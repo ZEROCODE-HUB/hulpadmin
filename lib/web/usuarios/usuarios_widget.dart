@@ -30,6 +30,98 @@ class UsuariosWidget extends StatefulWidget {
 }
 
 class _UsuariosWidgetState extends State<UsuariosWidget> {
+  /// Ciudades activas para el desplegable de edicion.
+  List<String> _ciudades = [];
+
+  Future<void> _cargarCiudades() async {
+    try {
+      final filas = await CiudadesTable().queryRows(
+        queryFn: (q) =>
+            q.eqOrNull('activo', true).order('nombre', ascending: true),
+      );
+      if (!mounted) return;
+      safeSetState(() => _ciudades = filas.map((c) => c.nombre).toList());
+    } catch (e) {
+      print('No se pudieron cargar las ciudades: $e');
+    }
+  }
+
+  /// Cambia la ciudad de un cliente.
+  ///
+  /// El admin no tenia forma de corregir los datos de un cliente: si se
+  /// equivocaba al registrarse, se quedaba asi. Por ahora solo la ciudad, que
+  /// es la que decide que solicitudes ve cada proveedor.
+  Future<void> _editarCiudadCliente(
+      VwListaUsuariosConServiciosRow usuario) async {
+    String? seleccion = (usuario.ciudad?.trim().isNotEmpty ?? false)
+        ? usuario.ciudad!.trim()
+        : null;
+    final opciones = <String>{
+      ..._ciudades,
+      if (seleccion != null) seleccion,
+    }.toList();
+
+    final guardado = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, refrescar) => AlertDialog(
+          title: Text(
+              'Ciudad de ${usuario.nombres ?? ''} ${usuario.apellidos ?? ''}'
+                  .trim()),
+          content: SizedBox(
+            width: 320,
+            child: DropdownButtonFormField<String>(
+              value: seleccion,
+              isExpanded: true,
+              hint: const Text('Sin ciudad'),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: opciones
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (val) => refrescar(() => seleccion = val),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (guardado != true || seleccion == null) return;
+    try {
+      await UsuariosTable().update(
+        data: {'ciudad': seleccion},
+        matchingRows: (rows) => rows.eqOrNull('id', usuario.id),
+      );
+      safeSetState(() => _model.requestCompleter = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ciudad actualizada',
+              style: TextStyle(
+                  color: FlutterFlowTheme.of(context).primaryBackground)),
+          backgroundColor: FlutterFlowTheme.of(context).primary,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo actualizar: $e',
+              style: TextStyle(
+                  color: FlutterFlowTheme.of(context).primaryBackground)),
+          backgroundColor: FlutterFlowTheme.of(context).error,
+        ),
+      );
+    }
+  }
+
   late UsuariosModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -83,6 +175,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => UsuariosModel());
+    _cargarCiudades();
 
     _model.dropDownValue ??= 'Recientes';
 
@@ -1507,6 +1600,46 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                         fontStyle: FlutterFlowTheme.of(context)
                                                                             .bodyMedium
                                                                             .fontStyle,
+                                                                        decoration:
+                                                                            TextDecoration.underline,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            // El admin no podia corregir ningun dato del cliente.
+                                                            InkWell(
+                                                              splashColor: Colors
+                                                                  .transparent,
+                                                              focusColor: Colors
+                                                                  .transparent,
+                                                              hoverColor: Colors
+                                                                  .transparent,
+                                                              highlightColor:
+                                                                  Colors
+                                                                      .transparent,
+                                                              onTap: () =>
+                                                                  _editarCiudadCliente(
+                                                                      usersItem),
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                        0.0,
+                                                                        6.0,
+                                                                        0.0,
+                                                                        0.0),
+                                                                child: Text(
+                                                                  'Editar ciudad',
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        font: GoogleFonts
+                                                                            .inter(),
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .primary,
+                                                                        letterSpacing:
+                                                                            0.0,
                                                                         decoration:
                                                                             TextDecoration.underline,
                                                                       ),

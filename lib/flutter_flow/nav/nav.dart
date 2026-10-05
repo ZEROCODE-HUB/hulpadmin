@@ -120,6 +120,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => CategoriasWidget(),
         ),
         FFRoute(
+          name: CiudadesWidget.routeName,
+          path: CiudadesWidget.routePath,
+          builder: (context, params) => CiudadesWidget(),
+        ),
+        FFRoute(
           name: SubcategoriaWidget.routeName,
           path: SubcategoriaWidget.routePath,
           builder: (context, params) => SubcategoriaWidget(

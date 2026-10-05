@@ -4,6 +4,7 @@ export '/web/dashboard/dashboard_widget.dart' show DashboardWidget;
 export '/web/proveedores/proveedores_widget.dart' show ProveedoresWidget;
 export '/web/usuarios/usuarios_widget.dart' show UsuariosWidget;
 export '/web/categorias/categorias_widget.dart' show CategoriasWidget;
+export '/web/ciudades/ciudades_widget.dart' show CiudadesWidget;
 export '/web/subcategoria/subcategoria_widget.dart' show SubcategoriaWidget;
 export '/web/servicios/servicios_widget.dart' show ServiciosWidget;
 export '/web/proveedores2/proveedores2_widget.dart' show Proveedores2Widget;

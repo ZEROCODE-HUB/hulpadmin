@@ -1,3 +1,4 @@
+import '/backend/supabase/profesionales_query.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/editar_proveedor_widget.dart';
 import '/components/historial_servicios_widget.dart';
@@ -251,21 +252,11 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                         child: FutureBuilder<List<VwProfesionalesCompletoRow>>(
                           future: (_model.requestCompleter ??=
                                   Completer<List<VwProfesionalesCompletoRow>>()
-                                    ..complete(VwProfesionalesCompletoTable()
-                                        .queryRows(
-                                      queryFn: (q) => q
-                                          .eqOrNull(
-                                            'categoria_id',
-                                            widget!.categoriaid,
-                                          )
-                                          .eqOrNull(
-                                            'verificado',
-                                            'verificado',
-                                          )
-                                          .ilike(
-                                            'nombres',
-                                            '%${_model.textFieldbuscarTextController.text}%',
-                                          ),
+                                    ..complete(consultarProfesionales(
+                                      verificado: 'verificado',
+                                      categoriaId: widget!.categoriaid,
+                                      busqueda: _model
+                                          .textFieldbuscarTextController.text,
                                     )))
                               .future,
                           builder: (context, snapshot) {
@@ -802,34 +793,14 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                               ),
                                             ),
                                           ),
-                                          StreamBuilder<
+                                          FutureBuilder<
                                               List<VwProfesionalesCompletoRow>>(
-                                            stream: _model
-                                                    .containerSupabaseStream ??=
-                                                SupaFlow.client
-                                                    .from(
-                                                        "vw_profesionales_completo")
-                                                    .stream(primaryKey: [
-                                                      'profesional_id',
-                                                      'subcategoria_id',
-                                                      'categoria_id'
-                                                    ])
-                                                    .eqOrNull(
-                                                      'categoria_id',
-                                                      widget!.categoriaid,
-                                                    )
-                                                    .map((list) => list
-                                                        .map((item) =>
-                                                            VwProfesionalesCompletoRow(
-                                                                item))
-                                                        // Solo los aprobados:
-                                                        // la vista trae todos
-                                                        // los proveedores sea
-                                                        // cual sea su estado.
-                                                        .where((fila) =>
-                                                            fila.verificado ==
-                                                            'verificado')
-                                                        .toList()),
+                                            future:
+                                                _model.listaCompletaRequest ??=
+                                                    consultarProfesionales(
+                                              verificado: 'verificado',
+                                              categoriaId: widget!.categoriaid,
+                                            ),
                                             builder: (context, snapshot) {
                                               // Customize what your widget looks like when it's loading.
                                               if (!snapshot.hasData) {
@@ -949,30 +920,25 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                           // REQ-002 v2.0.0: el pop-up se reemplaza por la página DetalleProveedor.
                                                                           context
                                                                               .pushNamed(
-                                                                            DetalleProveedorWidget
-                                                                                .routeName,
+                                                                            DetalleProveedorWidget.routeName,
                                                                             queryParameters:
                                                                                 {
-                                                                              'proveedorId':
-                                                                                  serializeParam(
+                                                                              'proveedorId': serializeParam(
                                                                                 itemsItem.profesionalId,
                                                                                 ParamType.String,
                                                                               ),
-                                                                              'categoriaid':
-                                                                                  serializeParam(
+                                                                              'categoriaid': serializeParam(
                                                                                 widget!.categoriaid,
                                                                                 ParamType.String,
                                                                               ),
-                                                                              'categorianombre':
-                                                                                  serializeParam(
+                                                                              'categorianombre': serializeParam(
                                                                                 widget!.categorianombre,
                                                                                 ParamType.String,
                                                                               ),
                                                                             }.withoutNulls,
                                                                             extra: <String,
                                                                                 dynamic>{
-                                                                              '__transition_info__':
-                                                                                  TransitionInfo(
+                                                                              '__transition_info__': TransitionInfo(
                                                                                 hasTransition: true,
                                                                                 transitionType: PageTransitionType.fade,
                                                                                 duration: Duration(milliseconds: 0),

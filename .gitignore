@@ -15,7 +15,10 @@ docs/CLAUDE.md
 .svn/
 .vercel
 /flutter/
-supabase/
+# Solo la carpeta del CLI de Supabase, en la raiz. Sin la barra inicial esta
+# regla tapaba tambien lib/backend/supabase/, y los ficheros nuevos de acceso
+# a datos nunca entraban al repositorio.
+/supabase/
 .env
 .env.local
 .env.production

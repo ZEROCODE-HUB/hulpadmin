@@ -1315,163 +1315,64 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                           width:
                                               MediaQuery.sizeOf(context).width *
                                                   1.0,
-                                          child: TextFormField(
-                                            controller:
-                                                _model.nombreTextController4 ??=
-                                                    TextEditingController(
-                                              text:
-                                                  columnVwSolicitudesServiciosCompletaRow
-                                                      ?.servicioNombre,
+                                          // Era un campo de solo lectura: el
+                                          // tipo de servicio no se podia
+                                          // corregir desde el admin.
+                                          child:
+                                              FutureBuilder<List<ServiciosRow>>(
+                                            future: ServiciosTable().queryRows(
+                                              queryFn: (q) => q
+                                                  .eqOrNull('estado', 'activo')
+                                                  .order('nombre',
+                                                      ascending: true),
                                             ),
-                                            focusNode: _model.nombreFocusNode4,
-                                            autofocus: false,
-                                            readOnly: true,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              hintText: 'Nombres',
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFF8A8A8A),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  width: 0.5,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  width: 0.5,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              errorBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 0.5,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedErrorBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 0.5,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              filled: true,
-                                              fillColor: Color(0xFFFBFAF9),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return Center(
+                                                  child: SizedBox(
+                                                    width: 50.0,
+                                                    height: 50.0,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                              Color>(
                                                         FlutterFlowTheme.of(
                                                                 context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
+                                                            .primary,
+                                                      ),
+                                                    ),
                                                   ),
-                                                  fontSize: 16.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            cursorColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            validator: _model
-                                                .nombreTextController4Validator
-                                                .asValidator(context),
+                                                );
+                                              }
+                                              final serviciosDisponibles =
+                                                  snapshot.data!;
+
+                                              return SearchableDropdown(
+                                                values: serviciosDisponibles
+                                                    .map((e) => e.id)
+                                                    .toList(),
+                                                labels: serviciosDisponibles
+                                                    .map((e) => e.nombre)
+                                                    .toList(),
+                                                selectedValue: _model
+                                                        .servicioNuevoValue ??
+                                                    columnVwSolicitudesServiciosCompletaRow
+                                                        ?.servicioId,
+                                                onChanged: (val) =>
+                                                    safeSetState(() {
+                                                  _model.servicioNuevoValue =
+                                                      val;
+                                                  _model.servicioNuevoNombre =
+                                                      serviciosDisponibles
+                                                          .where((e) =>
+                                                              e.id == val)
+                                                          .map((e) => e.nombre)
+                                                          .firstOrNull;
+                                                }),
+                                                hint: 'Seleccionar servicio...',
+                                              );
+                                            },
                                           ),
                                         ),
                                       ].divide(SizedBox(height: 8.0)),
@@ -2262,20 +2163,21 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                             // la anterior.
                                             key: ValueKey(
                                                 'ubicacion_${widget!.solicitudId}'),
-                                            coordenadasIniciales: (columnVwSolicitudesServiciosCompletaRow
-                                                            ?.latitud !=
-                                                        null &&
-                                                    columnVwSolicitudesServiciosCompletaRow
-                                                            ?.longitud !=
-                                                        null)
-                                                ? Coordenadas(
-                                                    columnVwSolicitudesServiciosCompletaRow!
-                                                        .latitud!,
-                                                    columnVwSolicitudesServiciosCompletaRow
-                                                        .longitud!)
-                                                : null,
-                                            direccionActual: () => _model
-                                                    .nombreTextController6
+                                            coordenadasIniciales:
+                                                (columnVwSolicitudesServiciosCompletaRow
+                                                                ?.latitud !=
+                                                            null &&
+                                                        columnVwSolicitudesServiciosCompletaRow
+                                                                ?.longitud !=
+                                                            null)
+                                                    ? Coordenadas(
+                                                        columnVwSolicitudesServiciosCompletaRow!
+                                                            .latitud!,
+                                                        columnVwSolicitudesServiciosCompletaRow
+                                                            .longitud!)
+                                                    : null,
+                                            direccionActual: () =>
+                                                _model.nombreTextController6
                                                     ?.text ??
                                                 '',
                                             onCambio: (punto) =>
@@ -2507,7 +2409,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'ID Proveedor',
+                                            'Proveedor',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -2538,11 +2440,21 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                               controller: _model
                                                       .nombreTextController8 ??=
                                                   TextEditingController(
+                                                // La vista ya trae el nombre;
+                                                // mostrar el id de usuario no
+                                                // le dice nada a nadie.
                                                 text: valueOrDefault<String>(
                                                   columnVwSolicitudesServiciosCompletaRow
-                                                      ?.proveedorIdUsuario
-                                                      ?.toString(),
-                                                  'Sin especificar',
+                                                              ?.proveedorNombreCompleto
+                                                              ?.trim()
+                                                              .isNotEmpty ==
+                                                          true
+                                                      ? columnVwSolicitudesServiciosCompletaRow
+                                                          ?.proveedorNombreCompleto
+                                                      : columnVwSolicitudesServiciosCompletaRow
+                                                          ?.proveedorIdUsuario
+                                                          ?.toString(),
+                                                  'Sin asignar',
                                                 ),
                                               ),
                                               focusNode:
@@ -2710,7 +2622,8 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 16.0, 0.0, 0.0),
                                 child: _buildPreciosAdicionalesSection(context),
                               ),
                               Align(
@@ -3396,16 +3309,24 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                                 snapshot.data!;
 
                                             return SearchableDropdown(
-                                              values: profesionalNuevoVwProfesionalesServiciosRowList
-                                                .map((p) => p.profesionalId ?? '')
-                                                .toList(),
-                                              labels: profesionalNuevoVwProfesionalesServiciosRowList
-                                                .map((p) => p.nombres ?? '')
-                                                .toList(),
-                                              selectedValue: _model.profesionalNuevoValue,
+                                              values:
+                                                  profesionalNuevoVwProfesionalesServiciosRowList
+                                                      .map((p) =>
+                                                          p.profesionalId ?? '')
+                                                      .toList(),
+                                              labels:
+                                                  profesionalNuevoVwProfesionalesServiciosRowList
+                                                      .map((p) =>
+                                                          p.nombres ?? '')
+                                                      .toList(),
+                                              selectedValue:
+                                                  _model.profesionalNuevoValue,
                                               onChanged: (val) => safeSetState(
-                                                  () => _model.profesionalNuevoValue = val),
-                                              hint: 'Seleccionar profesional...',
+                                                  () => _model
+                                                          .profesionalNuevoValue =
+                                                      val),
+                                              hint:
+                                                  'Seleccionar profesional...',
                                             );
                                           },
                                         ),
@@ -3730,8 +3651,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                       data: {
                                         'ubicacion':
                                             _model.nombreTextController6.text,
-                                        'latitud':
-                                            _model.coordenadas?.latitud,
+                                        'latitud': _model.coordenadas?.latitud,
                                         'longitud':
                                             _model.coordenadas?.longitud,
                                         'fecha': supaSerialize<DateTime>(_model
@@ -3749,6 +3669,12 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                                 ?.hora?.time)),
                                         'profesional_id':
                                             _model.profesionalNuevoValue,
+                                        if (_model.servicioNuevoValue != null)
+                                          'servicio_id':
+                                              _model.servicioNuevoValue,
+                                        if (_model.servicioNuevoNombre != null)
+                                          'servicio_nombre':
+                                              _model.servicioNuevoNombre,
                                         'precio_base': double.tryParse(
                                             _model.nombreTextController7.text),
                                         'precio_adicionales': _model
@@ -3789,8 +3715,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                       data: {
                                         'ubicacion':
                                             _model.nombreTextController6.text,
-                                        'latitud':
-                                            _model.coordenadas?.latitud,
+                                        'latitud': _model.coordenadas?.latitud,
                                         'longitud':
                                             _model.coordenadas?.longitud,
                                         'fecha': supaSerialize<DateTime>(_model
@@ -3878,25 +3803,29 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
       isDense: true,
       hintText: hint,
       hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-        font: GoogleFonts.inter(),
-        color: Color(0xFF8A8A8A),
-        fontSize: 16.0,
-        letterSpacing: 0.0,
-      ),
+            font: GoogleFonts.inter(),
+            color: Color(0xFF8A8A8A),
+            fontSize: 16.0,
+            letterSpacing: 0.0,
+          ),
       enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: FlutterFlowTheme.of(context).alternate, width: 0.5),
+        borderSide: BorderSide(
+            color: FlutterFlowTheme.of(context).alternate, width: 0.5),
         borderRadius: BorderRadius.circular(8.0),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 1.0),
+        borderSide:
+            BorderSide(color: FlutterFlowTheme.of(context).primary, width: 1.0),
         borderRadius: BorderRadius.circular(8.0),
       ),
       errorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 0.5),
+        borderSide:
+            BorderSide(color: FlutterFlowTheme.of(context).error, width: 0.5),
         borderRadius: BorderRadius.circular(8.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 0.5),
+        borderSide:
+            BorderSide(color: FlutterFlowTheme.of(context).error, width: 0.5),
         borderRadius: BorderRadius.circular(8.0),
       ),
       filled: true,
@@ -3915,14 +3844,12 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(
                   fontWeight: FontWeight.normal,
-                  fontStyle:
-                      FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                 ),
                 fontSize: 16.0,
                 letterSpacing: 0.0,
                 fontWeight: FontWeight.normal,
-                fontStyle:
-                    FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
               ),
         ),
         SizedBox(height: 8.0),
@@ -3933,8 +3860,8 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
               builder: (dialogContext) {
                 return Dialog(
                   elevation: 0,
-                  insetPadding: EdgeInsets.symmetric(
-                      horizontal: 40.0, vertical: 24.0),
+                  insetPadding:
+                      EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
                   backgroundColor: Colors.transparent,
                   alignment: AlignmentDirectional(0.0, 0.0)
                       .resolve(Directionality.of(context)),
@@ -3974,21 +3901,19 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Container(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 4.0),
+                    padding: EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 4.0),
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).primary,
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Text(
                       item.tipoItem ?? '',
-                      style:
-                          FlutterFlowTheme.of(context).bodySmall.override(
-                                font: GoogleFonts.inter(),
-                                color: Colors.white,
-                                fontSize: 12.0,
-                                letterSpacing: 0.0,
-                              ),
+                      style: FlutterFlowTheme.of(context).bodySmall.override(
+                            font: GoogleFonts.inter(),
+                            color: Colors.white,
+                            fontSize: 12.0,
+                            letterSpacing: 0.0,
+                          ),
                     ),
                   ),
                   SizedBox(width: 8.0),

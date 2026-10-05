@@ -15,6 +15,25 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
+  /// Ciudades activas, leidas de la tabla `ciudades`.
+  ///
+  /// Antes era una lista escrita a mano con cuatro ciudades (sin Bogota ni
+  /// Medellin, que son las que mas mueven) y distinta de las otras dos listas
+  /// que habia por el codigo.
+  List<String> ciudades = [];
+
+  Future<void> cargarCiudades() async {
+    try {
+      final filas = await CiudadesTable().queryRows(
+        queryFn: (q) =>
+            q.eqOrNull('activo', true).order('nombre', ascending: true),
+      );
+      ciudades = filas.map((c) => c.nombre).toList();
+    } catch (e) {
+      print('No se pudieron cargar las ciudades: $e');
+    }
+  }
+
   ///  Local state fields for this component.
 
   List<String> serviciosid = [];

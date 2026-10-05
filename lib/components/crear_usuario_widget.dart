@@ -35,6 +35,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
     super.initState();
     _model = createModel(context, () => CrearUsuarioModel());
 
+    _model.cargarCiudades().then((_) => safeSetState(() {}));
+
     _model.nombreTextController ??= TextEditingController();
     _model.nombreFocusNode ??= FocusNode();
 
@@ -567,14 +569,9 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                         controller:
                                             _model.ciudadValueController ??=
                                                 FormFieldController<String>(
-                                          _model.ciudadValue ??= 'Cali',
+                                          _model.ciudadValue,
                                         ),
-                                        options: [
-                                          'Cali',
-                                          'Jamundi',
-                                          'Palmira',
-                                          'Yumbo'
-                                        ],
+                                        options: _model.ciudades,
                                         onChanged: (val) => safeSetState(
                                             () => _model.ciudadValue = val),
                                         width:
@@ -2243,8 +2240,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                               final esUsuarioExterno =
                                   (password1 == '') && (password2 == '');
 
-                              if (!esUsuarioExterno &&
-                                  password1 != password2) {
+                              if (!esUsuarioExterno && password1 != password2) {
                                 await showDialog(
                                   context: context,
                                   builder: (dialogContext) {
@@ -2253,8 +2249,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                       insetPadding: EdgeInsets.zero,
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
-                                          .resolve(
-                                              Directionality.of(context)),
+                                          .resolve(Directionality.of(context)),
                                       child: Notificacion2Widget(
                                         titulo: 'Error',
                                         texto: 'Las contraseñas no coinciden',
@@ -2303,8 +2298,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                       insetPadding: EdgeInsets.zero,
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
-                                          .resolve(
-                                              Directionality.of(context)),
+                                          .resolve(Directionality.of(context)),
                                       child: Notificacion2Widget(
                                         titulo: 'Error',
                                         texto:
@@ -2324,17 +2318,15 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                 'id': _model.usuarioCreddo,
                                 'codigo_pais': '+57',
                                 'nombres': _model.nombreTextController.text,
-                                'apellidos':
-                                    _model.apellidoTextController.text,
+                                'apellidos': _model.apellidoTextController.text,
                                 'tipo_documento': _model.tipodocumentoValue,
-                                'numero_documento': _model
-                                    .numerodocumentoTextController.text,
+                                'numero_documento':
+                                    _model.numerodocumentoTextController.text,
                                 'pais': _model.paisValue,
                                 'ciudad': _model.ciudadValue,
                                 'direccion':
                                     _model.direccionTextController.text,
-                                'telefono':
-                                    _model.telefonoTextController.text,
+                                'telefono': _model.telefonoTextController.text,
                                 'correo_electronico':
                                     _model.correo1TextController.text,
                                 'rol': 'usuario',

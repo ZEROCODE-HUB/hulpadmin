@@ -297,6 +297,27 @@ class _MenuWidgetState extends State<MenuWidget> {
                             },
                           ),
                         ),
+                        wrapWithModel(
+                          model: _model.menuSeleccionModel9,
+                          updateCallback: () => safeSetState(() {}),
+                          child: MenuSeleccionWidget(
+                            textseleccion: 'Ciudades',
+                            imagen:
+                                'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/jl14vgg1blbo/category.png',
+                            action: () async {
+                              context.pushNamed(
+                                CiudadesWidget.routeName,
+                                extra: <String, dynamic>{
+                                  '__transition_info__': TransitionInfo(
+                                    hasTransition: true,
+                                    transitionType: PageTransitionType.fade,
+                                    duration: Duration(milliseconds: 0),
+                                  ),
+                                },
+                              );
+                            },
+                          ),
+                        ),
                         InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -388,85 +409,88 @@ class _MenuWidgetState extends State<MenuWidget> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-            Flexible(
-              child: MouseRegion(
-                opaque: false,
-                cursor: MouseCursor.defer ?? MouseCursor.defer,
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  focusColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () async {
-                    GoRouter.of(context).prepareAuthEvent();
-                    await authManager.signOut();
-                    GoRouter.of(context).clearRedirectLocation();
+                Flexible(
+                  child: MouseRegion(
+                    opaque: false,
+                    cursor: MouseCursor.defer ?? MouseCursor.defer,
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onTap: () async {
+                        GoRouter.of(context).prepareAuthEvent();
+                        await authManager.signOut();
+                        GoRouter.of(context).clearRedirectLocation();
 
-                    context.goNamedAuth(
-                        LoginWebWidget.routeName, context.mounted);
-                  },
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width * 1.0,
-                    decoration: BoxDecoration(
-                      color: _model.mouseRegionHovered!
-                          ? FlutterFlowTheme.of(context).customColor1
-                          : Color(0x00000000),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          12.0, 12.0, 12.0, 12.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/3pqtw21ue2e6/Logout.png',
-                              width: 28.0,
-                              height: 28.0,
-                              fit: BoxFit.cover,
-                            ),
+                        context.goNamedAuth(
+                            LoginWebWidget.routeName, context.mounted);
+                      },
+                      child: Container(
+                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        decoration: BoxDecoration(
+                          color: _model.mouseRegionHovered!
+                              ? FlutterFlowTheme.of(context).customColor1
+                              : Color(0x00000000),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              12.0, 12.0, 12.0, 12.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/3pqtw21ue2e6/Logout.png',
+                                  width: 28.0,
+                                  height: 28.0,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              if (FFAppState().MenuAbierto)
+                                Text(
+                                  'Cerrar sesión',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight: FontWeight.normal,
+                                          fontStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .fontStyle,
+                                        ),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        fontSize: 16.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.normal,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
+                                      ),
+                                ),
+                            ].divide(SizedBox(width: 8.0)),
                           ),
-                          if (FFAppState().MenuAbierto)
-                            Text(
-                              'Cerrar sesión',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    fontSize: 16.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                            ),
-                        ].divide(SizedBox(width: 8.0)),
+                        ),
                       ),
                     ),
+                    onEnter: ((event) async {
+                      safeSetState(() => _model.mouseRegionHovered = true);
+                    }),
+                    onExit: ((event) async {
+                      safeSetState(() => _model.mouseRegionHovered = false);
+                    }),
                   ),
                 ),
-                onEnter: ((event) async {
-                  safeSetState(() => _model.mouseRegionHovered = true);
-                }),
-                onExit: ((event) async {
-                  safeSetState(() => _model.mouseRegionHovered = false);
-                }),
-              ),
-            ),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
                   child: Text(
-                    FFAppState().MenuAbierto ? 'v1.0.11 · 2026-08-26' : 'v1.0.11',
+                    FFAppState().MenuAbierto
+                        ? 'v1.0.17 · 2026-09-24'
+                        : 'v1.0.17',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(
                             fontStyle: FlutterFlowTheme.of(context)
@@ -478,9 +502,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                               .withOpacity(0.6),
                           fontSize: 11.0,
                           letterSpacing: 0.0,
-                          fontStyle: FlutterFlowTheme.of(context)
-                              .bodySmall
-                              .fontStyle,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodySmall.fontStyle,
                         ),
                   ),
                 ),

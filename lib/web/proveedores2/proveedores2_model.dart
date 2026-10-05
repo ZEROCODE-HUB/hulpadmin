@@ -33,7 +33,9 @@ class Proveedores2Model extends FlutterFlowModel<Proveedores2Widget> {
   // State field(s) for DropDown widget.
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;
-  Stream<List<VwProfesionalesCompletoRow>>? containerSupabaseStream;
+  // Listado de la categoria (sin la caja de busqueda). Se pagina en
+  // profesionales_query.dart para no toparse con el limite de 1000 filas.
+  Future<List<VwProfesionalesCompletoRow>>? listaCompletaRequest;
 
   @override
   void initState(BuildContext context) {
@@ -48,6 +50,12 @@ class Proveedores2Model extends FlutterFlowModel<Proveedores2Widget> {
   }
 
   /// Additional helper methods.
+  /// Invalida las dos consultas de la pantalla para que se vuelvan a pedir.
+  void invalidarConsultas() {
+    listaCompletaRequest = null;
+    requestCompleter = null;
+  }
+
   Future waitForRequestCompleted({
     double minWait = 0,
     double maxWait = double.infinity,

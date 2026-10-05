@@ -27,7 +27,9 @@ class RegistroProveedoresModel
 
   // Model for Menu component.
   late MenuModel menuModel;
-  Stream<List<VwProfesionalesCompletoRow>>? containersinfiltroSupabaseStream;
+  // Listado completo de pendientes (sin la caja de busqueda). Se pagina en
+  // profesionales_query.dart para no toparse con el limite de 1000 filas.
+  Future<List<VwProfesionalesCompletoRow>>? listaCompletaRequest;
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
@@ -61,6 +63,13 @@ class RegistroProveedoresModel
   }
 
   /// Additional helper methods.
+
+  /// Invalida las dos consultas de la pantalla para que se vuelvan a pedir.
+  void invalidarConsultas() {
+    listaCompletaRequest = null;
+    requestCompleter = null;
+  }
+
   Future waitForRequestCompleted({
     double minWait = 0,
     double maxWait = double.infinity,

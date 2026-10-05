@@ -29,6 +29,8 @@ class MenuModel extends FlutterFlowModel<MenuWidget> {
   late MenuSeleccionModel menuSeleccionModel7;
   // Model for MenuSeleccion component.
   late MenuSeleccionModel menuSeleccionModel8;
+  // Model for MenuSeleccion component (Ciudades).
+  late MenuSeleccionModel menuSeleccionModel9;
   // State field(s) for MouseRegion widget.
   bool mouseRegionHovered = false;
 
@@ -42,6 +44,7 @@ class MenuModel extends FlutterFlowModel<MenuWidget> {
     menuSeleccionModel6 = createModel(context, () => MenuSeleccionModel());
     menuSeleccionModel7 = createModel(context, () => MenuSeleccionModel());
     menuSeleccionModel8 = createModel(context, () => MenuSeleccionModel());
+    menuSeleccionModel9 = createModel(context, () => MenuSeleccionModel());
   }
 
   @override
@@ -54,5 +57,6 @@ class MenuModel extends FlutterFlowModel<MenuWidget> {
     menuSeleccionModel6.dispose();
     menuSeleccionModel7.dispose();
     menuSeleccionModel8.dispose();
+    menuSeleccionModel9.dispose();
   }
 }

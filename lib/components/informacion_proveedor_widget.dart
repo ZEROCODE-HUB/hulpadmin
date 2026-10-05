@@ -74,8 +74,6 @@ class _InformacionProveedorWidgetState
 
   /// Returns true if [url] points to an image file (jpg/jpeg/png/webp).
 
-
-
   /// REQ-003: invisible spacer that holds a grid column slot.
 
   /// REQ-003: builds a row of up to 3 document cards with spacing.
@@ -83,7 +81,6 @@ class _InformacionProveedorWidgetState
   // guardan como RUTA, no como URL: hay que firmarlas para poder verlas. Los
   // valores que siguen siendo http se devuelven tal cual.
   final Map<String, String> _urlsFirmadas = {};
-
 
   /// Empty slots at the end are filled with invisible Expanded spacers.
 
@@ -430,6 +427,75 @@ class _InformacionProveedorWidgetState
                                                 ),
                                                 color: Color(0xFF606060),
                                                 fontSize: 22.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w600,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                        ),
+                                      ].divide(SizedBox(height: 4.0)),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Correo electrónico',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.inter(
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                color: Color(0xFF4A4A4A),
+                                                fontSize: 16.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .fontStyle,
+                                              ),
+                                        ),
+                                        // Seleccionable para poder copiar el
+                                        // correo, y a 18 px porque a 22 un
+                                        // correo normal no cabe en la columna.
+                                        SelectableText(
+                                          valueOrDefault<String>(
+                                            columnUsuariosRow
+                                                ?.correoElectronico,
+                                            'Sin correo',
+                                          ),
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                font: GoogleFonts.inter(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                ),
+                                                color: Color(0xFF606060),
+                                                fontSize: 18.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.w600,
                                                 fontStyle:
@@ -2326,8 +2392,8 @@ class _InformacionProveedorWidgetState
                               // ── CA-12: empty state Zona A ────────────────
                               if (loadedA == 0)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 32),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 32),
                                   child: Center(
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
@@ -2361,9 +2427,9 @@ class _InformacionProveedorWidgetState
                                               .override(
                                                 font: GoogleFonts.inter(),
                                                 letterSpacing: 0,
-                                                color: FlutterFlowTheme.of(
-                                                        context)
-                                                    .secondaryText,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryText,
                                               ),
                                         ),
                                       ],
@@ -2374,8 +2440,7 @@ class _InformacionProveedorWidgetState
                                 // ── CA-13/15: responsivo ─────────────────────
                                 LayoutBuilder(
                                   builder: (context, constraints) {
-                                    final isMobile =
-                                        constraints.maxWidth < 600;
+                                    final isMobile = constraints.maxWidth < 600;
                                     if (isMobile) {
                                       // Móvil: 1 columna
                                       return Column(
@@ -2388,8 +2453,7 @@ class _InformacionProveedorWidgetState
                                                 label: 'Cédula',
                                                 url: cedula,
                                                 prefijoDescarga: 'cedula',
-                                                proveedorId:
-                                                    widget.proveedorId,
+                                                proveedorId: widget.proveedorId,
                                                 fechaSubida: uploadDate),
                                             const SizedBox(height: 12),
                                           ],
@@ -2400,8 +2464,7 @@ class _InformacionProveedorWidgetState
                                                 url: cuenta,
                                                 prefijoDescarga:
                                                     'cuenta_bancaria',
-                                                proveedorId:
-                                                    widget.proveedorId,
+                                                proveedorId: widget.proveedorId,
                                                 fechaSubida: uploadDate),
                                             const SizedBox(height: 12),
                                           ],
@@ -2411,8 +2474,7 @@ class _InformacionProveedorWidgetState
                                                 label: 'Contrato',
                                                 url: contrato,
                                                 prefijoDescarga: 'contrato',
-                                                proveedorId:
-                                                    widget.proveedorId,
+                                                proveedorId: widget.proveedorId,
                                                 fechaSubida: uploadDate),
                                         ],
                                       );
@@ -2433,7 +2495,8 @@ class _InformacionProveedorWidgetState
                                           child: TarjetaDocumento(
                                               label: 'Cuenta bancaria',
                                               url: cuenta,
-                                              prefijoDescarga: 'cuenta_bancaria',
+                                              prefijoDescarga:
+                                                  'cuenta_bancaria',
                                               proveedorId: widget.proveedorId,
                                               fechaSubida: uploadDate),
                                         ),
@@ -2469,8 +2532,7 @@ class _InformacionProveedorWidgetState
                                   fontSize: 16,
                                   letterSpacing: 0,
                                   fontWeight: FontWeight.w600,
-                                  color:
-                                      FlutterFlowTheme.of(context).primary,
+                                  color: FlutterFlowTheme.of(context).primary,
                                 ),
                           ),
                         ),
@@ -2502,8 +2564,8 @@ class _InformacionProveedorWidgetState
 
                             if (validCerts.isEmpty) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 32),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -2550,27 +2612,22 @@ class _InformacionProveedorWidgetState
                             // CA-13/14/15: responsivo
                             return LayoutBuilder(
                               builder: (context, constraints) {
-                                final isMobile =
-                                    constraints.maxWidth < 600;
+                                final isMobile = constraints.maxWidth < 600;
 
                                 if (isMobile) {
                                   // Móvil: 1 columna
                                   final mobileItems = <Widget>[];
-                                  for (int i = 0;
-                                      i < validCerts.length;
-                                      i++) {
+                                  for (int i = 0; i < validCerts.length; i++) {
                                     mobileItems.add(TarjetaDocumento(
-                                      label: validCerts[i]
-                                          .entidadCertificadora,
+                                      label: validCerts[i].entidadCertificadora,
                                       url: validCerts[i].documentoUrl,
                                       prefijoDescarga: 'certificacion',
                                       proveedorId: validCerts[i].id,
-                                      fechaSubida:
-                                          validCerts[i].createdAt,
+                                      fechaSubida: validCerts[i].createdAt,
                                     ));
                                     if (i < validCerts.length - 1) {
-                                      mobileItems.add(
-                                          const SizedBox(height: 12));
+                                      mobileItems
+                                          .add(const SizedBox(height: 12));
                                     }
                                   }
                                   return Column(
@@ -2582,31 +2639,26 @@ class _InformacionProveedorWidgetState
 
                                 // Desktop: 3 columnas, filas de 3
                                 final rows = <Widget>[];
-                                for (int i = 0;
-                                    i < validCerts.length;
-                                    i += 3) {
+                                for (int i = 0; i < validCerts.length; i += 3) {
                                   final slice = validCerts.sublist(
-                                      i,
-                                      min(i + 3, validCerts.length));
+                                      i, min(i + 3, validCerts.length));
                                   rows.add(filaDocumentos(
                                     slice
                                         .map((cert) => Expanded(
                                               child: TarjetaDocumento(
-                                                label: cert
-                                                    .entidadCertificadora,
+                                                label:
+                                                    cert.entidadCertificadora,
                                                 url: cert.documentoUrl,
                                                 prefijoDescarga:
                                                     'certificacion',
                                                 proveedorId: cert.id,
-                                                fechaSubida:
-                                                    cert.createdAt,
+                                                fechaSubida: cert.createdAt,
                                               ),
                                             ))
                                         .toList(),
                                   ));
                                   if (i + 3 < validCerts.length) {
-                                    rows.add(
-                                        const SizedBox(height: 12));
+                                    rows.add(const SizedBox(height: 12));
                                   }
                                 }
                                 return Column(

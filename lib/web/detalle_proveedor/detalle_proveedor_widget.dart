@@ -53,13 +53,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
   static const Color _valueGray = Color(0xFF606060);
   // REQ-002 v2.0.3: color de los labels de campo, fiel al diseño.
   // Antes era un azul (#133CC2) que no esta en la paleta de Hulp.
-  static Color _labelColor(BuildContext c) =>
-      FlutterFlowTheme.of(c).primary;
+  static Color _labelColor(BuildContext c) => FlutterFlowTheme.of(c).primary;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => DetalleProveedorModel());
+    _cargarCiudades();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
@@ -69,9 +69,72 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
     super.dispose();
   }
 
+  /// Ciudades en las que opera Hulp, para no dejar escribirlas a mano.
+  List<String> _ciudades = [];
+
+  Future<void> _cargarCiudades() async {
+    try {
+      final filas = await CiudadesTable().queryRows(
+        queryFn: (q) =>
+            q.eqOrNull('activo', true).order('nombre', ascending: true),
+      );
+      if (!mounted) return;
+      safeSetState(() => _ciudades = filas.map((c) => c.nombre).toList());
+    } catch (e) {
+      print('No se pudieron cargar las ciudades: $e');
+    }
+  }
+
+  /// Desplegable de ciudad con la misma pinta que `_dialogField`.
+  ///
+  /// Escribe en el mismo `TextEditingController` que usaba el campo de texto,
+  /// asi el guardado no cambia. Antes se escribia a mano y cualquier variante
+  /// («bogota», «Bogotá») dejaba al proveedor descolgado del filtro por ciudad.
+  Widget _dialogCiudad(
+      BuildContext ctx, TextEditingController controlador, bool saving) {
+    final actual = controlador.text.trim();
+    final opciones = <String>{
+      ..._ciudades,
+      if (actual.isNotEmpty) actual,
+    }.toList();
+
+    return StatefulBuilder(
+      builder: (ctx, refrescar) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ciudad',
+            style: FlutterFlowTheme.of(ctx).bodySmall.override(
+                  font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                  fontSize: 13,
+                  letterSpacing: 0,
+                ),
+          ),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: controlador.text.trim().isEmpty
+                ? null
+                : controlador.text.trim(),
+            isExpanded: true,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+            hint: const Text('Sin ciudad'),
+            items: opciones
+                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                .toList(),
+            onChanged: saving
+                ? null
+                : (val) => refrescar(() => controlador.text = val ?? ''),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Helpers de documentos (idénticos a v1.0.0) ───────────────────────────
-
-
 
   // ── Documentos privados ──────────────────────────────────────────────────
   // Cedulas, cuentas bancarias y contratos viven en el bucket privado
@@ -143,20 +206,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
     ));
   }
 
-
-
-
-
-
-
   // ── Helpers de presentación (REQ-002 v2.0.0) ─────────────────────────────
 
   /// REQ-002 v2.0.0 §11.5: ID de proveedor derivado, solo presentación.
   String _idProveedor(UsuariosRow? row) {
     final anio = (row?.fechaRegistro?.year ?? DateTime.now().year).toString();
     final idNum = row?.idUsuario;
-    final padded =
-        idNum != null ? idNum.toString().padLeft(4, '0') : '----';
+    final padded = idNum != null ? idNum.toString().padLeft(4, '0') : '----';
     return 'PROV-$anio-$padded';
   }
 
@@ -364,8 +420,9 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 12),
                                 ),
-                                onPressed:
-                                    saving ? null : () => Navigator.of(ctx).pop(),
+                                onPressed: saving
+                                    ? null
+                                    : () => Navigator.of(ctx).pop(),
                                 child: const Text('Cancelar'),
                               ),
                               const SizedBox(width: 12),
@@ -407,8 +464,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                           if (ctx.mounted) {
                                             ScaffoldMessenger.of(ctx)
                                                 .showSnackBar(const SnackBar(
-                                              content: Text(
-                                                  'No se pudo actualizar'),
+                                              content:
+                                                  Text('No se pudo actualizar'),
                                             ));
                                           }
                                         }
@@ -477,7 +534,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
   }
 
   /// REQ-007: pop-up para editar "Facturación" (cuentas_bancarias + RUT).
-  void _editFacturacionDialog(BuildContext context, UsuariosRow? usuario) async {
+  void _editFacturacionDialog(
+      BuildContext context, UsuariosRow? usuario) async {
     final rows = await CuentasBancariasTable().querySingleRow(
       queryFn: (q) => q.eqOrNull('usuario_id', widget.proveedorId),
     );
@@ -652,7 +710,9 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             const SizedBox(width: 8),
                             Text(
                               'Editar datos del cliente',
-                              style: FlutterFlowTheme.of(ctx).bodyMedium.override(
+                              style: FlutterFlowTheme.of(ctx)
+                                  .bodyMedium
+                                  .override(
                                     font: GoogleFonts.inter(
                                         fontWeight: FontWeight.w700),
                                     fontSize: 18,
@@ -702,8 +762,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                             selectedFiles: files,
                                           );
                                           if (urls.isNotEmpty) {
-                                            setLocal(
-                                                () => nuevaFotoUrl = urls.first);
+                                            setLocal(() =>
+                                                nuevaFotoUrl = urls.first);
                                           }
                                         } catch (_) {
                                           if (ctx.mounted) {
@@ -725,9 +785,12 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                             strokeWidth: 2))
                                     : Icon(Icons.photo_camera_outlined,
                                         size: 18,
-                                        color: FlutterFlowTheme.of(ctx).primary),
+                                        color:
+                                            FlutterFlowTheme.of(ctx).primary),
                                 label: Text(
-                                    subiendoFoto ? 'Subiendo...' : 'Cambiar foto',
+                                    subiendoFoto
+                                        ? 'Subiendo...'
+                                        : 'Cambiar foto',
                                     style: GoogleFonts.inter(
                                         color: FlutterFlowTheme.of(ctx).primary,
                                         fontWeight: FontWeight.w600)),
@@ -745,7 +808,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         _dialogField(ctx, 'Teléfono', telCtrl,
                             saving: saving, keyboard: TextInputType.phone),
                         const SizedBox(height: 14),
-                        _dialogField(ctx, 'Ciudad', ciudadCtrl, saving: saving),
+                        _dialogCiudad(ctx, ciudadCtrl, saving),
                         const SizedBox(height: 14),
                         _dialogField(ctx, 'Instagram', igCtrl, saving: saving),
                         const SizedBox(height: 14),
@@ -791,7 +854,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                       try {
                                         final data = <String, dynamic>{
                                           'nombres': nombresCtrl.text.trim(),
-                                          'apellidos': apellidosCtrl.text.trim(),
+                                          'apellidos':
+                                              apellidosCtrl.text.trim(),
                                           'telefono': telCtrl.text.trim(),
                                           'ciudad': ciudadCtrl.text.trim(),
                                           'redes_sociales': [
@@ -800,14 +864,16 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                           ],
                                         };
                                         if (nuevaFotoUrl != null) {
-                                          data['foto_perfil_url'] = nuevaFotoUrl;
+                                          data['foto_perfil_url'] =
+                                              nuevaFotoUrl;
                                         }
                                         await UsuariosTable().update(
                                           data: data,
                                           matchingRows: (rows) => rows.eqOrNull(
                                               'id', widget.proveedorId),
                                         );
-                                        final fotoVieja = usuario?.fotoPerfilUrl;
+                                        final fotoVieja =
+                                            usuario?.fotoPerfilUrl;
                                         if (nuevaFotoUrl != null &&
                                             fotoVieja != null &&
                                             fotoVieja.isNotEmpty &&
@@ -935,8 +1001,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         Text(
                           'Editar servicios',
                           style: FlutterFlowTheme.of(ctx).bodyMedium.override(
-                                font:
-                                    GoogleFonts.inter(fontWeight: FontWeight.w700),
+                                font: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w700),
                                 fontSize: 18,
                                 letterSpacing: 0,
                                 fontWeight: FontWeight.w700,
@@ -1078,8 +1144,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                       safeSetState(() {});
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(const SnackBar(
-                                        content:
-                                            Text('Servicios actualizados'),
+                                        content: Text('Servicios actualizados'),
                                       ));
                                     }
                                   } catch (_) {
@@ -1444,13 +1509,14 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                               progreso == null
                                   ? 'Procesando…'
                                   : '${((progreso ?? 0) * 100).round()}% · $progresoTexto',
-                              style: FlutterFlowTheme.of(ctx).bodySmall.override(
-                                    font: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w500),
-                                    fontSize: 12,
-                                    letterSpacing: 0,
-                                    color: FlutterFlowTheme.of(ctx).primary,
-                                  ),
+                              style:
+                                  FlutterFlowTheme.of(ctx).bodySmall.override(
+                                        font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500),
+                                        fontSize: 12,
+                                        letterSpacing: 0,
+                                        color: FlutterFlowTheme.of(ctx).primary,
+                                      ),
                             ),
                           ),
                         ],
@@ -1478,8 +1544,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             const SizedBox(height: 10),
                             regRow('Cédula', cedulaUrl, 'cedula', 'cedulas',
                                 (v) => cedulaUrl = v),
-                            regRow('Cuenta bancaria', cuentaUrl,
-                                'cuenta_bancaria', 'cuentas',
+                            regRow(
+                                'Cuenta bancaria',
+                                cuentaUrl,
+                                'cuenta_bancaria',
+                                'cuentas',
                                 (v) => cuentaUrl = v),
                             regRow('Contrato', contratoUrl, 'contrato',
                                 'contratos', (v) => contratoUrl = v),
@@ -1593,15 +1662,14 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             Text(
                                 'Puedes seleccionar varios archivos; cada uno se '
                                 'guarda como una certificación de esa entidad.',
-                                style: FlutterFlowTheme.of(ctx)
-                                    .bodySmall
-                                    .override(
-                                      font: GoogleFonts.inter(),
-                                      fontSize: 11,
-                                      letterSpacing: 0,
-                                      color: FlutterFlowTheme.of(ctx)
-                                          .secondaryText,
-                                    )),
+                                style:
+                                    FlutterFlowTheme.of(ctx).bodySmall.override(
+                                          font: GoogleFonts.inter(),
+                                          fontSize: 11,
+                                          letterSpacing: 0,
+                                          color: FlutterFlowTheme.of(ctx)
+                                              .secondaryText,
+                                        )),
                           ],
                         ),
                       ),
@@ -1738,8 +1806,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       context.pushNamed(
         Proveedores2Widget.routeName,
         queryParameters: {
-          'categoriaid':
-              serializeParam(widget.categoriaid, ParamType.String),
+          'categoriaid': serializeParam(widget.categoriaid, ParamType.String),
           'categorianombre':
               serializeParam(widget.categorianombre, ParamType.String),
         }.withoutNulls,
@@ -1881,8 +1948,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
           style: OutlinedButton.styleFrom(
             foregroundColor: _valueGray,
             side: const BorderSide(color: Color(0xFF8A8A8A)),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             textStyle: GoogleFonts.inter(fontSize: 14),
           ),
@@ -1974,9 +2041,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                       ),
                       child: Text(
                         activo ? 'Activo' : 'Inactivo',
-                        style: FlutterFlowTheme.of(context)
-                            .bodySmall
-                            .override(
+                        style: FlutterFlowTheme.of(context).bodySmall.override(
                               font: GoogleFonts.inter(
                                   fontWeight: FontWeight.w600),
                               fontSize: 13,
@@ -2051,8 +2116,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   Text(
                     fecha != null ? dateTimeFormat("d MMM, y", fecha) : '—',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font:
-                              GoogleFonts.inter(fontWeight: FontWeight.w600),
+                          font: GoogleFonts.inter(fontWeight: FontWeight.w600),
                           fontSize: 15,
                           letterSpacing: 0,
                           fontWeight: FontWeight.w600,
@@ -2222,8 +2286,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5E9),
                     borderRadius: BorderRadius.circular(20),
@@ -2390,7 +2454,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         ))
                     .toList(),
               ));
-              if (i + 3 < validCerts.length) rows.add(const SizedBox(height: 12));
+              if (i + 3 < validCerts.length)
+                rows.add(const SizedBox(height: 12));
             }
             return Column(mainAxisSize: MainAxisSize.min, children: rows);
           },
@@ -2577,9 +2642,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             ),
                             InkWell(
                               borderRadius: BorderRadius.circular(20),
-                              onTap: saving
-                                  ? null
-                                  : () => Navigator.of(ctx).pop(),
+                              onTap:
+                                  saving ? null : () => Navigator.of(ctx).pop(),
                               child: Icon(Icons.close,
                                   size: 22,
                                   color:
@@ -2608,9 +2672,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 12),
                               ),
-                              onPressed: saving
-                                  ? null
-                                  : () => Navigator.of(ctx).pop(),
+                              onPressed:
+                                  saving ? null : () => Navigator.of(ctx).pop(),
                               child: const Text('Cancelar'),
                             ),
                             const SizedBox(width: 12),
@@ -2671,8 +2734,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white),
+                                          strokeWidth: 2, color: Colors.white),
                                     )
                                   : const Text('Guardar'),
                             ),
@@ -2786,8 +2848,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
     );
   }
 
-  Widget _refActionButton(BuildContext context, IconData icon, String label,
-      VoidCallback onTap) {
+  Widget _refActionButton(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
@@ -2946,7 +3008,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
               else ...[
                 // REQ-002 v2.0.3: si no hay entidad real en backend, se muestra
                 // el estado vacío ("—"); nunca un valor mock por defecto.
-                _infoText(context, 'Entidad', _valorReal(cuenta?.entidadBancaria)),
+                _infoText(
+                    context, 'Entidad', _valorReal(cuenta?.entidadBancaria)),
                 const SizedBox(height: 14),
                 _infoText(
                     context, 'Tipo de cuenta', _valorReal(cuenta?.tipoCuenta)),
@@ -2954,8 +3017,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                 _infoText(context, 'Número de cuenta',
                     _valorReal(cuenta?.numeroCuenta)),
                 const SizedBox(height: 14),
-                _infoText(context, 'RUT',
-                    _valorReal(usuario?.registroTributario)),
+                _infoText(
+                    context, 'RUT', _valorReal(usuario?.registroTributario)),
               ],
             ],
           );
@@ -3147,9 +3210,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
             spacing: 10,
             runSpacing: 10,
             children: [
-              ...nombres
-                  .take(_maxChipsVisible)
-                  .map((n) => _servicioTag(context, n, seleccionado: seleccionado)),
+              ...nombres.take(_maxChipsVisible).map(
+                  (n) => _servicioTag(context, n, seleccionado: seleccionado)),
               if (nombres.length > _maxChipsVisible)
                 _verMasChip(
                   context,
@@ -3214,8 +3276,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
         final screen = MediaQuery.sizeOf(ctx);
         return Dialog(
           insetPadding: const EdgeInsets.all(24),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: 640,
@@ -3255,8 +3317,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                       fontSize: 18,
                                       letterSpacing: 0,
                                       fontWeight: FontWeight.w700,
-                                      color: FlutterFlowTheme.of(ctx)
-                                          .primaryText,
+                                      color:
+                                          FlutterFlowTheme.of(ctx).primaryText,
                                     ),
                               ),
                             ),
@@ -3353,8 +3415,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle(
-              context, Icons.access_time, 'Historial de servicios'),
+          _sectionTitle(context, Icons.access_time, 'Historial de servicios'),
           FutureBuilder<List<VwSolicitudesServiciosCompletaRow>>(
             future: VwSolicitudesServiciosCompletaTable().queryRows(
               queryFn: (q) => q.eqOrNull('profesional_id', widget.proveedorId),
@@ -3422,9 +3483,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
 
   Widget _timelineNode(
       BuildContext context, VwSolicitudesServiciosCompletaRow item) {
-    final fecha = item.fecha != null
-        ? dateTimeFormat("d/M/y", item.fecha)
-        : '—';
+    final fecha =
+        item.fecha != null ? dateTimeFormat("d/M/y", item.fecha) : '—';
     final hora =
         item.hora?.time != null ? dateTimeFormat("Hm", item.hora?.time) : '';
     return SizedBox(

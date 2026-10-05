@@ -36,6 +36,8 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
     super.initState();
     _model = createModel(context, () => CrearProveedorModel());
 
+    _model.cargarCiudades().then((_) => safeSetState(() {}));
+
     _model.nombreTextController ??= TextEditingController();
     _model.nombreFocusNode ??= FocusNode();
 
@@ -574,14 +576,9 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                         controller:
                                             _model.ciudadValueController ??=
                                                 FormFieldController<String>(
-                                          _model.ciudadValue ??= 'Cali',
+                                          _model.ciudadValue,
                                         ),
-                                        options: [
-                                          'Cali',
-                                          'Jamundi',
-                                          'Palmira',
-                                          'Yumbo'
-                                        ],
+                                        options: _model.ciudades,
                                         onChanged: (val) => safeSetState(
                                             () => _model.ciudadValue = val),
                                         width:
@@ -2945,83 +2942,78 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                               }
 
                               await UsuariosTable().insert({
-                                    'id': _model.creado,
-                                    'nombres': _model.nombreTextController.text,
-                                    'apellidos':
-                                        _model.apellidoTextController.text,
-                                    'rol': 'proveedor',
-                                    'tipo_documento': _model.tipodocumentoValue,
-                                    'numero_documento': _model
-                                        .numerodocumentoTextController.text,
-                                    'pais': _model.paisValue,
-                                    'codigo_pais': '+57',
-                                    'telefono':
-                                        _model.telefonoTextController.text,
-                                    'direccion':
-                                        _model.direccionTextController.text,
-                                    'ciudad': _model.ciudadValue,
-                                    'registro_tributario':
-                                        _model.rutnitTextController.text,
-                                    'verificado': 'pendiente',
-                                    'correo_electronico':
-                                        _model.correo1TextController.text,
-                                  });
-                                  await CuentasBancariasTable().insert({
-                                    'usuario_id': _model.creado,
-                                    'entidad_bancaria': _model.entidadValue,
-                                    'tipo_cuenta': _model.tipocuentaValue,
-                                    'numero_cuenta':
-                                        _model.numerocuentaTextController.text,
-                                    'nombre_titular':
-                                        '${_model.nombreTextController.text} ${_model.apellidoTextController.text}',
-                                  });
-                                  for (int loop1Index = 0;
-                                      loop1Index < _model.serviciosid.length;
-                                      loop1Index++) {
-                                    final currentLoop1Item =
-                                        _model.serviciosid[loop1Index];
-                                    await ProfesionalServiciosTable().insert({
-                                      'usuario_id': _model.creado,
-                                      'servicio_id': currentLoop1Item,
-                                    });
-                                  }
-                                  await showDialog(
-                                    context: context,
-                                    builder: (dialogContext) {
-                                      return Dialog(
-                                        elevation: 0,
-                                        insetPadding: EdgeInsets.zero,
-                                        backgroundColor: Colors.transparent,
-                                        alignment:
-                                            AlignmentDirectional(0.0, 0.0)
-                                                .resolve(
-                                                    Directionality.of(context)),
-                                        child: Notificacion2Widget(
-                                          titulo: 'Proveedor creado',
-                                          texto:
-                                              'Proveedor creado correctamente',
-                                          boton: 'Aceptar',
-                                          succes: true,
-                                          action: () async {},
-                                        ),
-                                      );
-                                    },
+                                'id': _model.creado,
+                                'nombres': _model.nombreTextController.text,
+                                'apellidos': _model.apellidoTextController.text,
+                                'rol': 'proveedor',
+                                'tipo_documento': _model.tipodocumentoValue,
+                                'numero_documento':
+                                    _model.numerodocumentoTextController.text,
+                                'pais': _model.paisValue,
+                                'codigo_pais': '+57',
+                                'telefono': _model.telefonoTextController.text,
+                                'direccion':
+                                    _model.direccionTextController.text,
+                                'ciudad': _model.ciudadValue,
+                                'registro_tributario':
+                                    _model.rutnitTextController.text,
+                                'verificado': 'pendiente',
+                                'correo_electronico':
+                                    _model.correo1TextController.text,
+                              });
+                              await CuentasBancariasTable().insert({
+                                'usuario_id': _model.creado,
+                                'entidad_bancaria': _model.entidadValue,
+                                'tipo_cuenta': _model.tipocuentaValue,
+                                'numero_cuenta':
+                                    _model.numerocuentaTextController.text,
+                                'nombre_titular':
+                                    '${_model.nombreTextController.text} ${_model.apellidoTextController.text}',
+                              });
+                              for (int loop1Index = 0;
+                                  loop1Index < _model.serviciosid.length;
+                                  loop1Index++) {
+                                final currentLoop1Item =
+                                    _model.serviciosid[loop1Index];
+                                await ProfesionalServiciosTable().insert({
+                                  'usuario_id': _model.creado,
+                                  'servicio_id': currentLoop1Item,
+                                });
+                              }
+                              await showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return Dialog(
+                                    elevation: 0,
+                                    insetPadding: EdgeInsets.zero,
+                                    backgroundColor: Colors.transparent,
+                                    alignment: AlignmentDirectional(0.0, 0.0)
+                                        .resolve(Directionality.of(context)),
+                                    child: Notificacion2Widget(
+                                      titulo: 'Proveedor creado',
+                                      texto: 'Proveedor creado correctamente',
+                                      boton: 'Aceptar',
+                                      succes: true,
+                                      action: () async {},
+                                    ),
                                   );
+                                },
+                              );
 
-                                  Navigator.pop(context);
-                                  if (Navigator.of(context).canPop()) {
-                                    context.pop();
-                                  }
-                                  context.pushNamed(
-                                    RegistroProveedoresWidget.routeName,
-                                    extra: <String, dynamic>{
-                                      '__transition_info__': TransitionInfo(
-                                        hasTransition: true,
-                                        transitionType: PageTransitionType.fade,
-                                        duration: Duration(milliseconds: 0),
-                                      ),
-                                    },
-                                  );
+                              Navigator.pop(context);
+                              if (Navigator.of(context).canPop()) {
+                                context.pop();
+                              }
+                              context.pushNamed(
+                                RegistroProveedoresWidget.routeName,
+                                extra: <String, dynamic>{
+                                  '__transition_info__': TransitionInfo(
+                                    hasTransition: true,
+                                    transitionType: PageTransitionType.fade,
+                                    duration: Duration(milliseconds: 0),
+                                  ),
+                                },
+                              );
 
                               safeSetState(() {});
                             },

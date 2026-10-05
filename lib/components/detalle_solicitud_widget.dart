@@ -2314,7 +2314,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'ID Proveedor',
+                                            'Proveedor',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -2345,11 +2345,21 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               controller: _model
                                                       .nombreTextController10 ??=
                                                   TextEditingController(
+                                                // La vista ya trae el nombre;
+                                                // mostrar el id de usuario no
+                                                // le dice nada a nadie.
                                                 text: valueOrDefault<String>(
                                                   columnVwSolicitudesServiciosCompletaRow
-                                                      ?.proveedorIdUsuario
-                                                      ?.toString(),
-                                                  'Sin especificar',
+                                                              ?.proveedorNombreCompleto
+                                                              ?.trim()
+                                                              .isNotEmpty ==
+                                                          true
+                                                      ? columnVwSolicitudesServiciosCompletaRow
+                                                          ?.proveedorNombreCompleto
+                                                      : columnVwSolicitudesServiciosCompletaRow
+                                                          ?.proveedorIdUsuario
+                                                          ?.toString(),
+                                                  'Sin asignar',
                                                 ),
                                               ),
                                               focusNode:
