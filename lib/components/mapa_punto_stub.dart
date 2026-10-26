@@ -17,12 +17,14 @@ class MapaPuntoWidget extends StatelessWidget {
     required this.onPunto,
     this.mapId,
     this.punto,
+    this.centroCiudad,
     this.altura = 220.0,
   });
 
   final String claveApi;
   final String? mapId;
   final Coordenadas? punto;
+  final Coordenadas? centroCiudad;
   final ValueChanged<Coordenadas> onPunto;
   final double altura;
 

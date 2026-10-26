@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/profesionales_query.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/aceptar_proveedor_widget.dart';
@@ -814,6 +815,105 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                           ),
                                                         ),
                                                       ),
+                                                    SizedBox(width: 12.0),
+                                                    FlutterFlowDropDown<String>(
+                                                      controller: _model
+                                                              .ciudadDropdownValueController ??=
+                                                          FormFieldController<
+                                                              String>(null),
+                                                      options: _model.textController
+                                                                      .text !=
+                                                                  null &&
+                                                              _model.textController
+                                                                      .text !=
+                                                                  ''
+                                                          ? containerfiltroVwProfesionalesCompletoRowList
+                                                              .map((e) =>
+                                                                  e.ciudad)
+                                                              .whereType<
+                                                                  String>()
+                                                              .where((e) =>
+                                                                  e.isNotEmpty)
+                                                              .toSet()
+                                                              .toList()
+                                                          : containersinfiltroVwProfesionalesCompletoRowList
+                                                              .map((e) =>
+                                                                  e.ciudad)
+                                                              .whereType<
+                                                                  String>()
+                                                              .where((e) =>
+                                                                  e.isNotEmpty)
+                                                              .toSet()
+                                                              .toList(),
+                                                      onChanged: (val) =>
+                                                          safeSetState(() =>
+                                                              _model.ciudadDropdownValue =
+                                                                  val),
+                                                      width: 180.0,
+                                                      height: 48.0,
+                                                      textStyle:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium,
+                                                      hintText: 'Ciudades',
+                                                      icon: Icon(
+                                                        Icons
+                                                            .keyboard_arrow_down_rounded,
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .secondaryText,
+                                                        size: 24.0,
+                                                      ),
+                                                      fillColor:
+                                                          Color(0xFFFBFAF9),
+                                                      elevation: 2.0,
+                                                      borderColor:
+                                                          Color(0xFFDFDFDF),
+                                                      borderWidth: 1.0,
+                                                      borderRadius: 8.0,
+                                                      margin:
+                                                          EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  12.0,
+                                                                  0.0,
+                                                                  12.0,
+                                                                  0.0),
+                                                      hidesUnderline: true,
+                                                      isOverButton: false,
+                                                      isSearchable: false,
+                                                      isMultiSelect: false,
+                                                    ),
+                                                    if (_model.ciudadDropdownValue !=
+                                                            null &&
+                                                        _model.ciudadDropdownValue !=
+                                                            '')
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    4.0,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0),
+                                                        child: InkWell(
+                                                          onTap: () async {
+                                                            safeSetState(() {
+                                                              _model
+                                                                  .ciudadDropdownValueController
+                                                                  ?.reset();
+                                                              _model.ciudadDropdownValue =
+                                                                  null;
+                                                            });
+                                                          },
+                                                          child: Icon(
+                                                            Icons.close,
+                                                            color: Color(
+                                                                0xFFE20E0E),
+                                                            size: 24.0,
+                                                          ),
+                                                        ),
+                                                      ),
                                                     Expanded(
                                                       child: Align(
                                                         alignment:
@@ -1141,61 +1241,34 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                         0.0, 8.0, 0.0, 8.0),
                                                 child: Builder(
                                                   builder: (context) {
-                                                    final proveedoresDatos =
-                                                        () {
-                                                      if ((_model.textController
-                                                                      .text !=
-                                                                  null &&
-                                                              _model.textController
-                                                                      .text !=
-                                                                  '') &&
-                                                          (_model.dropDownValue !=
-                                                                  null &&
-                                                              _model.dropDownValue !=
-                                                                  '')) {
-                                                        return containerfiltroVwProfesionalesCompletoRowList
-                                                            .where((e) =>
-                                                                _model
-                                                                    .dropDownValue ==
-                                                                e
-                                                                    .categoriaNombre)
-                                                            .toList()
-                                                            .unique((e) =>
-                                                                e.profesionalId ??
-                                                                '');
-                                                      } else if (_model
-                                                                  .dropDownValue !=
-                                                              null &&
-                                                          _model.dropDownValue !=
-                                                              '') {
-                                                        return containerfiltroVwProfesionalesCompletoRowList
-                                                            .where((e) =>
+                                                    final hayBusqueda = _model
+                                                        .textController
+                                                        .text
+                                                        .isNotEmpty;
+                                                    final filasBase = hayBusqueda
+                                                        ? containerfiltroVwProfesionalesCompletoRowList
+                                                        : containersinfiltroVwProfesionalesCompletoRowList;
+                                                    final proveedoresDatos = filasBase
+                                                        .where((e) =>
+                                                            (_model.dropDownValue ==
+                                                                    null ||
+                                                                _model.dropDownValue ==
+                                                                    '' ||
                                                                 e.categoriaNombre ==
-                                                                _model
-                                                                    .dropDownValue)
-                                                            .toList()
-                                                            .unique((e) =>
-                                                                e.profesionalId ??
-                                                                '');
-                                                      } else if (_model
-                                                                  .textController
-                                                                  .text !=
-                                                              null &&
-                                                          _model.textController
-                                                                  .text !=
-                                                              '') {
-                                                        return containerfiltroVwProfesionalesCompletoRowList
-                                                            .unique((e) =>
-                                                                e.profesionalId ??
-                                                                '');
-                                                      } else {
-                                                        return containersinfiltroVwProfesionalesCompletoRowList
-                                                            .unique((e) =>
-                                                                e.profesionalId ??
-                                                                '');
-                                                      }
-                                                    }()
-                                                            .toList();
+                                                                    _model
+                                                                        .dropDownValue) &&
+                                                            (_model.ciudadDropdownValue ==
+                                                                    null ||
+                                                                _model.ciudadDropdownValue ==
+                                                                    '' ||
+                                                                e.ciudad ==
+                                                                    _model
+                                                                        .ciudadDropdownValue))
+                                                        .toList()
+                                                        .unique((e) =>
+                                                            e.profesionalId ??
+                                                            '')
+                                                        .toList();
 
                                                     return FlutterFlowDataTable<
                                                         VwProfesionalesCompletoRow>(
@@ -1310,6 +1383,23 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                         .fontStyle,
                                                                   ),
                                                             ),
+                                                          ),
+                                                        ),
+                                                        DataColumn2(
+                                                          label: Text(
+                                                            'Ciudad',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .inter(),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  fontSize:
+                                                                      16.0,
+                                                                ),
                                                           ),
                                                         ),
                                                         DataColumn2(
@@ -1444,7 +1534,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                   .secondaryBackground,
                                                         ),
                                                         cells: [
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               dateTimeFormat(
@@ -1483,7 +1573,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               proveedoresDatosItem
@@ -1520,7 +1610,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               proveedoresDatosItem
@@ -1555,7 +1645,24 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              proveedoresDatosItem
+                                                                  .ciudad,
+                                                              'Sin ciudad',
+                                                            ),
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .inter(),
+                                                                  fontSize:
+                                                                      16.0,
+                                                                ),
+                                                          ),
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               dateTimeFormat(

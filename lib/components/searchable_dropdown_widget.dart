@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/dialog_helpers.dart';
 
 /// Dropdown con búsqueda integrada. Se abre como un dialog al tocar.
 /// Visualmente idéntico a un TextFormField del formulario.
@@ -13,7 +14,11 @@ class SearchableDropdown extends StatelessWidget {
     required this.onChanged,
     required this.hint,
     this.searchHint = 'Buscar...',
-  }) : assert(values.length == labels.length);
+    this.searchTexts,
+    this.details,
+  }) : assert(values.length == labels.length),
+        assert(searchTexts == null || values.length == searchTexts.length),
+        assert(details == null || values.length == details.length);
 
   final List<String> values;
   final List<String> labels;
@@ -21,6 +26,8 @@ class SearchableDropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
   final String hint;
   final String searchHint;
+  final List<String>? searchTexts;
+  final List<String>? details;
 
   String? get _selectedLabel {
     if (selectedValue == null || selectedValue!.isEmpty) return null;
@@ -65,13 +72,15 @@ class SearchableDropdown extends StatelessWidget {
   }
 
   Future<void> _openDialog(BuildContext context) async {
-    final result = await showDialog<String>(
+    final result = await showMapSafeDialog<String>(
       context: context,
       builder: (_) => _SearchDropdownDialog(
         values: values,
         labels: labels,
         selectedValue: selectedValue,
         searchHint: searchHint,
+        searchTexts: searchTexts,
+        details: details,
       ),
     );
     if (result != null) onChanged(result.isEmpty ? null : result);
@@ -84,12 +93,16 @@ class _SearchDropdownDialog extends StatefulWidget {
     required this.labels,
     this.selectedValue,
     required this.searchHint,
+    this.searchTexts,
+    this.details,
   });
 
   final List<String> values;
   final List<String> labels;
   final String? selectedValue;
   final String searchHint;
+  final List<String>? searchTexts;
+  final List<String>? details;
 
   @override
   State<_SearchDropdownDialog> createState() => _SearchDropdownDialogState();
@@ -113,13 +126,25 @@ class _SearchDropdownDialogState extends State<_SearchDropdownDialog> {
   }
 
   void _filter(String q) {
-    final lower = q.toLowerCase();
+    final normalizedQuery = _normalizeText(q);
+    final digitQuery = _onlyDigits(q);
     setState(() {
       _indices = List.generate(widget.labels.length, (i) => i)
-          .where((i) => widget.labels[i].toLowerCase().contains(lower))
+          .where((i) {
+            final searchableText = widget.searchTexts?[i] ?? widget.labels[i];
+            if (_normalizeText(searchableText).contains(normalizedQuery)) {
+              return true;
+            }
+            return digitQuery.isNotEmpty &&
+                _onlyDigits(searchableText).contains(digitQuery);
+          })
           .toList();
     });
   }
+
+  String _normalizeText(String value) => value.trim().toLowerCase();
+
+  String _onlyDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +227,7 @@ class _SearchDropdownDialogState extends State<_SearchDropdownDialog> {
                         final idx = _indices[i];
                         final isSelected =
                             widget.values[idx] == widget.selectedValue;
+                        final detail = widget.details?[idx].trim() ?? '';
                         return InkWell(
                           onTap: () =>
                               Navigator.pop(context, widget.values[idx]),
@@ -211,17 +237,35 @@ class _SearchDropdownDialogState extends State<_SearchDropdownDialog> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    widget.labels[idx],
-                                    style: GoogleFonts.inter(
-                                      color: isSelected
-                                          ? theme.primary
-                                          : theme.primaryText,
-                                      fontSize: 15.0,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.labels[idx],
+                                        style: GoogleFonts.inter(
+                                          color: isSelected
+                                              ? theme.primary
+                                              : theme.primaryText,
+                                          fontSize: 15.0,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                      if (detail.isNotEmpty) ...[
+                                        const SizedBox(height: 3.0),
+                                        Text(
+                                          detail,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.inter(
+                                            color: theme.secondaryText,
+                                            fontSize: 13.0,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                                 if (isSelected)

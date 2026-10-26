@@ -83,10 +83,6 @@ class DetalleSolicitudModel extends FlutterFlowModel<DetalleSolicitudWidget> {
   FocusNode? nombreFocusNode13;
   TextEditingController? nombreTextController13;
   String? Function(BuildContext, String?)? nombreTextController13Validator;
-  // State field(s) for Checkbox widget.
-  bool? checkboxValue1;
-  // State field(s) for Checkbox widget.
-  bool? checkboxValue2;
   // State field(s) for nombre widget.
   FocusNode? nombreFocusNode14;
   TextEditingController? nombreTextController14;

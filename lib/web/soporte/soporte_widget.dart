@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/agregar_soporte_widget.dart';
 import '/components/detalle_soporte_widget.dart';
@@ -1302,7 +1303,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                       onTap:
                                                                           () async {},
                                                                       child:
-                                                                          Text(
+                                                                          TextoTablaCompleto(
                                                                         '#${valueOrDefault<String>(
                                                                           solicitudesDatosItem
                                                                               .nro
@@ -1324,7 +1325,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                             ),
                                                                       ),
                                                                     ),
-                                                                    Text(
+                                                                    TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         solicitudesDatosItem
@@ -1348,7 +1349,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                 FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                           ),
                                                                     ),
-                                                                    Text(
+                                                                    TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         '${dateTimeFormat("yMd", solicitudesDatosItem.fechaHora)} -  ${dateTimeFormat("jms", solicitudesDatosItem.fechaHora)}',
@@ -1371,7 +1372,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                 FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                           ),
                                                                     ),
-                                                                    Text(
+                                                                    TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         solicitudesDatosItem
@@ -1395,7 +1396,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                 FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                           ),
                                                                     ),
-                                                                    Text(
+                                                                    TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         solicitudesDatosItem
@@ -1513,9 +1514,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                   alignment: AlignmentDirectional(0.0, 0.0),
                                                                                   child: Padding(
                                                                                     padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
-                                                                                    child: Text(
+                                                                                    child: TextoTablaCompleto(
                                                                                       solicitudesDatosItem.estado == 'pendiente' ? 'Pendiente' : (solicitudesDatosItem.estado == 'en proceso' ? 'En proceso' : (solicitudesDatosItem.estado == 'rechazado' ? 'Cancelado' : (solicitudesDatosItem.estado == 'completado' ? 'Completado' : 'Escalado'))),
-                                                                                      maxLines: 2,
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             font: GoogleFonts.inter(
                                                                                               fontWeight: FontWeight.w500,
@@ -1536,7 +1536,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                         ),
                                                                       ),
                                                                     ),
-                                                                    Text(
+                                                                    TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         solicitudesDatosItem

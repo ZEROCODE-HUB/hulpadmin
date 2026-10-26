@@ -2,12 +2,9 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'seleccionar_profesional_widget.dart';
 import 'finalizar_servicio2_model.dart';
 export 'finalizar_servicio2_model.dart';
@@ -67,6 +64,28 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
     );
   }
 
+  String _mensajeErrorPago(dynamic respuesta, String alternativa) {
+    if (respuesta is! Map) return alternativa;
+
+    var mensaje = alternativa;
+    for (final valor in [
+      respuesta['error'],
+      respuesta['statusMessage'],
+      respuesta['message'],
+    ]) {
+      if (valor is String && valor.trim().isNotEmpty) {
+        mensaje = valor.trim();
+        break;
+      }
+    }
+
+    final codigo = int.tryParse('${respuesta['statusCode'] ?? ''}');
+    if (codigo != null && codigo >= 100 && codigo <= 599) {
+      return '$mensaje (HTTP $codigo)';
+    }
+    return mensaje;
+  }
+
   /// Resuelve con que profesional se cierra la solicitud.
   ///
   /// Si ya tiene uno asignado se respeta y no se molesta al administrador. Si
@@ -92,6 +111,129 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
 
     _model.profesionalResuelto = seleccion.profesionalId;
     return true;
+  }
+
+  bool _finalizando = false;
+
+  Future<void> _finalizarServicio({required bool conCobro}) async {
+    if (_finalizando) return;
+    if (widget.servicioId == null || widget.servicioId!.isEmpty) {
+      _avisar('No se encontró la solicitud.', esError: true);
+      return;
+    }
+    setState(() => _finalizando = true);
+    try {
+      final solicitudes = await SolicitudesServicioTable().queryRows(
+        queryFn: (q) => q.eqOrNull('id', widget.servicioId),
+      );
+      final solicitud = solicitudes.firstOrNull;
+      if (solicitud == null) {
+        _avisar('No se encontró la solicitud.', esError: true);
+        return;
+      }
+      if (!await _resolverProfesional(solicitud)) return;
+      await SolicitudesServicioTable().update(
+        data: {
+          'estado': 'finalizadas',
+          'profesional_id': _model.profesionalResuelto,
+        },
+        matchingRows: (rows) => rows.eqOrNull('id', solicitud.id),
+      );
+      final resultado = conCobro
+          ? await _cobrarAlFinalizar(solicitud)
+          : 'Se conservó el estado del pago; no se realizó ningún cobro.';
+      if (!mounted) return;
+      _avisar('Servicio finalizado. $resultado');
+      Navigator.pop(context);
+    } catch (e) {
+      _avisar('No se pudo finalizar el servicio: $e', esError: true);
+    } finally {
+      if (mounted) setState(() => _finalizando = false);
+    }
+  }
+
+  Future<String> _cobrarAlFinalizar(SolicitudesServicioRow solicitud) async {
+    // Una solicitud pagada solo necesita el cierre operativo.
+    if (solicitud.estadoPago == 'pagado') {
+      return 'El pago ya estaba registrado; no se realizó otro cobro.';
+    }
+
+    var aprobado = false;
+    try {
+      final metodos = await MetodosPagoTable().queryRows(
+        queryFn: (q) => q.eqOrNull('usuario_id', solicitud.usuarioId)
+            .eqOrNull('es_predeterminado', true),
+      );
+      int fuente;
+      String metodo;
+      if (metodos.isNotEmpty) {
+        fuente = metodos.first.paymentSourceId;
+        metodo = metodos.first.tipo;
+      } else {
+        final tarjetas = await TarjetasGuardadasTable().queryRows(
+          queryFn: (q) => q.eqOrNull('usuario_id', solicitud.usuarioId),
+        );
+        if (tarjetas.isEmpty) {
+          return 'No se realizó un cobro: el cliente no tiene método de pago. '
+              'Se conservó el estado del pago.';
+        }
+        fuente = int.tryParse(tarjetas.first.paymentSourceId) ?? 0;
+        metodo = 'CARD';
+      }
+      if (fuente <= 0) {
+        return 'No se realizó un cobro: el método de pago no es válido. '
+            'Se conservó el estado del pago.';
+      }
+      final tokens = await actions.getAcceptanceToken(
+        FFDevEnvironmentValues().publicKey,
+        FFDevEnvironmentValues().isProduction,
+      );
+      if (tokens is! Map || tokens['success'] != true) {
+        return 'Pago sin confirmar. ${_mensajeErrorPago(tokens, 'No se pudieron obtener los tokens de pago.')}';
+      }
+      final pago = await actions.createTransaction(
+        FFDevEnvironmentValues().privateKey,
+        FFDevEnvironmentValues().publicKey,
+        fuente,
+        tokens['acceptanceToken']?.toString() ?? '',
+        (((solicitud.precioBase ?? solicitud.precio) +
+            (solicitud.precioAdicionales ?? 0)) * 100).round(),
+        'COP',
+        '', // El backend obtiene el correo del cliente.
+        '${solicitud.id}-${DateTime.now().millisecondsSinceEpoch}',
+        FFDevEnvironmentValues().integrityKey,
+        FFDevEnvironmentValues().isProduction,
+        personalDataAuthToken: tokens['personalDataAuthToken']?.toString() ?? '',
+      );
+      if (pago is! Map || pago['success'] != true || pago['status'] != 'APPROVED') {
+        return 'Pago sin confirmar. ${_mensajeErrorPago(pago, 'El cobro no fue aprobado.')}';
+      }
+      aprobado = true;
+      await TransaccionesTable().insert({
+        'solicitud_id': solicitud.id,
+        'usuario_id': solicitud.usuarioId,
+        'monto': (pago['amount'] as num) / 100,
+        'moneda': 'COP',
+        'proveedor_pago': 'WOMPI',
+        'metodo_pago': metodo,
+        'numero_transaccion': pago['transactionId']?.toString(),
+        'referencia_externa': pago['reference']?.toString(),
+        'datos_pago': pago['fullData'],
+        'fecha_pago': supaSerialize<DateTime>(getCurrentTimestamp),
+        'fecha_registro': supaSerialize<DateTime>(getCurrentTimestamp),
+      });
+      await SolicitudesServicioTable().update(
+        data: {'estado_pago': 'pagado'},
+        matchingRows: (rows) => rows.eqOrNull('id', solicitud.id),
+      );
+      return 'Pago aprobado y registrado.';
+    } catch (e) {
+      if (aprobado) {
+        return 'Wompi aprobó el cobro, pero no se pudo completar su registro: $e. '
+            'Verifica el pago antes de intentar otro cobro.';
+      }
+      return 'Pago sin confirmar: $e';
+    }
   }
 
   @override
@@ -221,597 +363,9 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
                   child: FFButtonWidget(
-                    onPressed: () async {
-                      var _shouldSetState = false;
-                      try {
-                      _model.validacion =
-                          await SolicitudesServicioTable().queryRows(
-                        queryFn: (q) => q.eqOrNull(
-                          'id',
-                          widget!.servicioId,
-                        ),
-                      );
-                      _shouldSetState = true;
-                      final solicitudConPago = _model.validacion?.firstOrNull;
-                      if (solicitudConPago == null) {
-                        _avisar(
-                          'No se encontro la solicitud. Recarga la pagina e intentalo de nuevo.',
-                          esError: true,
-                        );
-                        if (_shouldSetState) safeSetState(() {});
-                        return;
-                      }
-                      if (!await _resolverProfesional(solicitudConPago)) {
-                        if (_shouldSetState) safeSetState(() {});
-                        return;
-                      }
-                      {
-                        await SolicitudesServicioTable().update(
-                          data: {
-                            'profesional_id': _model.profesionalResuelto,
-                          },
-                          matchingRows: (rows) => rows.eqOrNull(
-                            'id',
-                            widget!.servicioId,
-                          ),
-                        );
-                        _model.resultadosUsuarioMetodoPago =
-                            await MetodosPagoTable().queryRows(
-                          queryFn: (q) => q
-                              .eqOrNull(
-                                'usuario_id',
-                                _model.validacion?.firstOrNull?.usuarioId,
-                              )
-                              .eqOrNull(
-                                'es_predeterminado',
-                                true,
-                              ),
-                        );
-                        _shouldSetState = true;
-                        if (_model.resultadosUsuarioMetodoPago!.length > 0) {
-                          _model.usuarioServicio2 =
-                              await UsuariosTable().queryRows(
-                            queryFn: (q) => q.eqOrNull(
-                              'id',
-                              _model.validacion?.firstOrNull?.usuarioId,
-                            ),
-                          );
-                          _shouldSetState = true;
-                          _model.aceptaceToken2 =
-                              await actions.getAcceptanceToken(
-                            FFDevEnvironmentValues().publicKey,
-                            FFDevEnvironmentValues().isProduction,
-                          );
-                          _shouldSetState = true;
-                          if (getJsonField(
-                            _model.aceptaceToken2,
-                            r'''$.success''',
-                          )) {
-                            _model.pago2 = await actions.createTransaction(
-                              FFDevEnvironmentValues().privateKey,
-                              FFDevEnvironmentValues().publicKey,
-                              functions.stringToIngete(_model
-                                  .resultadosUsuarioMetodoPago!
-                                  .firstOrNull!
-                                  .paymentSourceId
-                                  .toString()),
-                              getJsonField(
-                                _model.aceptaceToken2,
-                                r'''$.acceptanceToken''',
-                              ).toString(),
-                              ((valueOrDefault<double>(
-                                            _model.validacion?.firstOrNull
-                                                ?.precioBase,
-                                            valueOrDefault<double>(
-                                              _model.validacion?.firstOrNull
-                                                  ?.precio,
-                                              0.0,
-                                            ),
-                                          ) +
-                                          valueOrDefault<double>(
-                                            _model.validacion?.firstOrNull
-                                                ?.precioAdicionales,
-                                            0.0,
-                                          )) *
-                                      100)
-                                  .round(),
-                              'COP',
-                              _model.usuarioServicio2!.firstOrNull!
-                                  .correoElectronico!,
-                              '${_model.validacion!.firstOrNull!.id}-${DateTime.now().millisecondsSinceEpoch}',
-                              FFDevEnvironmentValues().integrityKey,
-                              FFDevEnvironmentValues().isProduction,
-                            );
-                            _shouldSetState = true;
-                            if (getJsonField(
-                              _model.pago2,
-                              r'''$.success''',
-                            )) {
-                              if ('APPROVED' ==
-                                  getJsonField(
-                                    _model.pago2,
-                                    r'''$.status''',
-                                  ).toString()) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '¡Servicio finalizado y pago aprobado!',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryBackground,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 2000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).primary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'estado': 'finalizadas',
-                                    'profesional_id':
-                                        _model.profesionalResuelto,
-                                    'estado_pago': 'pagado',
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                await TransaccionesTable().insert({
-                                  'numero_transaccion': getJsonField(
-                                    _model.pago2,
-                                    r'''$.transactionId''',
-                                  )?.toString(),
-                                  'referencia_externa': getJsonField(
-                                    _model.pago2,
-                                    r'''$.reference''',
-                                  )?.toString(),
-                                  // Lo que Wompi confirmo, no lo que calculo la app.
-                                  // Sin esto no hay forma de auditar un cobro.
-                                  'datos_pago': getJsonField(
-                                    _model.pago2,
-                                    r'''$.fullData''',
-                                  ),
-                                  'solicitud_id':
-                                      _model.validacion?.firstOrNull?.id,
-                                  'usuario_id':
-                                      _model.usuarioServicio2?.firstOrNull?.id,
-                                  'monto': valueOrDefault<double>(
-                                        _model.validacion?.firstOrNull
-                                            ?.precioBase,
-                                        valueOrDefault<double>(
-                                          _model.validacion?.firstOrNull?.precio,
-                                          0.0,
-                                        ),
-                                      ) +
-                                      valueOrDefault<double>(
-                                        _model.validacion?.firstOrNull
-                                            ?.precioAdicionales,
-                                        0.0,
-                                      ),
-                                  'moneda': 'COP',
-                                  'proveedor_pago': 'WOMPI',
-                                  'fecha_pago': supaSerialize<DateTime>(
-                                      getCurrentTimestamp),
-                                  'fecha_registro': supaSerialize<DateTime>(
-                                      getCurrentTimestamp),
-                                  'metodo_pago':
-                                      _model.resultadosUsuarioMetodoPago
-                                              ?.firstOrNull?.tipo ??
-                                          'Bancolombia',
-                                  'numero_transaccion': getJsonField(
-                                    _model.pago2,
-                                    r'''$.transactionId''',
-                                  )?.toString(),
-                                  'referencia_externa': getJsonField(
-                                    _model.pago2,
-                                    r'''$.reference''',
-                                  )?.toString(),
-                                });
-                                Navigator.pop(context);
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              } else if ('DECLINED' ==
-                                  getJsonField(
-                                    _model.pago2,
-                                    r'''$.status''',
-                                  ).toString()) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'pago rechazado',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 4000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).secondary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'profesional_id': null,
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'pago no es aprobado',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 4000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).secondary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'profesional_id': null,
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    getJsonField(
-                                      _model.pago2,
-                                      r'''$.error''',
-                                    ).toString(),
-                                    style: TextStyle(
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                    ),
-                                  ),
-                                  duration: Duration(milliseconds: 4000),
-                                  backgroundColor:
-                                      FlutterFlowTheme.of(context).secondary,
-                                ),
-                              );
-                              await SolicitudesServicioTable().update(
-                                data: {
-                                  'profesional_id': null,
-                                },
-                                matchingRows: (rows) => rows.eqOrNull(
-                                  'id',
-                                  widget!.servicioId,
-                                ),
-                              );
-                              if (_shouldSetState) safeSetState(() {});
-                              return;
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error Aceptace Token',
-                                  style: TextStyle(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                  ),
-                                ),
-                                duration: Duration(milliseconds: 4000),
-                                backgroundColor:
-                                    FlutterFlowTheme.of(context).secondary,
-                              ),
-                            );
-                            await SolicitudesServicioTable().update(
-                              data: {
-                                'profesional_id': null,
-                              },
-                              matchingRows: (rows) => rows.eqOrNull(
-                                'id',
-                                widget!.servicioId,
-                              ),
-                            );
-                            if (_shouldSetState) safeSetState(() {});
-                            return;
-                          }
-                        } else {
-                          _model.tarjeta =
-                              await TarjetasGuardadasTable().queryRows(
-                            queryFn: (q) => q.eqOrNull(
-                              'usuario_id',
-                              _model.validacion?.firstOrNull?.usuarioId,
-                            ),
-                          );
-                          _shouldSetState = true;
-                          if (_model.tarjeta == null || _model.tarjeta!.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('El usuario no tiene método de pago ni tarjeta guardada.'),
-                                duration: Duration(milliseconds: 4000),
-                                backgroundColor: FlutterFlowTheme.of(context).secondary,
-                              ),
-                            );
-                            if (_shouldSetState) safeSetState(() {});
-                            return;
-                          }
-                          _model.usuarioServicio =
-                              await UsuariosTable().queryRows(
-                            queryFn: (q) => q.eqOrNull(
-                              'id',
-                              _model.validacion?.firstOrNull?.usuarioId,
-                            ),
-                          );
-                          _shouldSetState = true;
-                          _model.aceptaceToken =
-                              await actions.getAcceptanceToken(
-                            FFDevEnvironmentValues().publicKey,
-                            FFDevEnvironmentValues().isProduction,
-                          );
-                          _shouldSetState = true;
-                          if (getJsonField(
-                            _model.aceptaceToken,
-                            r'''$.success''',
-                          )) {
-                            _model.pago = await actions.createTransaction(
-                              FFDevEnvironmentValues().privateKey,
-                              FFDevEnvironmentValues().publicKey,
-                              functions.stringToIngete(
-                                  _model.tarjeta!.firstOrNull!.paymentSourceId),
-                              getJsonField(
-                                _model.aceptaceToken,
-                                r'''$.acceptanceToken''',
-                              ).toString(),
-                              ((valueOrDefault<double>(
-                                            _model.validacion?.firstOrNull
-                                                ?.precioBase,
-                                            valueOrDefault<double>(
-                                              _model.validacion?.firstOrNull
-                                                  ?.precio,
-                                              0.0,
-                                            ),
-                                          ) +
-                                          valueOrDefault<double>(
-                                            _model.validacion?.firstOrNull
-                                                ?.precioAdicionales,
-                                            0.0,
-                                          )) *
-                                      100)
-                                  .round(),
-                              'COP',
-                              _model.usuarioServicio!.firstOrNull!
-                                  .correoElectronico!,
-                              '${_model.validacion!.firstOrNull!.id}-${DateTime.now().millisecondsSinceEpoch}',
-                              FFDevEnvironmentValues().integrityKey,
-                              FFDevEnvironmentValues().isProduction,
-                            );
-                            _shouldSetState = true;
-                            if (getJsonField(
-                              _model.pago,
-                              r'''$.success''',
-                            )) {
-                              if ('APPROVED' ==
-                                  getJsonField(
-                                    _model.pago,
-                                    r'''$.status''',
-                                  ).toString()) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '¡Servicio finalizado y pago aprobado!',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryBackground,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 2000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).primary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'estado': 'finalizadas',
-                                    'profesional_id':
-                                        _model.profesionalResuelto,
-                                    'estado_pago': 'pagado',
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                await TransaccionesTable().insert({
-                                  'numero_transaccion': getJsonField(
-                                    _model.pago,
-                                    r'''$.transactionId''',
-                                  )?.toString(),
-                                  'referencia_externa': getJsonField(
-                                    _model.pago,
-                                    r'''$.reference''',
-                                  )?.toString(),
-                                  // Lo que Wompi confirmo, no lo que calculo la app.
-                                  // Sin esto no hay forma de auditar un cobro.
-                                  'datos_pago': getJsonField(
-                                    _model.pago,
-                                    r'''$.fullData''',
-                                  ),
-                                  'solicitud_id':
-                                      _model.validacion?.firstOrNull?.id,
-                                  'usuario_id':
-                                      _model.usuarioServicio?.firstOrNull?.id,
-                                  'monto': valueOrDefault<double>(
-                                        _model.validacion?.firstOrNull
-                                            ?.precioBase,
-                                        valueOrDefault<double>(
-                                          _model.validacion?.firstOrNull?.precio,
-                                          0.0,
-                                        ),
-                                      ) +
-                                      valueOrDefault<double>(
-                                        _model.validacion?.firstOrNull
-                                            ?.precioAdicionales,
-                                        0.0,
-                                      ),
-                                  'moneda': 'COP',
-                                  'proveedor_pago': 'WOMPI',
-                                  'fecha_pago': supaSerialize<DateTime>(
-                                      getCurrentTimestamp),
-                                  'fecha_registro': supaSerialize<DateTime>(
-                                      getCurrentTimestamp),
-                                  'metodo_pago': 'Tarjeta',
-                                  'numero_transaccion': getJsonField(
-                                    _model.pago,
-                                    r'''$.transactionId''',
-                                  )?.toString(),
-                                  'referencia_externa': getJsonField(
-                                    _model.pago,
-                                    r'''$.reference''',
-                                  )?.toString(),
-                                });
-                                Navigator.pop(context);
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              } else if ('DECLINED' ==
-                                  getJsonField(
-                                    _model.pago,
-                                    r'''$.status''',
-                                  ).toString()) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'pago rechazado',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 4000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).secondary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'profesional_id': null,
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'pago no es aprobado',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                    duration: Duration(milliseconds: 4000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).secondary,
-                                  ),
-                                );
-                                await SolicitudesServicioTable().update(
-                                  data: {
-                                    'profesional_id': null,
-                                  },
-                                  matchingRows: (rows) => rows.eqOrNull(
-                                    'id',
-                                    widget!.servicioId,
-                                  ),
-                                );
-                                if (_shouldSetState) safeSetState(() {});
-                                return;
-                              }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    getJsonField(
-                                      _model.pago,
-                                      r'''$.error''',
-                                    ).toString(),
-                                    style: TextStyle(
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                    ),
-                                  ),
-                                  duration: Duration(milliseconds: 4000),
-                                  backgroundColor:
-                                      FlutterFlowTheme.of(context).secondary,
-                                ),
-                              );
-                              await SolicitudesServicioTable().update(
-                                data: {
-                                  'profesional_id': null,
-                                },
-                                matchingRows: (rows) => rows.eqOrNull(
-                                  'id',
-                                  widget!.servicioId,
-                                ),
-                              );
-                              if (_shouldSetState) safeSetState(() {});
-                              return;
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error Aceptace Token',
-                                  style: TextStyle(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                  ),
-                                ),
-                                duration: Duration(milliseconds: 4000),
-                                backgroundColor:
-                                    FlutterFlowTheme.of(context).secondary,
-                              ),
-                            );
-                            await SolicitudesServicioTable().update(
-                              data: {
-                                'profesional_id': null,
-                              },
-                              matchingRows: (rows) => rows.eqOrNull(
-                                'id',
-                                widget!.servicioId,
-                              ),
-                            );
-                            if (_shouldSetState) safeSetState(() {});
-                            return;
-                          }
-                        }
-                      }
-
-                      if (_shouldSetState) safeSetState(() {});
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error al finalizar: $e'),
-                            duration: Duration(milliseconds: 6000),
-                            backgroundColor: FlutterFlowTheme.of(context).secondary,
-                          ),
-                        );
-                        if (_shouldSetState) safeSetState(() {});
-                      }
-                    },
+                    onPressed: _finalizando
+                        ? null
+                        : () => _finalizarServicio(conCobro: true),
                     text: 'Finalizar servicio con metodos de pago',
                     options: FFButtonOptions(
                       height: 40.0,
@@ -848,97 +402,9 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
                   child: FFButtonWidget(
-                    onPressed: () async {
-                      _model.validacion25 =
-                          await SolicitudesServicioTable().queryRows(
-                        queryFn: (q) => q.eqOrNull(
-                          'id',
-                          widget!.servicioId,
-                        ),
-                      );
-                      safeSetState(() {});
-
-                      final solicitud = _model.validacion25?.firstOrNull;
-                      if (solicitud == null) {
-                        _avisar(
-                          'No se encontro la solicitud. Recarga la pagina e intentalo de nuevo.',
-                          esError: true,
-                        );
-                        return;
-                      }
-
-                      // Antes, si la solicitud no tenia profesional, aqui
-                      // habia un `return` mudo: el boton no hacia nada y no
-                      // decia por que. Ahora se ofrece elegir uno, o
-                      // finalizar sin ninguno.
-                      if (!await _resolverProfesional(solicitud)) return;
-                      final profesionalId = _model.profesionalResuelto;
-
-                      await SolicitudesServicioTable().update(
-                        data: {
-                          'estado': 'finalizadas',
-                          'profesional_id': profesionalId,
-                          'estado_pago': 'pagado',
-                        },
-                        matchingRows: (rows) => rows.eqOrNull(
-                          'id',
-                          widget!.servicioId,
-                        ),
-                      );
-
-                      _model.usuarioServicio33 =
-                          await UsuariosTable().queryRows(
-                        queryFn: (q) => q.eqOrNull(
-                          'id',
-                          solicitud.usuarioId,
-                        ),
-                      );
-                      safeSetState(() {});
-
-                      final clienteId =
-                          _model.usuarioServicio33?.firstOrNull?.id;
-                      if (clienteId == null) {
-                        // La solicitud ya quedo finalizada; lo unico que falta
-                        // es el asiento contable, y sin cliente la insercion
-                        // violaria el NOT NULL de usuario_id.
-                        _avisar(
-                          'Servicio finalizado, pero no se pudo registrar la transaccion: '
-                          'la solicitud no tiene cliente asociado.',
-                          esError: true,
-                        );
-                        Navigator.pop(context);
-                        return;
-                      }
-
-                      await TransaccionesTable().insert({
-                        'solicitud_id': solicitud.id,
-                        'usuario_id': clienteId,
-                        // Misma formula que los otros dos cierres de este
-                        // mismo dialogo: el precio vigente es precio_base
-                        // —precio solo se escribe al crear la solicitud— y
-                        // encima van los adicionales.
-                        'monto': valueOrDefault<double>(
-                              solicitud.precioBase,
-                              valueOrDefault<double>(solicitud.precio, 0.0),
-                            ) +
-                            valueOrDefault<double>(
-                              solicitud.precioAdicionales,
-                              0.0,
-                            ),
-                        'moneda': 'COP',
-                        'proveedor_pago': 'QR',
-                        'fecha_pago':
-                            supaSerialize<DateTime>(getCurrentTimestamp),
-                        'fecha_registro':
-                            supaSerialize<DateTime>(getCurrentTimestamp),
-                        'metodo_pago': 'QR',
-                      });
-
-                      _avisar(profesionalId == null
-                          ? 'Servicio finalizado sin profesional asignado.'
-                          : 'Servicio finalizado y profesional asignado.');
-                      Navigator.pop(context);
-                    },
+                    onPressed: _finalizando
+                        ? null
+                        : () => _finalizarServicio(conCobro: false),
                     text: 'Finalizar servicio sin metodos de pago',
                     options: FFButtonOptions(
                       height: 40.0,

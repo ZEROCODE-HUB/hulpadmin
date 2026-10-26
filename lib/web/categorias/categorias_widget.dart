@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_categoria_widget.dart';
 import '/components/editar_categoria_widget.dart';
@@ -1318,7 +1319,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                     },
                                                                   );
                                                                 },
-                                                                child: Text(
+                                                                child: TextoTablaCompleto(
                                                                   valueOrDefault<
                                                                       String>(
                                                                     categoriasItem
@@ -1355,7 +1356,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                       ),
                                                                 ),
                                                               ),
-                                                              Text(
+                                                              TextoTablaCompleto(
                                                                 valueOrDefault<
                                                                     String>(
                                                                   categoriasItem
@@ -1390,7 +1391,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                           .fontStyle,
                                                                     ),
                                                               ),
-                                                              Text(
+                                                              TextoTablaCompleto(
                                                                 valueOrDefault<
                                                                     String>(
                                                                   categoriasItem
@@ -1425,7 +1426,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                           .fontStyle,
                                                                     ),
                                                               ),
-                                                              Text(
+                                                              TextoTablaCompleto(
                                                                 dateTimeFormat(
                                                                     "yMMMd",
                                                                     categoriasItem
@@ -1457,7 +1458,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                           .fontStyle,
                                                                     ),
                                                               ),
-                                                              Text(
+                                                              TextoTablaCompleto(
                                                                 categoriasItem
                                                                     .estado!,
                                                                 style: FlutterFlowTheme.of(

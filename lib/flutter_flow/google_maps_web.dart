@@ -39,6 +39,7 @@ extension type _MapOptions._(JSObject _) implements JSObject {
     _LatLngLiteral center,
     int zoom,
     String? mapId,
+    String gestureHandling,
     bool disableDefaultUI,
     bool zoomControl,
     bool streetViewControl,
@@ -168,6 +169,12 @@ class MapaGoogle {
   /// Quita el marcador sin destruir el mapa.
   void quitarMarcador() => _marcador?.map = null;
 
+  /// Cambia solo la cámara, sin marcador ni callback de selección.
+  void centrarEn(double latitud, double longitud, {required int zoom}) {
+    _mapa.setCenter(_LatLngLiteral(lat: latitud, lng: longitud));
+    _mapa.setZoom(zoom);
+  }
+
   void _ponerMarcador(_LatLngLiteral pos) {
     final existente = _marcador;
     if (existente != null) {
@@ -208,6 +215,31 @@ web.HTMLElement crearContenedorMapa() {
   return div;
 }
 
+/// El mapa recibe los eventos antes que esta barrera, en fase de burbujeo.
+/// Flutter no debe recibir la rueda ni iniciar un arrastre desde el mapa.
+void Function() aislarEventosMapa(web.HTMLElement elemento) {
+  final alIniciarArrastre = ((web.Event evento) {
+    evento.stopPropagation();
+  }).toJS;
+  final alUsarRueda = ((web.Event evento) {
+    evento.stopPropagation();
+    if (evento.cancelable) evento.preventDefault();
+  }).toJS;
+
+  elemento.addEventListener('pointerdown', alIniciarArrastre);
+  elemento.addEventListener(
+    'wheel',
+    alUsarRueda,
+    web.AddEventListenerOptions(passive: false),
+  );
+
+  // No se bloquean move/up: Maps los necesita al arrastrar fuera del recuadro.
+  return () {
+    elemento.removeEventListener('pointerdown', alIniciarArrastre);
+    elemento.removeEventListener('wheel', alUsarRueda);
+  };
+}
+
 /// Crea el mapa dentro de `elemento` y conecta los avisos de cambio de punto.
 ///
 /// `alElegirPunto` se dispara tanto al hacer clic en el mapa como al soltar el
@@ -233,11 +265,15 @@ MapaGoogle? crearMapa({
       center: centro,
       zoom: zoom,
       mapId: mapId,
+      // En el formulario el mapa está dentro de una página desplazable; este
+      // modo hace que la rueda sobre el mapa interactúe con el propio mapa.
+      gestureHandling: 'greedy',
       disableDefaultUI: true,
       zoomControl: true,
       streetViewControl: false,
       mapTypeControl: false,
-      fullscreenControl: false,
+      // Amplía la misma instancia del mapa y conserva el punto seleccionado.
+      fullscreenControl: true,
       // Sin esto, pinchar sobre un negocio abre su ficha en vez de fijar el
       // punto, que es justo lo contrario de lo que se busca aqui.
       clickableIcons: false,

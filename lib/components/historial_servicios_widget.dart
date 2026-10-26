@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacioneliminar_widget.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
@@ -514,7 +515,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                 FlutterFlowTheme.of(context)
                                     .secondaryBackground),
                             cells: [
-                              Text(
+                              TextoTablaCompleto(
                                 '#${valueOrDefault<String>(
                                   historialServiciosItem.ticket?.toString(),
                                   '000',
@@ -539,7 +540,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 '${dateTimeFormat("d/M/y", historialServiciosItem.fecha)} - ${dateTimeFormat("Hm", historialServiciosItem.hora?.time)}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -561,7 +562,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 valueOrDefault<String>(
                                   historialServiciosItem.servicioNombre,
                                   'Sin datos',
@@ -586,7 +587,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 valueOrDefault<String>(
                                   historialServiciosItem.proveedorIdUsuario
                                       ?.toString(),
@@ -612,7 +613,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 '\$${historialServiciosItem.precioTotal?.toString()}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -680,7 +681,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       8.0, 2.0, 8.0, 2.0),
-                                  child: Text(
+                                  child: TextoTablaCompleto(
                                     historialServiciosItem.estadoSolicitud ==
                                             'entrantes'
                                         ? 'Pendiente'
@@ -697,7 +698,6 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                                         'finalizadas'
                                                     ? 'Finalizado'
                                                     : 'En curso'))),
-                                    maxLines: 2,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(

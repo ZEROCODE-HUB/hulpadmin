@@ -23,7 +23,7 @@ class SolicitudStatusBadgeWidget extends StatelessWidget {
     final label = solicitudStatusLabel(estado);
 
     final badge = Container(
-      height: 32.0,
+      constraints: const BoxConstraints(minHeight: 32.0),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(24.0),
@@ -35,7 +35,7 @@ class SolicitudStatusBadgeWidget extends StatelessWidget {
             const EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
         child: Text(
           label,
-          maxLines: 2,
+          maxLines: null,
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(fontWeight: FontWeight.w500),
                 color: fgColor,

@@ -1,8 +1,11 @@
+import '/backend/pagos_manuales.dart';
+import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/chat_usuario_proveedor_widget.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
 import '/components/enlace_mapa_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/cliente_nombre_helpers.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -28,6 +31,36 @@ class DetalleSolicitudWidget extends StatefulWidget {
 
 class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
   late DetalleSolicitudModel _model;
+  bool _guardandoPago = false;
+
+  Future<void> _marcarPagoRecibido(
+    VwSolicitudesServiciosCompletaRow solicitud,
+  ) async {
+    final solicitudId = solicitud.solicitudId;
+    if (_guardandoPago ||
+        solicitudId == null ||
+        !isPaymentPending(solicitud.estadoPago)) {
+      return;
+    }
+    setState(() => _guardandoPago = true);
+    try {
+      await registrarPagoRecibidoQr(solicitudId);
+      if (!mounted) return;
+      setState(() => solicitud.estadoPago = 'pagado');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago marcado como recibido.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo registrar el pago. Intenta de nuevo.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _guardandoPago = false);
+    }
+  }
 
   @override
   void setState(VoidCallback callback) {
@@ -129,6 +162,16 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                       columnVwSolicitudesServiciosCompletaRowList.isNotEmpty
                           ? columnVwSolicitudesServiciosCompletaRowList.first
                           : null;
+
+                  final nombreCliente = nombreClienteVisible(
+                    columnVwSolicitudesServiciosCompletaRow
+                        ?.clienteNombreCompleto,
+                  );
+                  final nombreController = _model.nombreTextController1 ??=
+                      TextEditingController();
+                  if (nombreController.text != nombreCliente) {
+                    nombreController.text = nombreCliente;
+                  }
 
                   return SingleChildScrollView(
                     child: Column(
@@ -672,17 +715,12 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                     .width *
                                                 1.0,
                                             child: TextFormField(
-                                              controller: _model
-                                                      .nombreTextController1 ??=
-                                                  TextEditingController(
-                                                text:
-                                                    columnVwSolicitudesServiciosCompletaRow
-                                                        ?.clienteNombres,
-                                              ),
+                                              controller: nombreController,
                                               focusNode:
                                                   _model.nombreFocusNode1,
                                               autofocus: false,
                                               readOnly: true,
+                                              maxLines: null,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -1924,6 +1962,9 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               ),
                                               focusNode:
                                                   _model.nombreFocusNode7,
+                                              minLines: 2,
+                                              maxLines: null,
+                                              keyboardType: TextInputType.multiline,
                                               autofocus: false,
                                               readOnly: true,
                                               obscureText: false,
@@ -3358,11 +3399,18 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                   .alternate,
                                         ),
                                         child: Checkbox(
-                                          value: _model.checkboxValue1 ??= true,
-                                          onChanged: (newValue) async {
-                                            safeSetState(() => _model
-                                                .checkboxValue1 = newValue!);
-                                          },
+                                          value: isPaymentReceived(
+                                            columnVwSolicitudesServiciosCompletaRow?.estadoPago,
+                                          ),
+                                          onChanged: _guardandoPago ||
+                                                  columnVwSolicitudesServiciosCompletaRow == null ||
+                                                  !isPaymentPending(columnVwSolicitudesServiciosCompletaRow.estadoPago)
+                                              ? null
+                                              : (newValue) async {
+                                                  if (newValue == true) {
+                                                    await _marcarPagoRecibido(columnVwSolicitudesServiciosCompletaRow);
+                                                  }
+                                                },
                                           side: (FlutterFlowTheme.of(context)
                                                       .alternate !=
                                                   null)
@@ -3422,12 +3470,10 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                   .alternate,
                                         ),
                                         child: Checkbox(
-                                          value: _model.checkboxValue2 ??=
-                                              false,
-                                          onChanged: (newValue) async {
-                                            safeSetState(() => _model
-                                                .checkboxValue2 = newValue!);
-                                          },
+                                          value: isPaymentPending(
+                                            columnVwSolicitudesServiciosCompletaRow?.estadoPago,
+                                          ),
+                                          onChanged: null,
                                           side: (FlutterFlowTheme.of(context)
                                                       .alternate !=
                                                   null)
@@ -3788,7 +3834,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                       ),
                                 ),
                                 Text(
-                                  'Cliente: ${columnVwSolicitudesServiciosCompletaRow?.clienteNombres}',
+                                  'Cliente: $nombreCliente',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(

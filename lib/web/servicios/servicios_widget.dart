@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_servicio_widget.dart';
 import '/components/editar_servicio_widget.dart';
@@ -1178,7 +1179,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                   },
                                                                 );
                                                               },
-                                                              child: Text(
+                                                              child: TextoTablaCompleto(
                                                                 subcategoriasItem
                                                                     .nombre!,
                                                                 style: FlutterFlowTheme.of(
@@ -1215,7 +1216,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                               ),
                                                             ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             'Desde \$${valueOrDefault<String>(
                                                               formatNumber(
                                                                 subcategoriasItem
@@ -1229,7 +1230,6 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                               ),
                                                               '0',
                                                             )}',
-                                                            maxLines: 4,
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1260,7 +1260,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               subcategoriasItem
@@ -1298,7 +1298,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             subcategoriasItem
                                                                 .estado!,
                                                             style: FlutterFlowTheme

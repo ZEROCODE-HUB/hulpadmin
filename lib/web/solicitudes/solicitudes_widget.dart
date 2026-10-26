@@ -1,3 +1,4 @@
+import '/backend/pagos_manuales.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_solicitud_widget.dart';
 import '/components/detalle_solicitud_widget.dart';
@@ -11,6 +12,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/dialog_helpers.dart';
+import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/web/menu/menu_widget.dart';
 import '/web/solicitudes/solicitudes_filter_bar.dart';
 import '/web/solicitudes/solicitudes_data_table.dart';
@@ -38,6 +40,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   StreamSubscription<List<Map<String, dynamic>>>? _solicitudesTriggerSub;
+  final Set<String> _paymentUpdatesInProgress = <String>{};
 
   static String? _trimOrNull(String? s) {
     if (s == null) return null;
@@ -218,20 +221,68 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
   }
 
-  void _onViewDetails(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item) {
-    showCenteredDialog(
+  Future<void> _onViewDetails(
+      BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    await showCenteredDialog(
       context,
       DetalleSolicitudWidget(solicitudId: item.solicitudId!),
     );
+    _refrescarClientes();
   }
 
-  void _onEdit(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item) {
-    showCenteredDialog(
+  Future<void> _onEdit(
+      BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    await showCenteredDialog(
       context,
       EdicionSolicitudWidget(solicitudId: item.solicitudId!),
     );
+    _refrescarClientes();
+  }
+
+  void _refrescarClientes() {
+    if (!mounted) return;
+    safeSetState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+  }
+
+  Future<void> _onMarkPaymentReceived(
+    BuildContext context,
+    VwSolicitudesServiciosCompletaRow item,
+  ) async {
+    final solicitudId = item.solicitudId;
+    if (solicitudId == null ||
+        solicitudId.isEmpty ||
+        !isPaymentPending(item.estadoPago) ||
+        _paymentUpdatesInProgress.contains(solicitudId)) {
+      return;
+    }
+
+    safeSetState(() => _paymentUpdatesInProgress.add(solicitudId));
+    try {
+      await registrarPagoRecibidoQr(solicitudId);
+
+      if (!mounted) return;
+      safeSetState(() {
+        _model.requestCompleter = null;
+        _model.containerSupabaseStream = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago marcado como recibido.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo actualizar el estado del pago.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        safeSetState(() => _paymentUpdatesInProgress.remove(solicitudId));
+      }
+    }
   }
 
   // -- Build ------------------------------------------------------------------
@@ -383,6 +434,9 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                         onViewDetails: (item) =>
                             _onViewDetails(context, item),
                         onEdit: (item) => _onEdit(context, item),
+                        onMarkPaymentReceived: (item) =>
+                            _onMarkPaymentReceived(context, item),
+                        updatingPaymentIds: _paymentUpdatesInProgress,
                       ),
                     ),
                   ),

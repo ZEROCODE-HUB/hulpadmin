@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -788,7 +789,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Text(
+                                                            child: TextoTablaCompleto(
                                                               valueOrDefault<
                                                                   String>(
                                                                 proveedoresItem
@@ -830,7 +831,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               proveedoresItem
@@ -838,7 +839,6 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                                   ?.toString(),
                                                               '0',
                                                             ),
-                                                            maxLines: 4,
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -869,7 +869,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               proveedoresItem

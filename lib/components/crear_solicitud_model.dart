@@ -42,12 +42,30 @@ class CrearSolicitudModel extends FlutterFlowModel<CrearSolicitudWidget> {
   // State field(s) for usuarioSeleccionado widget.
   String? usuarioSeleccionadoValue;
   FormFieldController<String>? usuarioSeleccionadoValueController;
+  // Estado de las sugerencias provenientes del perfil del cliente.
+  String? clienteAutocompletadoId;
+  bool direccionSugeridaPorCliente = false;
+  bool direccionEditadaManualmente = false;
+  bool ciudadSugeridaPorCliente = false;
+  bool ciudadEditadaManualmente = false;
+  String? ciudadPerfilNoDisponible;
+  // Sugerencias obtenidas de solicitudes anteriores del cliente. Se mantienen
+  // separadas de las del perfil para respetar su prioridad al cambiar cliente.
+  String? historialClienteId;
+  Future<List<VwSolicitudesServiciosCompletaRow>>?
+      historialSolicitudesRequest;
+  bool servicioSugeridoPorHistorial = false;
+  bool servicioEditadoManualmente = false;
+  bool ciudadSugeridaPorHistorial = false;
+  String? servicioHistorialNoDisponible;
+  String? ciudadHistorialNoDisponible;
   // State field(s) for usuarioSeleccionado2 widget.
   String? usuarioSeleccionado2Value;
   FormFieldController<String>? usuarioSeleccionado2ValueController;
   // State field(s) for proveedorSeleccionado widget.
   String? proveedorSeleccionadoValue;
   FormFieldController<String>? proveedorSeleccionadoValueController;
+  Future<List<VwProfesionalesCompletoRow>>? profesionalesDisponiblesRequest;
   // State field(s) for descripcion widget.
   FocusNode? descripcionFocusNode;
   TextEditingController? descripcionTextController;
@@ -80,8 +98,10 @@ class CrearSolicitudModel extends FlutterFlowModel<CrearSolicitudWidget> {
   // State field(s) for servicioSelecc widget.
   String? servicioSeleccValue;
   FormFieldController<String>? servicioSeleccValueController;
+  Future<List<ServiciosRow>>? serviciosDisponiblesRequest;
   // State field(s) for ciudadSelecc widget.
   String? ciudadSeleccValue;
+  Future<List<CiudadesRow>>? ciudadesActivasRequest;
   // Stores action output result for [Backend Call - Query Rows] action in servicioSelecc widget.
   List<ServiciosRow>? precioss;
   DateTime? datePicked;

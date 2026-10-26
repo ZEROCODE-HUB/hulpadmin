@@ -9,9 +9,6 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import '/backend/wompi_servidor.dart';
 
 /// Cobra una solicitud y espera a que Wompi resuelva la transaccion.
@@ -25,8 +22,8 @@ import '/backend/wompi_servidor.dart';
 /// Antes llegaba desde la pantalla, asi que bastaba con manipular la peticion
 /// para cobrar una cifra distinta de la que vale el servicio.
 ///
-/// El sondeo posterior se queda aqui porque consulta con la clave PUBLICA,
-/// que esta pensada para viajar en el cliente.
+/// El sondeo consulta la accion consultar_transaccion de la Edge Function.
+/// La consulta a Wompi y su clave privada permanecen en el servidor.
 Future<dynamic> createTransaction(
   String privateKey, // ignorado: la clave vive en el servidor
   String publicKey,
@@ -37,8 +34,9 @@ Future<dynamic> createTransaction(
   String customerEmail, // ignorado: sale de la ficha del cliente
   String referenceId,
   String integrityKey, // ignorado: la firma se hace en el servidor
-  bool isProduction,
-) async {
+  bool isProduction, {
+  required String personalDataAuthToken,
+}) async {
   try {
     if (publicKey.trim().isEmpty || !publicKey.startsWith('pub_')) {
       return {
@@ -52,6 +50,13 @@ Future<dynamic> createTransaction(
         'success': false,
         'error': 'Acceptance token requerido',
         'field': 'acceptanceToken'
+      };
+    }
+    if (personalDataAuthToken.trim().isEmpty) {
+      return {
+        'success': false,
+        'error': 'Token de autorizacion de datos personales requerido',
+        'field': 'personalDataAuthToken'
       };
     }
     if (referenceId.trim().isEmpty) {
@@ -72,6 +77,7 @@ Future<dynamic> createTransaction(
       'accion': 'crear_cobro',
       'solicitud_id': solicitudId,
       'acceptance_token': acceptanceToken.trim(),
+      'accept_personal_auth': personalDataAuthToken.trim(),
       if (paymentSourceId > 0) 'payment_source_id': paymentSourceId,
     });
 
@@ -90,49 +96,35 @@ Future<dynamic> createTransaction(
       };
     }
 
-    // Sondeo hasta que Wompi resuelva. Va con la clave publica.
-    final baseUrl = isProduction
-        ? 'https://production.wompi.co/v1'
-        : 'https://sandbox.wompi.co/v1';
+    // Conserva el sondeo; el backend consulta a Wompi con su clave privada.
     final inicio = DateTime.now();
+    Map<String, dynamic>? ultimoErrorConsulta;
 
     for (int intento = 1; intento <= 20; intento++) {
       await Future.delayed(Duration(seconds: 3));
 
       try {
-        final estadoResp = await http.get(
-          Uri.parse('$baseUrl/transactions/$transactionId'),
-          headers: {
-            'Authorization': 'Bearer $publicKey',
-            'Content-Type': 'application/json',
-          },
-        );
+        final consulta = await llamarWompi({
+          'accion': 'consultar_transaccion',
+          'transaction_id': transactionId,
+        });
 
-        if (estadoResp.statusCode == 200) {
-          final datos = jsonDecode(estadoResp.body);
-          final estado = datos['data']['status'];
-          final segundos = DateTime.now().difference(inicio).inSeconds;
+        if (consulta['success'] != true) {
+          ultimoErrorConsulta = consulta;
+          continue;
+        }
+        ultimoErrorConsulta = null;
 
-          if (estadosFinales.contains(estado)) {
-            return {
-              'success': true,
-              'transactionId': transactionId,
-              'status': estado,
-              'statusMessage': datos['data']['status_message'] ?? '',
-              'amount': datos['data']['amount_in_cents'],
-              'currency': datos['data']['currency'],
-              'customerEmail': datos['data']['customer_email'],
-              'reference': datos['data']['reference'],
-              'createdAt': datos['data']['created_at'],
-              'finalizedAt': datos['data']['finalized_at'],
-              'paymentMethod': datos['data']['payment_method'],
-              'paymentSourceId': datos['data']['payment_source_id'],
-              'attempts': intento,
-              'totalTime': '$segundos segundos',
-              'message': 'Transaccion finalizada: $estado',
-              'fullData': datos['data']
-            };
-          }
+        final estado = consulta['status'];
+        final segundos = DateTime.now().difference(inicio).inSeconds;
+
+        if (estadosFinales.contains(estado)) {
+          return {
+            ...consulta,
+            'attempts': intento,
+            'totalTime': '$segundos segundos',
+            'message': 'Transaccion finalizada: $estado',
+          };
         }
       } catch (e) {
         // Un fallo de red suelto no aborta el sondeo: se reintenta.
@@ -141,6 +133,15 @@ Future<dynamic> createTransaction(
     }
 
     final total = DateTime.now().difference(inicio).inSeconds;
+    if (ultimoErrorConsulta != null) {
+      return {
+        ...ultimoErrorConsulta,
+        'transactionId': transactionId,
+        'attempts': 20,
+        'totalTime': '$total segundos',
+        'phase': 'POLLING',
+      };
+    }
     return {
       'success': false,
       'error':

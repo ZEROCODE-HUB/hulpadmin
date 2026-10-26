@@ -9,55 +9,43 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '/backend/wompi_servidor.dart';
 
+/// Obtiene los tokens mediante el backend para evitar CORS en el navegador.
+/// Los parámetros se conservan para las llamadas existentes; el servidor
+/// determina el ambiente y la clave pública desde su configuración.
 Future<dynamic> getAcceptanceToken(
   String publicKey,
   bool isProduction,
 ) async {
-  try {
-    // Determinar la URL base según el entorno
-    final baseUrl = isProduction
-        ? 'https://production.wompi.co/v1'
-        : 'https://sandbox.wompi.co/v1';
+  final respuesta = await llamarWompi({
+    'accion': 'obtener_tokens_aceptacion',
+  });
 
-    // Hacer la petición GET para obtener información del merchant
-    final response = await http.get(
-      Uri.parse('$baseUrl/merchants/$publicKey'),
-      headers: {
-        'Authorization': 'Bearer $publicKey',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    // Decodificar la respuesta
-    final responseData = jsonDecode(response.body);
-
-    // Verificar si la petición fue exitosa
-    if (response.statusCode == 200) {
-      return {
-        'success': true,
-        'acceptanceToken': responseData['data']['presigned_acceptance']
-            ['acceptance_token'],
-        'permalink': responseData['data']['presigned_acceptance']['permalink'],
-        'message': 'Token de aceptación obtenido exitosamente'
-      };
-    } else {
-      return {
-        'success': false,
-        'error': responseData['error']?.toString() ??
-            'Error desconocido al obtener acceptance token',
-        'statusCode': response.statusCode
-      };
-    }
-  } catch (e) {
+  if (respuesta['success'] != true) {
     return {
+      ...respuesta,
       'success': false,
-      'error': 'Error de conexión: ${e.toString()}',
-      'statusCode': 0
     };
   }
+
+  final acceptanceToken = respuesta['acceptanceToken'];
+  final personalDataAuthToken = respuesta['personalDataAuthToken'];
+  if (acceptanceToken is! String ||
+      acceptanceToken.trim().isEmpty ||
+      personalDataAuthToken is! String ||
+      personalDataAuthToken.trim().isEmpty) {
+    return {
+      'success': false,
+      'error': 'El servidor no devolvió ambos tokens de aceptación válidos',
+      'statusCode': 502,
+    };
+  }
+
+  return {
+    ...respuesta,
+    'acceptanceToken': acceptanceToken.trim(),
+    'personalDataAuthToken': personalDataAuthToken.trim(),
+    'permalink': respuesta['permalink'],
+  };
 }

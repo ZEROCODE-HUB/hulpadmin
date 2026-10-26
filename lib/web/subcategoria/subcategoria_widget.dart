@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_subcategoria_widget.dart';
 import '/components/editar_subcategoria_widget.dart';
@@ -1137,7 +1138,7 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Text(
+                                                            child: TextoTablaCompleto(
                                                               subcategoriasItem
                                                                   .nombre!,
                                                               style: FlutterFlowTheme
@@ -1175,14 +1176,13 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               subcategoriasItem
                                                                   .descripcion,
                                                               'Sin datos.',
                                                             ),
-                                                            maxLines: 4,
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -1213,7 +1213,7 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             valueOrDefault<
                                                                 String>(
                                                               subcategoriasItem
@@ -1251,7 +1251,7 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             dateTimeFormat(
                                                                 "d/M/y",
                                                                 subcategoriasItem
@@ -1286,7 +1286,7 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                       .fontStyle,
                                                                 ),
                                                           ),
-                                                          Text(
+                                                          TextoTablaCompleto(
                                                             subcategoriasItem
                                                                 .estado!,
                                                             style: FlutterFlowTheme

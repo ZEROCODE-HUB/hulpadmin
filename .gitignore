@@ -15,10 +15,9 @@ docs/CLAUDE.md
 .svn/
 .vercel
 /flutter/
-# Solo la carpeta del CLI de Supabase, en la raiz. Sin la barra inicial esta
-# regla tapaba tambien lib/backend/supabase/, y los ficheros nuevos de acceso
-# a datos nunca entraban al repositorio.
-/supabase/
+# Conservar fuentes de Edge Functions y migraciones; ignorar solo estado local.
+/supabase/.temp/
+/supabase/.branches/
 .env
 .env.local
 .env.production
@@ -33,7 +32,7 @@ docs/CLAUDE.md
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-#.vscode/
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/

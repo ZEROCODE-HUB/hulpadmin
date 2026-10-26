@@ -1,3 +1,4 @@
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/aceptar_proveedor_widget.dart';
 import '/components/dropdown_proveedor_estado_widget.dart';
@@ -1319,7 +1320,7 @@ class _SolicitudesRechazadasWidgetState
                                                               .secondaryBackground,
                                                     ),
                                                     cells: [
-                                                      Text(
+                                                      TextoTablaCompleto(
                                                         dateTimeFormat(
                                                             "d/M/y",
                                                             proveedoresDatosItem
@@ -1356,7 +1357,7 @@ class _SolicitudesRechazadasWidgetState
                                                                       .fontStyle,
                                                             ),
                                                       ),
-                                                      Text(
+                                                      TextoTablaCompleto(
                                                         valueOrDefault<String>(
                                                           proveedoresDatosItem
                                                               .nombreCompleto,
@@ -1391,7 +1392,7 @@ class _SolicitudesRechazadasWidgetState
                                                                       .fontStyle,
                                                             ),
                                                       ),
-                                                      Text(
+                                                      TextoTablaCompleto(
                                                         valueOrDefault<String>(
                                                           proveedoresDatosItem
                                                               .categoriaNombre,
@@ -1426,7 +1427,7 @@ class _SolicitudesRechazadasWidgetState
                                                                       .fontStyle,
                                                                 ),
                                                       ),
-                                                      Text(
+                                                      TextoTablaCompleto(
                                                         dateTimeFormat(
                                                             "d/M/y",
                                                             proveedoresDatosItem
