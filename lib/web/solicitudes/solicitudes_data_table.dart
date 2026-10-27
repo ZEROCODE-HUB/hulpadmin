@@ -39,29 +39,33 @@ class SolicitudesDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterFlowDataTable<VwSolicitudesServiciosCompletaRow>(
-      controller: controller,
-      data: data,
-      columnsBuilder: (onSortChanged) => _buildColumns(context),
-      dataRowBuilder: (item, index, selected, onSelectChanged) =>
-          _buildRow(context, item, index),
-      paginated: true,
-      selectable: false,
-      hidePaginator: false,
-      showFirstLastButtons: true,
-      width: MediaQuery.sizeOf(context).width * 1.0,
-      height: MediaQuery.sizeOf(context).height * 1.0,
-      minWidth: 1800.0,
-      headingRowHeight: 56.0,
-      dataRowHeight: 60.0,
-      columnSpacing: 20.0,
-      headingRowColor: const Color(0xFFFBFAF9),
-      borderRadius: BorderRadius.circular(20.0),
-      addHorizontalDivider: false,
-      addTopAndBottomDivider: false,
-      hideDefaultHorizontalDivider: true,
-      addVerticalDivider: false,
-    );
+    return ScrollbarTheme(
+        data: ScrollbarTheme.of(context).copyWith(
+          thumbVisibility: const WidgetStatePropertyAll(true),
+        ),
+        child: FlutterFlowDataTable<VwSolicitudesServiciosCompletaRow>(
+          controller: controller,
+          data: data,
+          columnsBuilder: (onSortChanged) => _buildColumns(context),
+          dataRowBuilder: (item, index, selected, onSelectChanged) =>
+              _buildRow(context, item, index),
+          paginated: true,
+          selectable: false,
+          hidePaginator: false,
+          showFirstLastButtons: true,
+          width: MediaQuery.sizeOf(context).width * 1.0,
+          height: MediaQuery.sizeOf(context).height * 1.0,
+          minWidth: 1800.0,
+          headingRowHeight: 56.0,
+          dataRowHeight: 60.0,
+          columnSpacing: 20.0,
+          headingRowColor: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(20.0),
+          addHorizontalDivider: false,
+          addTopAndBottomDivider: false,
+          hideDefaultHorizontalDivider: true,
+          addVerticalDivider: false,
+        ));
   }
 
   List<DataColumn2> _buildColumns(BuildContext context) {

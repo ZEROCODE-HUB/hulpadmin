@@ -2,6 +2,7 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
 import '/index.dart';
@@ -56,6 +57,7 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 800.0,
+          maxHeight: MediaQuery.sizeOf(context).height - 32.0,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -71,9 +73,13 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  ResponsiveToolbarRow(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    breakpoint: 520.0,
+                    wrapAlignment: WrapAlignment.spaceBetween,
+                    spacing: 8.0,
+                    runSpacing: 8.0,
                     children: [
                       Opacity(
                         opacity: 0.0,
@@ -420,8 +426,10 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                         .fontStyle,
                                   ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
+                        Wrap(
+                          spacing: 20.0,
+                          runSpacing: 12.0,
+                          crossAxisAlignment: WrapCrossAlignment.start,
                           children: [
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -951,7 +959,7 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                 ),
                               ].divide(SizedBox(height: 12.0)),
                             ),
-                          ].divide(SizedBox(width: 20.0)),
+                          ],
                         ),
                       ].divide(SizedBox(height: 16.0)),
                     ),
@@ -959,9 +967,13 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 42.0, 0.0, 0.0),
-                    child: Row(
+                    child: ResponsiveToolbarRow(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
+                      breakpoint: 520.0,
+                      wrapAlignment: WrapAlignment.center,
+                      spacing: 12.0,
+                      runSpacing: 12.0,
                       children: [
                         FFButtonWidget(
                           onPressed: () async {

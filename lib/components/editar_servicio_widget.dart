@@ -1,5 +1,6 @@
 import '/backend/supabase/supabase.dart';
 import '/components/notificacion2_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -120,6 +121,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
             return Container(
               constraints: BoxConstraints(
                 maxWidth: 800.0,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.9,
               ),
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -129,7 +131,9 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                 key: _model.formKey,
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Padding(
-                  padding: EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(
+                    MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0,
+                  ),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -213,7 +217,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.nombreservicioTextController ??=
@@ -370,7 +374,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                           ),
                         ),
                         Flexible(
-                          child: Row(
+                          child: ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               InkWell(
@@ -703,7 +707,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.preciobaseTextController ??=
@@ -859,7 +863,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.descripcionTextController ??=
@@ -1013,13 +1017,12 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Row(
+                              ResponsiveFormRow(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
                                     child: Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller: _model.itemsTextController,
                                         focusNode: _model.itemsFocusNode,
@@ -1353,7 +1356,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                               ].divide(SizedBox(height: 8.0)),
                             ),
                           ),
-                        Row(
+                        ResponsiveFormRow(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Flexible(
@@ -1395,8 +1398,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                       options: ['activo', 'inactivo'],
                                       onChanged: (val) => safeSetState(
                                           () => _model.estadoValue = val),
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       height: 48.0,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -1758,7 +1760,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                       builder: (dialogContext) {
                                         return Dialog(
                                           elevation: 0,
-                                          insetPadding: EdgeInsets.zero,
+                                          insetPadding: const EdgeInsets.all(16.0),
                                           backgroundColor: Colors.transparent,
                                           alignment: AlignmentDirectional(
                                                   0.0, 0.0)
@@ -1799,7 +1801,7 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                       builder: (dialogContext) {
                                         return Dialog(
                                           elevation: 0,
-                                          insetPadding: EdgeInsets.zero,
+                                          insetPadding: const EdgeInsets.all(16.0),
                                           backgroundColor: Colors.transparent,
                                           alignment: AlignmentDirectional(
                                                   0.0, 0.0)

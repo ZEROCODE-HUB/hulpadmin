@@ -78,82 +78,123 @@ class SolicitudesFilterBar extends StatelessWidget {
         );
 
     return Container(
-      width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0x7C766C4D), width: 0.5),
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 6.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 24.0, 0.0),
-              child: Text(
-                'Filtrar por:',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.inter(),
-                      color: const Color(0xFF4A4A4A),
-                      fontSize: 16.0,
-                      letterSpacing: 0.0,
-                    ),
-              ),
-            ),
-            _buildEstadoDropdown(context, bodyStyle),
-            if (_hasEstado) _buildResetButton(onEstadoReset),
-            _buildCategoriaDropdown(context, bodyStyle),
-            if (_hasCategoria) _buildResetButton(onCategoriaReset),
-            HulpDateRangePickerWidget(
-              dateStart: dateStart,
-              dateEnd: dateEnd,
-              onDateRangeSelected: onDateRangeSelected,
-              onReset: onDateReset,
-            ),
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional(1.0, 0.0),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      0.0, 0.0, 12.0, 0.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Numero de solicitudes:',
-                        style: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              font: GoogleFonts.inter(),
-                              color: const Color(0xFF0B6244),
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                            ),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        resultCount.toString(),
-                        style: FlutterFlowTheme.of(context)
-                            .bodyMedium
-                            .override(
-                              font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600),
-                              color: const Color(0xFF0B6244),
-                              fontSize: 20.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ].divide(const SizedBox(width: 12.0)),
-        ),
-      ),
+      padding: const EdgeInsets.all(12),
+      child: LayoutBuilder(builder: (context, size) {
+        final scale = MediaQuery.textScalerOf(context).scale(16) / 16;
+        final label = Text('Filtrar por:', style: bodyStyle);
+        final counter = Text.rich(
+            TextSpan(children: [
+              const TextSpan(text: 'Numero de solicitudes: '),
+              TextSpan(
+                  text: resultCount.toString(),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 20)),
+            ]),
+            style: bodyStyle.copyWith(color: const Color(0xFF0B6244)));
+        Widget estado(double width) => SizedBox(
+            width: width,
+            child: Row(children: [
+              Expanded(child: _buildEstadoDropdown(context, bodyStyle)),
+              if (_hasEstado)
+                _buildResetButton(onEstadoReset, 'Limpiar estado'),
+            ]));
+        Widget categoria(double width) => SizedBox(
+            width: width,
+            child: Row(children: [
+              Expanded(child: _buildCategoriaDropdown(context, bodyStyle)),
+              if (_hasCategoria)
+                _buildResetButton(onCategoriaReset, 'Limpiar categoría'),
+            ]));
+        Widget fecha(double width) => SizedBox(
+            width: width,
+            child: HulpDateRangePickerWidget(
+                expandido: true,
+                dateStart: dateStart,
+                dateEnd: dateEnd,
+                onDateRangeSelected: onDateRangeSelected,
+                onReset: onDateReset));
+
+        if (size.maxWidth < 750) {
+          final twoColumns =
+              size.maxWidth >= 292 * scale.clamp(1, double.infinity);
+          final fieldWidth =
+              twoColumns ? (size.maxWidth - 12) / 2 : size.maxWidth;
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(child: label),
+                const SizedBox(height: 8),
+                Wrap(spacing: 12, runSpacing: 12, children: [
+                  estado(fieldWidth),
+                  categoria(fieldWidth),
+                ]),
+                const SizedBox(height: 12),
+                Center(child: fecha(size.maxWidth.clamp(0, 320))),
+                const SizedBox(height: 12),
+                Center(child: counter),
+              ]);
+        }
+        double anchoTexto(InlineSpan text) {
+          final painter = TextPainter(
+            text: text,
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+          )..layout();
+          final width = painter.width;
+          painter.dispose();
+          return width;
+        }
+
+        final estadoWidth = 200.0 + (_hasEstado ? 48 : 0);
+        final categoriaWidth = 200.0 + (_hasCategoria ? 48 : 0);
+        final fechaWidth = dateStart != null && dateEnd != null ? 320.0 : 200.0;
+        final singleRowWidth = estadoWidth +
+            categoriaWidth +
+            fechaWidth +
+            52 +
+            anchoTexto(TextSpan(text: 'Filtrar por:', style: bodyStyle)) +
+            anchoTexto(
+                TextSpan(style: counter.style, children: [counter.textSpan!]));
+        if (size.maxWidth >= singleRowWidth) {
+          return Row(children: [
+            label,
+            const SizedBox(width: 12),
+            estado(estadoWidth),
+            const SizedBox(width: 12),
+            categoria(categoriaWidth),
+            const SizedBox(width: 12),
+            fecha(fechaWidth),
+            const SizedBox(width: 16),
+            const Spacer(),
+            counter,
+          ]);
+        }
+        // Keep all three filters together; move the label and count above them.
+        final maxFieldWidth = (size.maxWidth - fechaWidth - 24) / 2;
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: [label, counter]),
+              const SizedBox(height: 12),
+              Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                estado(estadoWidth.clamp(0.0, maxFieldWidth)),
+                const SizedBox(width: 12),
+                categoria(categoriaWidth.clamp(0.0, maxFieldWidth)),
+                const SizedBox(width: 12),
+                fecha(fechaWidth),
+              ]),
+            ]);
+      }),
     );
   }
 
@@ -165,9 +206,8 @@ class SolicitudesFilterBar extends StatelessWidget {
     };
     final selected = _resolveMenuValue(dropDownValue1, opts);
 
-    return SizedBox(
-      width: 200.0,
-      height: 48.0,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: const Color(0xFFFBFAF9),
@@ -179,10 +219,12 @@ class SolicitudesFilterBar extends StatelessWidget {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
+              itemHeight: null,
               value: opts.isEmpty ? null : selected,
               hint: Text('Estado', style: bodyStyle),
               icon: Icon(Icons.keyboard_arrow_down_rounded,
-                  color: FlutterFlowTheme.of(context).secondaryText, size: 24.0),
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  size: 24.0),
               style: bodyStyle,
               items: opts
                   .map(
@@ -191,7 +233,7 @@ class SolicitudesFilterBar extends StatelessWidget {
                       child: Text(
                         labelFor[e] ?? e,
                         style: bodyStyle,
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                       ),
                     ),
                   )
@@ -208,9 +250,8 @@ class SolicitudesFilterBar extends StatelessWidget {
     final opts = List<String>.from(categoriaOptions);
     final selected = _resolveMenuValue(dropDownValue2, opts);
 
-    return SizedBox(
-      width: 200.0,
-      height: 48.0,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: const Color(0xFFFBFAF9),
@@ -222,10 +263,12 @@ class SolicitudesFilterBar extends StatelessWidget {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
+              itemHeight: null,
               value: opts.isEmpty ? null : selected,
               hint: Text('Categoria', style: bodyStyle),
               icon: Icon(Icons.keyboard_arrow_down_rounded,
-                  color: FlutterFlowTheme.of(context).secondaryText, size: 24.0),
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  size: 24.0),
               style: bodyStyle,
               items: opts
                   .map(
@@ -234,7 +277,7 @@ class SolicitudesFilterBar extends StatelessWidget {
                       child: Text(
                         e,
                         style: bodyStyle,
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                       ),
                     ),
                   )
@@ -247,14 +290,10 @@ class SolicitudesFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildResetButton(VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
-      child: InkWell(
-        splashColor: Colors.transparent,
-        onTap: onTap,
-        child: const Icon(Icons.close, color: Color(0xFFE20E0E), size: 24.0),
-      ),
-    );
+  Widget _buildResetButton(VoidCallback onTap, String tooltip) {
+    return IconButton(
+        onPressed: onTap,
+        tooltip: tooltip,
+        icon: const Icon(Icons.close, color: Color(0xFFE20E0E), size: 24));
   }
 }

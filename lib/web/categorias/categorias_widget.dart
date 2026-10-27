@@ -4,6 +4,8 @@ import '/components/crear_categoria_widget.dart';
 import '/components/editar_categoria_widget.dart';
 import '/components/notificacion2_widget.dart';
 import '/components/notificacioneliminar_widget.dart';
+import '/components/responsive_layout_rows.dart';
+import '/app_state.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -109,6 +111,128 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
     return list;
   }
 
+  Widget _buildCategoryFilters(List<VwResumenCategoriasRow> rows) {
+    final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          font: GoogleFonts.inter(),
+          fontSize: 16.0,
+          letterSpacing: 0.0,
+        );
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(color: const Color(0x7C766C4D), width: 0.5),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: ResponsiveProviderFilterLayout(
+            label: Text('Filtrar por:', style: textStyle),
+            filters: [
+              ResponsiveFilterField(
+                selector: FlutterFlowDropDown<String>(
+                  controller: _model.dropDownValueController1 ??=
+                      FormFieldController<String>(null),
+                  options: _estadoOpcionesDesde(rows),
+                  onChanged: (value) => safeSetState(
+                    () => _model.dropDownValue1 = value,
+                  ),
+                  width: 200.0,
+                  height: 48.0,
+                  textStyle: textStyle,
+                  hintText: 'Estado',
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                    size: 24.0,
+                  ),
+                  fillColor: const Color(0xFFFBFAF9),
+                  elevation: 2.0,
+                  borderColor: const Color(0xFFDFDFDF),
+                  borderWidth: 1.0,
+                  borderRadius: 8.0,
+                  margin: const EdgeInsetsDirectional.fromSTEB(
+                    12.0,
+                    0.0,
+                    12.0,
+                    0.0,
+                  ),
+                  hidesUnderline: true,
+                  isOverButton: false,
+                  isSearchable: false,
+                  isMultiSelect: false,
+                ),
+                clearAction: _model.dropDownValue1 == null ||
+                        _model.dropDownValue1 == ''
+                    ? null
+                    : _buildClearFilter(() => safeSetState(() {
+                          _model.dropDownValueController1?.reset();
+                          _model.dropDownValue1 = null;
+                        })),
+              ),
+              ResponsiveFilterField(
+                selector: FlutterFlowDropDown<String>(
+                  controller: _model.dropDownValueController2 ??=
+                      FormFieldController<String>(null),
+                  options: _fechaOpcionesDesde(rows),
+                  onChanged: (value) => safeSetState(
+                    () => _model.dropDownValue2 = value,
+                  ),
+                  width: 200.0,
+                  height: 48.0,
+                  textStyle: textStyle,
+                  hintText: 'Fecha',
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                    size: 24.0,
+                  ),
+                  fillColor: const Color(0xFFFBFAF9),
+                  elevation: 2.0,
+                  borderColor: const Color(0xFFDFDFDF),
+                  borderWidth: 1.0,
+                  borderRadius: 8.0,
+                  margin: const EdgeInsetsDirectional.fromSTEB(
+                    12.0,
+                    0.0,
+                    12.0,
+                    0.0,
+                  ),
+                  hidesUnderline: true,
+                  isOverButton: false,
+                  isSearchable: false,
+                  isMultiSelect: false,
+                ),
+                clearAction: _model.dropDownValue2 == null ||
+                        _model.dropDownValue2 == ''
+                    ? null
+                    : _buildClearFilter(() => safeSetState(() {
+                          _model.dropDownValueController2?.reset();
+                          _model.dropDownValue2 = null;
+                        })),
+              ),
+            ],
+            summary: const SizedBox.shrink(),
+            breakpoint: 900.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClearFilter(VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 4.0),
+      child: InkWell(
+        onTap: onPressed,
+        child: const Icon(Icons.close, color: Color(0xFFE20E0E), size: 24.0),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -129,12 +253,26 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FFAppState>();
+    final screenSize = MediaQuery.sizeOf(context);
+    final contentWidth = screenSize.width -
+        (MenuWidget.esMovil(context)
+            ? 0.0
+            : (FFAppState().MenuAbierto ? 280.0 : 112.0));
+    final contentPadding = contentWidth < 900.0 ? 16.0 : 40.0;
+    final searchPadding = contentWidth < 600.0 ? 16.0 : 40.0;
+    final searchWidth =
+        (contentWidth - searchPadding * 2 - 56.0)
+            .clamp(160.0, 394.0)
+            .toDouble();
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -211,8 +349,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
+                                    width: double.infinity,
                                     height: 72.0,
                                     decoration: BoxDecoration(
                                       color: Color(0xFFEEECE8),
@@ -229,9 +366,9 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  40.0, 0.0, 0.0, 0.0),
+                                                  searchPadding, 0.0, 0.0, 0.0),
                                           child: Container(
-                                            width: 394.0,
+                                            width: searchWidth,
                                             child: TextFormField(
                                               controller: _model.textController,
                                               focusNode:
@@ -403,7 +540,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 12.0, 40.0, 12.0),
+                                                  0.0, 12.0, searchPadding, 12.0),
                                           child: Icon(
                                             Icons.notifications_none,
                                             color: FlutterFlowTheme.of(context)
@@ -417,7 +554,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                   Flexible(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          40.0, 24.0, 40.0, 0.0),
+                                          contentPadding, 24.0, contentPadding, 0.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
@@ -542,7 +679,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     0.0, 16.0, 0.0, 0.0),
-                                            child: Row(
+                                            child: ResponsiveHeadingActionRow(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -589,7 +726,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                           return Dialog(
                                                             elevation: 0,
                                                             insetPadding:
-                                                                EdgeInsets.zero,
+                                                                const EdgeInsets.all(16.0),
                                                             backgroundColor:
                                                                 Colors
                                                                     .transparent,
@@ -679,310 +816,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                               ],
                                             ),
                                           ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 24.0, 0.0, 0.0),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  1.0,
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFFBFAF9),
-                                                borderRadius:
-                                                    BorderRadius.circular(16.0),
-                                                border: Border.all(
-                                                  color: Color(0x7C766C4D),
-                                                  width: 0.5,
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        0.0, 6.0, 0.0, 6.0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  16.0,
-                                                                  0.0,
-                                                                  32.0,
-                                                                  0.0),
-                                                      child: Text(
-                                                        'Filtrar por:',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .inter(
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                              color: Color(
-                                                                  0xFF4A4A4A),
-                                                              fontSize: 16.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    FlutterFlowDropDown<String>(
-                                                      controller: _model
-                                                              .dropDownValueController1 ??=
-                                                          FormFieldController<
-                                                              String>(null),
-                                                      options:
-                                                          _estadoOpcionesDesde(
-                                                              containerVwResumenCategoriasRowList),
-                                                      onChanged: (val) =>
-                                                          safeSetState(() =>
-                                                              _model.dropDownValue1 =
-                                                                  val),
-                                                      width: 200.0,
-                                                      height: 48.0,
-                                                      textStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                fontSize: 16.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                      hintText: 'Estado',
-                                                      icon: Icon(
-                                                        Icons
-                                                            .keyboard_arrow_down_rounded,
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        size: 24.0,
-                                                      ),
-                                                      fillColor:
-                                                          Color(0xFFFBFAF9),
-                                                      elevation: 2.0,
-                                                      borderColor:
-                                                          Color(0xFFDFDFDF),
-                                                      borderWidth: 1.0,
-                                                      borderRadius: 8.0,
-                                                      margin:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  12.0,
-                                                                  0.0,
-                                                                  12.0,
-                                                                  0.0),
-                                                      hidesUnderline: true,
-                                                      isOverButton: false,
-                                                      isSearchable: false,
-                                                      isMultiSelect: false,
-                                                    ),
-                                                    if (_model.dropDownValue1 !=
-                                                            null &&
-                                                        _model.dropDownValue1 !=
-                                                            '')
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    4.0,
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: InkWell(
-                                                          splashColor: Colors
-                                                              .transparent,
-                                                          focusColor: Colors
-                                                              .transparent,
-                                                          hoverColor: Colors
-                                                              .transparent,
-                                                          highlightColor: Colors
-                                                              .transparent,
-                                                          onTap: () async {
-                                                            safeSetState(() {
-                                                              _model
-                                                                  .dropDownValueController1
-                                                                  ?.reset();
-                                                              _model.dropDownValue1 =
-                                                                  null;
-                                                            });
-                                                          },
-                                                          child: Icon(
-                                                            Icons.close,
-                                                            color: Color(
-                                                                0xFFE20E0E),
-                                                            size: 24.0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  16.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      child:
-                                                          FlutterFlowDropDown<
-                                                              String>(
-                                                        controller: _model
-                                                                .dropDownValueController2 ??=
-                                                            FormFieldController<
-                                                                String>(null),
-                                                        options:
-                                                            _fechaOpcionesDesde(
-                                                                containerVwResumenCategoriasRowList),
-                                                        onChanged: (val) =>
-                                                            safeSetState(() =>
-                                                                _model.dropDownValue2 =
-                                                                    val),
-                                                        width: 200.0,
-                                                        height: 48.0,
-                                                        textStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      16.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                        hintText: 'Fecha',
-                                                        icon: Icon(
-                                                          Icons
-                                                              .keyboard_arrow_down_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryText,
-                                                          size: 24.0,
-                                                        ),
-                                                        fillColor:
-                                                            Color(0xFFFBFAF9),
-                                                        elevation: 2.0,
-                                                        borderColor:
-                                                            Color(0xFFDFDFDF),
-                                                        borderWidth: 1.0,
-                                                        borderRadius: 8.0,
-                                                        margin:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    12.0,
-                                                                    0.0,
-                                                                    12.0,
-                                                                    0.0),
-                                                        hidesUnderline: true,
-                                                        isOverButton: false,
-                                                        isSearchable: false,
-                                                        isMultiSelect: false,
-                                                      ),
-                                                    ),
-                                                    if (_model.dropDownValue2 !=
-                                                            null &&
-                                                        _model.dropDownValue2 !=
-                                                            '')
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    4.0,
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: InkWell(
-                                                          splashColor: Colors
-                                                              .transparent,
-                                                          focusColor: Colors
-                                                              .transparent,
-                                                          hoverColor: Colors
-                                                              .transparent,
-                                                          highlightColor: Colors
-                                                              .transparent,
-                                                          onTap: () async {
-                                                            safeSetState(() {
-                                                              _model
-                                                                  .dropDownValueController2
-                                                                  ?.reset();
-                                                              _model.dropDownValue2 =
-                                                                  null;
-                                                            });
-                                                          },
-                                                          child: Icon(
-                                                            Icons.close,
-                                                            color: Color(
-                                                                0xFFE20E0E),
-                                                            size: 24.0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                          _buildCategoryFilters(containerVwResumenCategoriasRowList),
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
@@ -1008,6 +842,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                           controller: _model
                                                               .paginatedDataTableController,
                                                           data: categorias,
+                                                          minWidth: 1120.0,
                                                           columnsBuilder:
                                                               (onSortChanged) =>
                                                                   [
@@ -1518,7 +1353,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                               (dialogContext) {
                                                                             return Dialog(
                                                                               elevation: 0,
-                                                                              insetPadding: EdgeInsets.zero,
+                                                                              insetPadding: const EdgeInsets.all(16.0),
                                                                               backgroundColor: Colors.transparent,
                                                                               alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                               child: GestureDetector(
@@ -1591,7 +1426,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                               (dialogContext) {
                                                                             return Dialog(
                                                                               elevation: 0,
-                                                                              insetPadding: EdgeInsets.zero,
+                                                                              insetPadding: const EdgeInsets.all(16.0),
                                                                               backgroundColor: Colors.transparent,
                                                                               alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                               child: GestureDetector(
@@ -1615,7 +1450,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                                       builder: (dialogContext) {
                                                                                         return Dialog(
                                                                                           elevation: 0,
-                                                                                          insetPadding: EdgeInsets.zero,
+                                                                                          insetPadding: const EdgeInsets.all(16.0),
                                                                                           backgroundColor: Colors.transparent,
                                                                                           alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                           child: GestureDetector(

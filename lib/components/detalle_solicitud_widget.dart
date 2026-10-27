@@ -1,3 +1,4 @@
+import 'solicitud_responsive_fields.dart';
 import '/backend/pagos_manuales.dart';
 import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/backend/supabase/supabase.dart';
@@ -190,7 +191,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                 size: 24.0,
                               ),
                             ),
-                            Align(
+                            Flexible(child: Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Text(
                                 'Detalles de la solicitud',
@@ -212,7 +213,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                            ),
+                            )),
                             InkWell(
                               splashColor: Colors.transparent,
                               focusColor: Colors.transparent,
@@ -229,7 +230,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                             ),
                           ],
                         ),
-                        Row(
+                        SolicitudResponsiveFields(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -459,7 +460,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               barrierColor: Colors.transparent,
                                               context: context,
                                               isGlobal: false,
-                                              avoidOverflow: false,
+                                              avoidOverflow: true,
                                               targetAnchor:
                                                   AlignmentDirectional(0.0, 0.0)
                                                       .resolve(
@@ -504,7 +505,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               ),
                                               Expanded(
                                                 child: Container(
-                                                  height: 32.0,
+                                                  constraints: const BoxConstraints(minHeight: 32),
                                                   decoration: BoxDecoration(
                                                     color: columnVwSolicitudesServiciosCompletaRow
                                                                 ?.estadoSolicitud ==
@@ -677,7 +678,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 24.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -1315,7 +1316,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                   ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -1711,7 +1712,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -2141,7 +2142,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -2587,10 +2588,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                         width: 0.5,
                                       ),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
+                                    child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                         Text(
                                           'Precio adicional',
                                           style: FlutterFlowTheme.of(context)
@@ -2655,7 +2653,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -3352,9 +3350,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 20.0, 0.0, 20.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
+                                  child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                       Text(
                                         'Pago Recibido',
                                         style: FlutterFlowTheme.of(context)
@@ -3805,10 +3801,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 8.0, 0.0, 8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                            child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                 Text(
                                   'Proveedor: ${columnVwSolicitudesServiciosCompletaRow?.proveedorNombreCompleto}',
                                   style: FlutterFlowTheme.of(context)

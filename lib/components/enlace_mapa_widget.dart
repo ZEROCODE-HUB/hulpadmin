@@ -38,15 +38,16 @@ class EnlaceMapaWidget extends StatelessWidget {
       child: InkWell(
         onTap: () => launchURL(url),
         borderRadius: BorderRadius.circular(6.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 6,
+          runSpacing: 4,
           children: [
             Icon(
               hayPunto ? Icons.place_rounded : Icons.travel_explore_rounded,
               size: 16.0,
               color: tema.primary,
             ),
-            SizedBox(width: 6.0),
             Text(
               hayPunto
                   ? 'Abrir el punto en Google Maps'
@@ -61,7 +62,6 @@ class EnlaceMapaWidget extends StatelessWidget {
               ),
             ),
             if (hayPunto) ...[
-              SizedBox(width: 8.0),
               Text(
                 Coordenadas(latitud!, longitud!).formateadas,
                 style: tema.bodySmall.override(

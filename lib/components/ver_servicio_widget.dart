@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -107,6 +108,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
             return Container(
               constraints: BoxConstraints(
                 maxWidth: 800.0,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.9,
               ),
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -116,7 +118,9 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                 key: _model.formKey,
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Padding(
-                  padding: EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(
+                    MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0,
+                  ),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -200,7 +204,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.nombreservicioTextController ??=
@@ -358,7 +362,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                           ),
                         ),
                         Flexible(
-                          child: Row(
+                          child: ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Container(
@@ -472,7 +476,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.preciobaseTextController ??=
@@ -629,7 +633,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                                     ),
                               ),
                               Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 child: TextFormField(
                                   controller:
                                       _model.descripcionTextController ??=
@@ -861,7 +865,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                               ].divide(SizedBox(height: 8.0)),
                             ),
                           ),
-                        Row(
+                        ResponsiveFormRow(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Flexible(
@@ -900,8 +904,7 @@ class _VerServicioWidgetState extends State<VerServicioWidget> {
                                       options: <String>[],
                                       onChanged: (val) => safeSetState(
                                           () => _model.estadoValue = val),
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       height: 48.0,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium

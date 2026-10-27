@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -63,6 +64,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 620.0,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -72,7 +74,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -154,7 +156,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                                   ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           child: TextFormField(
                             controller: _model.textController1,
                             focusNode: _model.textFieldFocusNode,
@@ -295,7 +297,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 16.0, 0.0, 0.0),
                                 child: Container(
-                                  width: MediaQuery.sizeOf(context).width * 1.0,
+                                  width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
@@ -350,7 +352,11 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Container(
-                                                width: 97.0,
+                                                width: MediaQuery.sizeOf(context)
+                                                            .width <
+                                                        600.0
+                                                    ? 48.0
+                                                    : 97.0,
                                                 height: 1.0,
                                                 decoration: BoxDecoration(
                                                   color: Color(0xFFB5B5B5),
@@ -393,7 +399,11 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                                                 ),
                                               ),
                                               Container(
-                                                width: 97.0,
+                                                width: MediaQuery.sizeOf(context)
+                                                            .width <
+                                                        600.0
+                                                    ? 48.0
+                                                    : 97.0,
                                                 height: 1.0,
                                                 decoration: BoxDecoration(
                                                   color: Color(0xFFB5B5B5),
@@ -578,7 +588,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                             ),
                       ),
                       Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: double.infinity,
                         child: TextFormField(
                           controller: _model.descripcionTextController,
                           focusNode: _model.descripcionFocusNode,
@@ -685,7 +695,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                       ),
                     ].divide(SizedBox(height: 8.0)),
                   ),
-                  Row(
+                  ResponsiveFormRow(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Flexible(
@@ -723,7 +733,7 @@ class _CrearSubcategoriaWidgetState extends State<CrearSubcategoriaWidget> {
                                 options: ['activo', 'inactivo'],
                                 onChanged: (val) => safeSetState(
                                     () => _model.dropDownValue = val),
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 height: 48.0,
                                 textStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium

@@ -1,3 +1,4 @@
+import 'solicitud_responsive_fields.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -116,7 +117,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                             size: 24.0,
                           ),
                         ),
-                        Align(
+                        Flexible(child: Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: Text(
                             'Nuevo soporte',
@@ -138,7 +139,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       .fontStyle,
                                 ),
                           ),
-                        ),
+                        )),
                         InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -271,7 +272,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -653,7 +654,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                               ),
                             ],
                           ),
-                          Row(
+                          SolicitudResponsiveFields(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1069,7 +1070,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                               ),
                             ].divide(SizedBox(width: 8.0)),
                           ),
-                          Row(
+                          SolicitudResponsiveFields(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1447,7 +1448,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -2044,7 +2045,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -2772,9 +2773,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                       child: Padding(
                         padding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        child: Wrap(alignment: WrapAlignment.end, spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
@@ -2931,7 +2930,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(width: 8.0)),
+                          ],
                         ),
                       ),
                     ),

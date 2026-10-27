@@ -1,3 +1,4 @@
+import 'solicitud_responsive_fields.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -137,7 +138,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                 size: 24.0,
                               ),
                             ),
-                            Align(
+                            Flexible(child: Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Text(
                                 'Detalles del soporte',
@@ -159,7 +160,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                            ),
+                            )),
                             InkWell(
                               splashColor: Colors.transparent,
                               focusColor: Colors.transparent,
@@ -302,7 +303,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 24.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -711,7 +712,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 24.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -1190,7 +1191,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 24.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -1623,7 +1624,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                   ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -2235,7 +2236,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -3005,9 +3006,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                             decoration: BoxDecoration(),
                           ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        Wrap(alignment: WrapAlignment.end, spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
@@ -3130,7 +3129,7 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(width: 8.0)),
+                          ],
                         ),
                         Container(
                           decoration: BoxDecoration(

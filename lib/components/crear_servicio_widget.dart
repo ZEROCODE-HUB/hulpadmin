@@ -2,6 +2,7 @@ import '/backend/supabase/supabase.dart';
 import '/backend/schema/structs/index.dart';
 import '/components/item_widget.dart';
 import '/components/notificacion2_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -87,6 +88,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
         child: Container(
           constraints: BoxConstraints(
             maxWidth: 800.0,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
           ),
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -96,7 +98,9 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
             key: _model.formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(
+                MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -180,7 +184,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                 ),
                           ),
                           Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            width: double.infinity,
                             child: TextFormField(
                               controller: _model.nombreservicioTextController,
                               focusNode: _model.nombreservicioFocusNode,
@@ -321,7 +325,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                       ),
                     ),
                     Flexible(
-                      child: Row(
+                      child: ResponsiveFormRow(
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Builder(
@@ -1134,7 +1138,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                 ),
                           ),
                           Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            width: double.infinity,
                             child: TextFormField(
                               controller: _model.preciobaseTextController,
                               focusNode: _model.preciobaseFocusNode,
@@ -1273,7 +1277,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                 ),
                           ),
                           Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            width: double.infinity,
                             child: TextFormField(
                               controller: _model.descripcionTextController1,
                               focusNode: _model.descripcionFocusNode1,
@@ -1412,7 +1416,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                 ),
                           ),
                           Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            width: double.infinity,
                             child: TextFormField(
                               controller: _model.descripcionTextController2,
                               focusNode: _model.descripcionFocusNode2,
@@ -1550,12 +1554,12 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                       .fontStyle,
                                 ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
                                 child: Container(
-                                  width: MediaQuery.sizeOf(context).width * 1.0,
+                                  width: double.infinity,
                                   child: TextFormField(
                                     controller: _model.itemsTextController,
                                     focusNode: _model.itemsFocusNode,
@@ -1899,7 +1903,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                   builder: (dialogContext) {
                                     return Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.all(16.0),
                                       backgroundColor: Colors.transparent,
                                       alignment:
                                           AlignmentDirectional(0.0, 0.0)
@@ -2166,7 +2170,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                         ].divide(SizedBox(height: 12.0)),
                       ),
                     ),
-                    Row(
+                    ResponsiveFormRow(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Flexible(
@@ -2205,7 +2209,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                   options: ['activo', 'inactivo'],
                                   onChanged: (val) => safeSetState(
                                       () => _model.estadoValue = val),
-                                  width: MediaQuery.sizeOf(context).width * 1.0,
+                                  width: double.infinity,
                                   height: 48.0,
                                   textStyle: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -2280,9 +2284,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller: _model
                                               .informacionrelevanteTextController,
@@ -2523,7 +2525,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                   builder: (dialogContext) {
                                     return Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.all(16.0),
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
                                           .resolve(Directionality.of(context)),
@@ -2566,7 +2568,7 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                                   builder: (dialogContext) {
                                     return Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.all(16.0),
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
                                           .resolve(Directionality.of(context)),

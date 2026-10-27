@@ -257,6 +257,8 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: tema.secondaryBackground,
         body: SafeArea(

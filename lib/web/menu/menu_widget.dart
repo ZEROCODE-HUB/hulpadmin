@@ -12,7 +12,39 @@ import 'menu_model.dart';
 export 'menu_model.dart';
 
 class MenuWidget extends StatefulWidget {
-  const MenuWidget({super.key});
+  const MenuWidget({super.key, this.movil = false});
+
+  final bool movil;
+
+  static bool esMovil(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < kBreakpointMedium;
+
+  static PreferredSizeWidget? barraMovil(BuildContext context) {
+    if (!esMovil(context)) return null;
+    return AppBar(
+      backgroundColor: FlutterFlowTheme.of(context).primary,
+      automaticallyImplyLeading: false,
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white),
+          tooltip: 'Abrir menú',
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ),
+      title: const Text('Hulp', style: TextStyle(color: Colors.white)),
+    );
+  }
+
+  static Widget? menuMovil(BuildContext context) {
+    if (!esMovil(context)) return null;
+    return Drawer(
+      width: 280.0,
+      backgroundColor: FlutterFlowTheme.of(context).primary,
+      child: SafeArea(
+        child: SingleChildScrollView(child: MenuWidget(movil: true)),
+      ),
+    );
+  }
 
   @override
   State<MenuWidget> createState() => _MenuWidgetState();
@@ -46,16 +78,21 @@ class _MenuWidgetState extends State<MenuWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
+    if (!widget.movil && MenuWidget.esMovil(context)) {
+      return const SizedBox.shrink();
+    }
+    final menuExpandido = widget.movil || FFAppState().MenuAbierto;
+
     return Container(
       width: valueOrDefault<double>(
-        FFAppState().MenuAbierto ? 280.0 : 112.0,
+        menuExpandido ? 280.0 : 112.0,
         280.0,
       ),
-      height: MediaQuery.sizeOf(context).height * 1.0,
+      height: widget.movil ? null : MediaQuery.sizeOf(context).height * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primary,
       ),
-      child: Padding(
+      child: _contenidoDesplazable(Padding(
         padding: EdgeInsets.all(12.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -76,18 +113,18 @@ class _MenuWidgetState extends State<MenuWidget> {
                         Image.network(
                           'https://zexegravzidwloxeimxx.supabase.co/storage/v1/object/public/fotoservocops/servicios/Logo-3.png',
                           width: valueOrDefault<double>(
-                            FFAppState().MenuAbierto ? 82.0 : 60.0,
+                            menuExpandido ? 82.0 : 60.0,
                             60.0,
                           ),
                           height: valueOrDefault<double>(
-                            FFAppState().MenuAbierto ? 42.0 : 28.0,
+                            menuExpandido ? 42.0 : 28.0,
                             28.0,
                           ),
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
                               const SizedBox.shrink(),
                         ),
-                        if (!FFAppState().MenuAbierto)
+                        if (!menuExpandido)
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 4.0, 0.0, 0.0, 0.0),
@@ -110,15 +147,19 @@ class _MenuWidgetState extends State<MenuWidget> {
                           ),
                       ],
                     ),
-                    if (FFAppState().MenuAbierto)
+                    if (menuExpandido)
                       InkWell(
                         splashColor: Colors.transparent,
                         focusColor: Colors.transparent,
                         hoverColor: Colors.transparent,
                         highlightColor: Colors.transparent,
                         onTap: () async {
-                          FFAppState().MenuAbierto = false;
-                          safeSetState(() {});
+                          if (widget.movil) {
+                            Scaffold.of(context).closeDrawer();
+                          } else {
+                            FFAppState().MenuAbierto = false;
+                            safeSetState(() {});
+                          }
                         },
                         child: Icon(
                           Icons.close,
@@ -150,9 +191,11 @@ class _MenuWidgetState extends State<MenuWidget> {
                               'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
                             ),
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
                           ),
                         ),
-                        if (FFAppState().MenuAbierto)
+                        if (menuExpandido)
                           Text(
                             FFAppState().user.nombres.maybeHandleOverflow(
                                   maxChars: 13,
@@ -193,6 +236,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel1,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Panel de control',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/j0eja7e3h9q3/Dashboard.png',
@@ -214,6 +258,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel2,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Solicitudes',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/tnechqj7p09z/mark_email_unread.png',
@@ -235,6 +280,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel3,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Soporte',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/dl7p2acq358w/support_agent.png',
@@ -256,11 +302,12 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel4,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Registro Proveedores',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/to1bcnobshpm/talento_hulp.png',
                             action: () async {
-                              if (Navigator.of(context).canPop()) {
+                              if (!widget.movil && Navigator.of(context).canPop()) {
                                 context.pop();
                               }
                               context.pushNamed(
@@ -280,6 +327,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel5,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Categorías',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/jl14vgg1blbo/category.png',
@@ -301,6 +349,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel9,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Ciudades',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/jl14vgg1blbo/category.png',
@@ -339,6 +388,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             model: _model.menuSeleccionModel6,
                             updateCallback: () => safeSetState(() {}),
                             child: MenuSeleccionWidget(
+                            movil: widget.movil,
                               textseleccion: 'Usuarios',
                               imagen:
                                   'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/4ytkvlil6egm/account_circle.png',
@@ -361,6 +411,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel7,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Proveedores',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/vt3r5xmh9fo5/person_apron.png',
@@ -382,6 +433,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                           model: _model.menuSeleccionModel8,
                           updateCallback: () => safeSetState(() {}),
                           child: MenuSeleccionWidget(
+                            movil: widget.movil,
                             textseleccion: 'Rendimiento',
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/dm21gi4z074w/Rendimiento.png',
@@ -447,10 +499,12 @@ class _MenuWidgetState extends State<MenuWidget> {
                                   width: 28.0,
                                   height: 28.0,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const SizedBox(width: 28, height: 28),
                                 ),
                               ),
-                              if (FFAppState().MenuAbierto)
-                                Text(
+                              if (menuExpandido)
+                                Flexible(child: Text(
                                   'Cerrar sesión',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -471,7 +525,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                             .bodyMedium
                                             .fontStyle,
                                       ),
-                                ),
+                                )),
                             ].divide(SizedBox(width: 8.0)),
                           ),
                         ),
@@ -488,7 +542,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
                   child: Text(
-                    FFAppState().MenuAbierto
+                    menuExpandido
                         ? 'v1.0.17 · 2026-09-24'
                         : 'v1.0.17',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
@@ -511,7 +565,14 @@ class _MenuWidgetState extends State<MenuWidget> {
             ),
           ],
         ),
-      ),
+      )),
     );
+  }
+
+  Widget _contenidoDesplazable(Widget child) {
+    if (widget.movil) return child;
+    return LayoutBuilder(builder: (context, size) => SingleChildScrollView(
+      child: ConstrainedBox(constraints: BoxConstraints(minHeight: size.maxHeight), child: child),
+    ));
   }
 }

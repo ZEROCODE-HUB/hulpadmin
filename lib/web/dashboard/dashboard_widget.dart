@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dashboard_model.dart';
+import 'dashboard_responsive.dart';
 export 'dashboard_model.dart';
 
 class DashboardWidget extends StatefulWidget {
@@ -55,6 +56,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       child: PopScope(
         canPop: false,
         child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           body: SafeArea(
@@ -77,7 +80,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         children: [
                           Container(
                             width: MediaQuery.sizeOf(context).width * 1.0,
-                            height: 72.0,
+                            height: MenuWidget.esMovil(context) ? 48.0 : 72.0,
                             decoration: BoxDecoration(
                               color: Color(0xFFEEECE8),
                               border: Border.all(
@@ -104,7 +107,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                           Flexible(
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  40.0, 24.0, 40.0, 0.0),
+                                  MenuWidget.esMovil(context) ? 12.0 : 24.0, 16.0, MenuWidget.esMovil(context) ? 12.0 : 24.0, 0.0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -157,7 +160,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 20.0, 0.0, 20.0),
+                                                    16.0, 20.0, 16.0, 20.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -165,16 +168,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                   alignment:
                                                       AlignmentDirectional(
                                                           -1.0, 0.0),
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
+                                                  child: DashboardMetricGrid(minWidth: 145, children: [
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -296,7 +292,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -340,8 +336,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -463,7 +458,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -507,8 +502,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -630,7 +624,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -674,8 +668,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -797,7 +790,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -841,8 +834,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -964,7 +956,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -1008,8 +1000,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 160),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1131,7 +1122,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -1174,28 +1165,15 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                      ]
-                                                          .divide(SizedBox(
-                                                              width: 16.0))
-                                                          .addToEnd(SizedBox(
-                                                              width: 20.0)),
-                                                    ),
-                                                  ),
+                                                      ],),
                                                 ),
                                                 Align(
                                                   alignment:
                                                       AlignmentDirectional(
                                                           -1.0, 0.0),
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
+                                                  child: DashboardMetricGrid(minWidth: 180, children: [
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 196),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1284,7 +1262,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1356,7 +1334,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1428,7 +1406,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1474,8 +1452,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 196),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1564,7 +1541,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1636,7 +1613,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1682,8 +1659,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 196),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1812,7 +1788,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -1856,8 +1832,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 196),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1986,7 +1961,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -2030,8 +2005,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 196),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -2160,7 +2134,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -2203,13 +2177,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                      ]
-                                                          .divide(SizedBox(
-                                                              width: 16.0))
-                                                          .addToEnd(SizedBox(
-                                                              width: 20.0)),
-                                                    ),
-                                                  ),
+                                                      ],),
                                                 ),
                                               ].divide(SizedBox(height: 24.0)),
                                             ),
@@ -2333,7 +2301,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .max,
@@ -2379,7 +2347,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -2553,7 +2522,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -2614,7 +2583,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                 solicitudesItem.ticket?.toString(),
                                                                                 '-',
                                                                               )}',
-                                                                              maxLines: 2,
+                                                                              maxLines: null,
                                                                               style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                     font: GoogleFonts.inter(
                                                                                       fontWeight: FontWeight.normal,
@@ -2658,7 +2627,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                         barrierColor: Colors.transparent,
                                                                                         context: context,
                                                                                         isGlobal: false,
-                                                                                        avoidOverflow: false,
+                                                                                        avoidOverflow: true,
                                                                                         targetAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                         followerAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                         builder: (dialogContext) {
@@ -2702,7 +2671,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                         ),
                                                                                         Expanded(
                                                                                           child: Container(
-                                                                                            height: 32.0,
+                                                                                            constraints: const BoxConstraints(minHeight: 32),
                                                                                             decoration: BoxDecoration(
                                                                                               color: solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFFE9EBEC) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFFD6EAFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFFDFF9D2) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
                                                                                               borderRadius: BorderRadius.circular(24.0),
@@ -2716,7 +2685,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                               padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                               child: Text(
                                                                                                 solicitudesItem.estadoSolicitud == 'entrantes' ? 'Pendiente' : (solicitudesItem.estadoSolicitud == 'aceptadas' ? 'Activo' : (solicitudesItem.estadoSolicitud == 'canceladas' ? 'Cancelado' : (solicitudesItem.estadoSolicitud == 'finalizadas' ? 'Finalizado' : 'En curso'))),
-                                                                                                maxLines: 2,
+                                                                                                maxLines: null,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       font: GoogleFonts.inter(
                                                                                                         fontWeight: FontWeight.w500,
@@ -2749,8 +2718,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.servicioNombre,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -2772,8 +2740,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.clienteNombreCompleto,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -2795,6 +2762,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),
@@ -2808,7 +2776,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 24.0, 0.0, 24.0),
-                                      child: Row(
+                                      child: DashboardSummaryLayout(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -2926,7 +2894,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .min,
@@ -2972,7 +2940,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -3117,7 +3086,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -3174,8 +3143,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.nombreCompleto,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3197,8 +3165,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.categoriaNombre,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3263,6 +3230,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),
@@ -3375,7 +3343,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .min,
@@ -3421,7 +3389,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -3599,7 +3568,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -3658,8 +3627,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.nro.toString(),
                                                                               '0',
                                                                             )}',
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3697,7 +3665,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                     barrierColor: Colors.transparent,
                                                                                     context: context,
                                                                                     isGlobal: false,
-                                                                                    avoidOverflow: false,
+                                                                                    avoidOverflow: true,
                                                                                     targetAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                     followerAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                     builder: (dialogContext) {
@@ -3744,7 +3712,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                     ),
                                                                                     Expanded(
                                                                                       child: Container(
-                                                                                        height: 32.0,
+                                                                                        constraints: const BoxConstraints(minHeight: 32),
                                                                                         decoration: BoxDecoration(
                                                                                           color: soportelItem.estado == 'pendiente' ? Color(0xFFE9EBEC) : (soportelItem.estado == 'en proceso' ? Color(0xFFD6EAFF) : (soportelItem.estado == 'completado' ? Color(0xFFDFF9D2) : (soportelItem.estado == 'rechazado' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
                                                                                           borderRadius: BorderRadius.circular(24.0),
@@ -3758,7 +3726,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                           padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                           child: Text(
                                                                                             soportelItem.estado == 'pendiente' ? 'Pendiente' : (soportelItem.estado == 'en proceso' ? 'En proceso' : (soportelItem.estado == 'rechazado' ? 'Cancelado' : (soportelItem.estado == 'completado' ? 'Completado' : 'Escalado'))),
-                                                                                            maxLines: 2,
+                                                                                            maxLines: null,
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                   font: GoogleFonts.inter(
                                                                                                     fontWeight: FontWeight.w500,
@@ -3789,8 +3757,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.asunto,
                                                                               'Sin asunto',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3814,8 +3781,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.nombreUsuario,
                                                                               'Sin usuario',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3837,6 +3803,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),

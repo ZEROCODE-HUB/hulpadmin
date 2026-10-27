@@ -1,5 +1,6 @@
 import '/backend/supabase/supabase.dart';
 import '/components/notificacion2_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -60,10 +61,16 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
+        padding: EdgeInsetsDirectional.fromSTEB(
+          0.0,
+          MediaQuery.sizeOf(context).width < 600.0 ? 8.0 : 20.0,
+          0.0,
+          MediaQuery.sizeOf(context).width < 600.0 ? 8.0 : 20.0,
+        ),
         child: Container(
           constraints: BoxConstraints(
             maxWidth: 800.0,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
           ),
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -73,7 +80,9 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
             key: _model.formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(
+                MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 20.0,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -158,7 +167,8 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                                   ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
+                            breakpoint: 600.0,
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -167,8 +177,7 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller: _model.nombreTextController,
                                         focusNode: _model.nombreFocusNode,
@@ -323,9 +332,7 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.apellidoTextController,
@@ -512,7 +519,7 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                           return Container(
                             decoration: BoxDecoration(),
                             child: custom_widgets.CrearProveedor(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              width: double.infinity,
                               height: 300.0,
                               serviciosid: containerProfesionalServiciosRowList
                                   .map((e) => e.servicioId)
@@ -568,7 +575,7 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: EdgeInsets.zero,
+                                    insetPadding: const EdgeInsets.all(16.0),
                                     backgroundColor: Colors.transparent,
                                     alignment: AlignmentDirectional(0.0, 0.0)
                                         .resolve(Directionality.of(context)),

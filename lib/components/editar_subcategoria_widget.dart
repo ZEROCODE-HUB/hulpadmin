@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -69,6 +70,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 620.0,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -78,7 +80,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -162,7 +164,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                   ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           child: TextFormField(
                             controller: _model.textController1,
                             focusNode: _model.textFieldFocusNode,
@@ -420,7 +422,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                             ),
                       ),
                       Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: double.infinity,
                         child: TextFormField(
                           controller: _model.descripcionTextController,
                           focusNode: _model.descripcionFocusNode,
@@ -528,7 +530,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                       ),
                     ].divide(SizedBox(height: 8.0)),
                   ),
-                  Row(
+                  ResponsiveFormRow(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Flexible(
@@ -567,7 +569,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                 options: ['activo', 'inactivo'],
                                 onChanged: (val) => safeSetState(
                                     () => _model.dropDownValue = val),
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 height: 48.0,
                                 textStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium

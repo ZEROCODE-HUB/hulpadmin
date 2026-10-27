@@ -1,3 +1,4 @@
+import 'solicitud_responsive_fields.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/actualizar_cliente_solicitud.dart';
 import '/backend/schema/structs/index.dart';
@@ -94,7 +95,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
     return Align(
       alignment: AlignmentDirectional.center,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20.0),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: MediaQuery.sizeOf(context).width < 700 ? 8 : 0),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1200.0),
           decoration: BoxDecoration(
@@ -206,14 +207,14 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const SizedBox(width: 24.0, height: 24.0),
-        Text(
+        Flexible(child: Text(
           'Editar solicitud',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(fontWeight: FontWeight.w500),
                 fontSize: 22.0,
                 letterSpacing: 0.0,
               ),
-        ),
+        )),
         InkWell(
           splashColor: Colors.transparent,
           focusColor: Colors.transparent,
@@ -232,7 +233,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
 
   Widget _buildTwoColumnRow(Widget left, Widget right,
       {CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
-    return Row(
+    return SolicitudResponsiveFields(
       crossAxisAlignment: crossAxisAlignment,
       children: [
         Expanded(child: left),

@@ -13,6 +13,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
     this.placeholder = 'Rango de fecha',
     this.firstDate,
     this.lastDate,
+    this.expandido = false,
   });
 
   final DateTime? dateStart;
@@ -22,6 +23,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
   final String placeholder;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final bool expandido;
 
   bool get _hasSelection => dateStart != null && dateEnd != null;
 
@@ -51,67 +53,66 @@ class HulpDateRangePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final boton = InkWell(
+      borderRadius: BorderRadius.circular(8.0),
+      splashColor: Colors.transparent,
+      hoverColor: FlutterFlowTheme.of(context).primary.withOpacity(0.04),
+      onTap: () => _openPicker(context),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(
+            color: _hasSelection
+                ? FlutterFlowTheme.of(context).primary
+                : const Color(0xFFDFDFDF),
+            width: _hasSelection ? 1.5 : 1.0,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                color: FlutterFlowTheme.of(context).primary,
+                size: 18.0,
+              ),
+              Flexible(
+                  child: Padding(
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
+                child: Text(
+                  _displayText,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                        color: _hasSelection
+                            ? FlutterFlowTheme.of(context).primaryText
+                            : FlutterFlowTheme.of(context).secondaryText,
+                        fontSize: 14.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(8.0),
-          splashColor: Colors.transparent,
-          hoverColor: FlutterFlowTheme.of(context).primary.withOpacity(0.04),
-          onTap: () => _openPicker(context),
-          child: Container(
-            height: 48.0,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBFAF9),
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(
-                color: _hasSelection
-                    ? FlutterFlowTheme.of(context).primary
-                    : const Color(0xFFDFDFDF),
-                width: _hasSelection ? 1.5 : 1.0,
-              ),
-            ),
-            child: Padding(
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.calendar_today_rounded,
-                    color: FlutterFlowTheme.of(context).primary,
-                    size: 18.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                        8.0, 0.0, 0.0, 0.0),
-                    child: Text(
-                      _displayText,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                            color: _hasSelection
-                                ? FlutterFlowTheme.of(context).primaryText
-                                : FlutterFlowTheme.of(context).secondaryText,
-                            fontSize: 14.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        if (expandido) Expanded(child: boton) else boton,
         if (_hasSelection)
           Padding(
-            padding:
-                const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12.0),
-              splashColor: Colors.transparent,
-              onTap: onReset,
-              child: const Icon(
+            padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
+            child: IconButton(
+              tooltip: 'Limpiar fechas',
+              onPressed: onReset,
+              icon: const Icon(
                 Icons.close,
                 color: Color(0xFFE20E0E),
                 size: 24.0,
@@ -194,8 +195,18 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
 
   String get _monthLabel {
     const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ];
     return '${months[_focusedMonth.month - 1]} ${_focusedMonth.year}';
   }
@@ -217,7 +228,8 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       insetPadding: const EdgeInsets.all(24.0),
-      child: Container(
+      child: SingleChildScrollView(
+          child: Container(
         width: 380,
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -271,7 +283,8 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
                     child: Text(
                       _monthLabel,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                            font:
+                                GoogleFonts.inter(fontWeight: FontWeight.w600),
                             fontSize: 15.0,
                             fontWeight: FontWeight.w600,
                           ),
@@ -292,16 +305,15 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
                         child: Center(
                           child: Text(
                             d,
-                            style: FlutterFlowTheme.of(context)
-                                .bodySmall
-                                .override(
-                                  font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style:
+                                FlutterFlowTheme.of(context).bodySmall.override(
+                                      font: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600),
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryText,
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                           ),
                         ),
                       ))
@@ -312,8 +324,11 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
             _buildCalendarGrid(context, primary),
             const SizedBox(height: 16.0),
             // Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 TextButton(
                   onPressed: () {
@@ -323,14 +338,13 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
                     });
                   },
                   child: Text('Limpiar',
-                      style: TextStyle(color: FlutterFlowTheme.of(context).error)),
+                      style:
+                          TextStyle(color: FlutterFlowTheme.of(context).error)),
                 ),
-                const SizedBox(width: 8.0),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
-                const SizedBox(width: 8.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
@@ -349,7 +363,7 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -426,8 +440,7 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
           '${date.day}',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(
-                    fontWeight:
-                        isEdge ? FontWeight.w700 : FontWeight.w500),
+                    fontWeight: isEdge ? FontWeight.w700 : FontWeight.w500),
                 color: textColor,
                 fontSize: 14.0,
                 fontWeight: isEdge ? FontWeight.w700 : FontWeight.w500,

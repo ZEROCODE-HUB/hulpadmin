@@ -1,4 +1,5 @@
 import '/backend/schema/structs/index.dart';
+import '/components/responsive_layout_rows.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -72,7 +73,10 @@ class _ItemWidgetState extends State<ItemWidget> {
       child: Padding(
         padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
         child: Container(
-          constraints: BoxConstraints(maxWidth: 460.0),
+          constraints: BoxConstraints(
+            maxWidth: 460.0,
+            maxHeight: MediaQuery.sizeOf(context).height - 72.0,
+          ),
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondaryBackground,
             borderRadius: BorderRadius.circular(12.0),
@@ -86,6 +90,7 @@ class _ItemWidgetState extends State<ItemWidget> {
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
               padding: EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -252,7 +257,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                               ),
                             ),
                             Container(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              width: double.infinity,
                               child: TextFormField(
                                 controller:
                                     _model.descripcionTextController,
@@ -358,7 +363,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
+                              breakpoint: 360.0,
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -403,9 +409,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                         ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller: _model.textController2,
                                           focusNode:
@@ -573,9 +577,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                         ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller: _model.textController3,
                                           focusNode:
@@ -742,7 +744,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                             ),
                           ),
                           Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            width: double.infinity,
                             child: TextFormField(
                               controller: _model.textController4,
                               focusNode: _model.textFieldFocusNode3,
@@ -986,7 +988,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: EdgeInsets.zero,
+                                    insetPadding: const EdgeInsets.all(16.0),
                                     backgroundColor: Colors.transparent,
                                     alignment:
                                         AlignmentDirectional(0.0, 0.0)
@@ -1036,7 +1038,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: EdgeInsets.zero,
+                                    insetPadding: const EdgeInsets.all(16.0),
                                     backgroundColor: Colors.transparent,
                                     alignment:
                                         AlignmentDirectional(0.0, 0.0)
@@ -1062,7 +1064,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                         },
                         text: 'Agregar',
                         options: FFButtonOptions(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           height: 48.0,
                           padding: EdgeInsets.all(8.0),
                           iconPadding: EdgeInsetsDirectional.fromSTEB(
@@ -1100,6 +1102,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                     ),
                   ),
                 ].divide(SizedBox(height: 16.0)),
+              ),
               ),
             ),
           ),

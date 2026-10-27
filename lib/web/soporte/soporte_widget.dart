@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'soporte_model.dart';
+import 'soporte_responsive_layout.dart';
 export 'soporte_model.dart';
 
 class SoporteWidget extends StatefulWidget {
@@ -68,6 +69,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -124,11 +127,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Padding(
+                                  Flexible(child: Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        40.0, 0.0, 0.0, 0.0),
-                                    child: Container(
-                                      width: 394.0,
+                                        12.0, 0.0, 12.0, 0.0),
+                                    child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 394),
                                       child: TextFormField(
                                         controller: _model.textController,
                                         focusNode: _model.textFieldFocusNode,
@@ -277,10 +279,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                             .asValidator(context),
                                       ),
                                     ),
-                                  ),
+                                  )),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 40.0, 12.0),
+                                        0.0, 12.0, 12.0, 12.0),
                                     child: Icon(
                                       Icons.notifications_none,
                                       color:
@@ -394,24 +396,13 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                 decoration: BoxDecoration(),
                                                 child: Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(40.0, 24.0,
-                                                          40.0, 0.0),
-                                                  child: Column(
+                                                      .fromSTEB(MenuWidget.esMovil(context) ? 12.0 : 24.0, 16.0, MenuWidget.esMovil(context) ? 12.0 : 24.0, 0.0),
+                                                  child: SoporteResponsiveContent(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     children: [
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            children: [
+                                                      Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
+                                                          Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
                                                               InkWell(
                                                                 splashColor: Colors
                                                                     .transparent,
@@ -552,7 +543,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                     16.0,
                                                                     0.0,
                                                                     0.0),
-                                                        child: Row(
+                                                        child: SoporteResponsiveTitle(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
                                                           mainAxisAlignment:
@@ -654,7 +645,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                             0.0,
                                                                             16.0,
                                                                             0.0),
-                                                                    child: Row(
+                                                                    child: Row(mainAxisAlignment: MainAxisAlignment.center,
                                                                       mainAxisSize:
                                                                           MainAxisSize
                                                                               .max,
@@ -701,60 +692,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                     8.0,
                                                                     0.0,
                                                                     0.0),
-                                                        child: Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        16.0),
-                                                            border: Border.all(
-                                                              color: Color(
-                                                                  0x7C766C4D),
-                                                              width: 0.5,
-                                                            ),
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0.0,
-                                                                        6.0,
-                                                                        0.0,
-                                                                        6.0),
-                                                            child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Flexible(
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                    child:
-                                                                        SingleChildScrollView(
-                                                                      scrollDirection:
-                                                                          Axis.horizontal,
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        children:
-                                                                            [
+                                                        child: SoporteResponsiveFilters(children: [
                                                                           Padding(
                                                                             padding: EdgeInsetsDirectional.fromSTEB(
                                                                                 0.0,
@@ -924,81 +862,15 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                 color: Color(0xFFE20E0E),
                                                                                 size: 24.0,
                                                                               ),
-                                                                            ),
-                                                                        ].divide(SizedBox(width: 8.0)),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Align(
-                                                                  alignment:
-                                                                      AlignmentDirectional(
-                                                                          1.0,
-                                                                          0.0),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .end,
-                                                                      children:
-                                                                          [
-                                                                        Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          children:
-                                                                              [
-                                                                            Text(
-                                                                              'Número de solicitudes:',
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                    ),
-                                                                                    fontSize: 16.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                            ),
-                                                                            Text(
-                                                                              valueOrDefault<String>(
-                                                                                containerSoporteRowList.length.toString(),
-                                                                                '0',
-                                                                              ),
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FontWeight.w600,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                    ),
-                                                                                    color: FlutterFlowTheme.of(context).primary,
-                                                                                    fontSize: 20.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.w600,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                            ),
-                                                                          ].divide(SizedBox(width: 8.0)),
-                                                                        ),
-                                                                      ].divide(SizedBox(
-                                                                              width: 16.0)),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  width: 12.0)),
-                                                            ),
-                                                          ),
-                                                        ),
+                                                                            ),],
+  counter: Text.rich(TextSpan(children: [
+    const TextSpan(text: 'Número de solicitudes: '),
+    TextSpan(text: containerSoporteRowList.length.toString(),
+      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 20)),
+  ]), style: FlutterFlowTheme.of(context).bodyMedium.override(
+    font: GoogleFonts.inter(), fontSize: 16, letterSpacing: 0,
+    color: FlutterFlowTheme.of(context).primary)),
+),
                                                       ),
                                                       Expanded(
                                                         child: Padding(
@@ -1068,7 +940,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                               }()
                                                                       .toList();
 
-                                                              return FlutterFlowDataTable<
+                                                              return ScrollbarTheme(data: ScrollbarTheme.of(context).copyWith(thumbVisibility: const WidgetStatePropertyAll(true)), child: FlutterFlowDataTable<
                                                                   SoporteRow>(
                                                                 controller: _model
                                                                     .paginatedDataTableController,
@@ -1452,7 +1324,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                               barrierColor: Colors.transparent,
                                                                               context: context,
                                                                               isGlobal: false,
-                                                                              avoidOverflow: false,
+                                                                              avoidOverflow: true,
                                                                               targetAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                               followerAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                               builder: (dialogContext) {
@@ -1502,7 +1374,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                               ),
                                                                               Expanded(
                                                                                 child: Container(
-                                                                                  height: 32.0,
+                                                                                  constraints: const BoxConstraints(minHeight: 32),
                                                                                   decoration: BoxDecoration(
                                                                                     color: solicitudesDatosItem.estado == 'pendiente' ? Color(0xFFE9EBEC) : (solicitudesDatosItem.estado == 'en proceso' ? Color(0xFFD6EAFF) : (solicitudesDatosItem.estado == 'completado' ? Color(0xFFDFF9D2) : (solicitudesDatosItem.estado == 'rechazado' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
                                                                                     borderRadius: BorderRadius.circular(24.0),
@@ -1630,8 +1502,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                             context)
                                                                         .height *
                                                                     1.0,
-                                                                headingRowHeight:
-                                                                    56.0,
+                                                                minWidth: 1400,
+                                                                headingRowHeight: 56.0,
                                                                 dataRowHeight:
                                                                     60.0,
                                                                 columnSpacing:
@@ -1651,7 +1523,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                     true,
                                                                 addVerticalDivider:
                                                                     false,
-                                                              );
+                                                              ));
                                                             },
                                                           ),
                                                         ),

@@ -1,6 +1,7 @@
 import '/backend/supabase/supabase.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/components/notificacion2_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -81,6 +82,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
       child: Padding(
         padding: EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
         child: Container(
+          width: double.infinity,
           constraints: BoxConstraints(
             maxWidth: 800.0,
           ),
@@ -92,7 +94,9 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
             key: _model.formKey,
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(
+                MediaQuery.sizeOf(context).width < 640.0 ? 12.0 : 20.0,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -181,7 +185,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                               ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -211,8 +215,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller: _model.nombreTextController,
                                         focusNode: _model.nombreFocusNode,
@@ -358,6 +361,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                   ].divide(SizedBox(height: 8.0)),
                                 ),
                               ),
+                              const SizedBox(width: 8.0),
                               Flexible(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -385,8 +389,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.apellidoTextController,
@@ -534,7 +537,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -574,9 +577,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                         options: _model.ciudades,
                                         onChanged: (val) => safeSetState(
                                             () => _model.ciudadValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -656,9 +657,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.direccionTextController,
@@ -813,7 +812,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -856,9 +855,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                         ],
                                         onChanged: (val) => safeSetState(() =>
                                             _model.tipodocumentoValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -938,9 +935,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller: _model
                                               .numerodocumentoTextController,
@@ -1097,7 +1092,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -1134,9 +1129,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                         options: ['+57'],
                                         onChanged: (val) => safeSetState(
                                             () => _model.paisValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -1215,9 +1208,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.telefonoTextController,
@@ -1405,7 +1396,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                               ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1435,8 +1426,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.correo1TextController,
@@ -1617,8 +1607,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.correo2TextController,
@@ -1777,7 +1766,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -1808,9 +1797,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.password1TextController,
@@ -2020,9 +2007,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.password2TextController,
@@ -2246,7 +2231,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                   builder: (dialogContext) {
                                     return Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.all(16.0),
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
                                           .resolve(Directionality.of(context)),
@@ -2295,7 +2280,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                                   builder: (dialogContext) {
                                     return Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.all(16.0),
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
                                           .resolve(Directionality.of(context)),

@@ -1,6 +1,7 @@
 import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacioneliminar_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -87,7 +88,10 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Container(
-        height: 750.0,
+        width: double.infinity,
+        height: MediaQuery.sizeOf(context).height < 840.0
+            ? MediaQuery.sizeOf(context).height * 0.9
+            : 750.0,
         constraints: BoxConstraints(
           maxWidth: 980.0,
         ),
@@ -99,7 +103,9 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(
+              MediaQuery.sizeOf(context).width < 600.0 ? 12.0 : 24.0,
+            ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -181,7 +187,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                   ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           height: 40.0,
                           decoration: BoxDecoration(
                             color: Color(0xFFFBFAF9),
@@ -235,9 +241,9 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: ResponsiveToolbarRow(
+                      breakpoint: 760.0,
+                      wrapAlignment: WrapAlignment.spaceBetween,
                       children: [
                         Text(
                           'Resumen',
@@ -260,23 +266,13 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         .fontStyle,
                                   ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Text(
-                              'Activos actuales: ${_model.listaHistorial.where((e) => (e.estadoSolicitud != 'finalizadas') && (e.estadoSolicitud != 'canceladas')).toList().length.toString()}- Total completados:${_model.listaHistorial.where((e) => e.estadoSolicitud == 'finalizadas').toList().length.toString()}',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
+                        Flexible(
+                          child: Text(
+                            'Activos actuales: ${_model.listaHistorial.where((e) => (e.estadoSolicitud != 'finalizadas') && (e.estadoSolicitud != 'canceladas')).toList().length.toString()}- Total completados:${_model.listaHistorial.where((e) => e.estadoSolicitud == 'finalizadas').toList().length.toString()}',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.inter(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
@@ -284,14 +280,23 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         .bodyMedium
                                         .fontStyle,
                                   ),
-                            ),
-                          ],
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                          ),
                         ),
-                      ].divide(SizedBox(width: 16.0)),
+                      ],
                     ),
                   ),
                   Container(
-                    height: 450.0,
+                    height: MediaQuery.sizeOf(context).width < 600.0
+                        ? 320.0
+                        : 450.0,
                     child: Builder(
                       builder: (context) {
                         final historialServicios =
@@ -759,7 +764,8 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         builder: (dialogContext) {
                                           return Dialog(
                                             elevation: 0,
-                                            insetPadding: EdgeInsets.zero,
+                                            insetPadding:
+                                                const EdgeInsets.all(16.0),
                                             backgroundColor: Colors.transparent,
                                             alignment: AlignmentDirectional(
                                                     0.0, 0.0)
@@ -799,6 +805,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                           selectable: false,
                           hidePaginator: false,
                           showFirstLastButtons: false,
+                          minWidth: 1100.0,
                           headingRowHeight: 56.0,
                           dataRowHeight: 48.0,
                           columnSpacing: 20.0,

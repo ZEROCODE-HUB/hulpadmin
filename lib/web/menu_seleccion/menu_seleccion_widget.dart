@@ -14,11 +14,13 @@ class MenuSeleccionWidget extends StatefulWidget {
     required this.textseleccion,
     required this.imagen,
     required this.action,
+    this.movil = false,
   });
 
   final String? textseleccion;
   final String? imagen;
   final Future Function()? action;
+  final bool movil;
 
   @override
   State<MenuSeleccionWidget> createState() => _MenuSeleccionWidgetState();
@@ -63,6 +65,7 @@ class _MenuSeleccionWidgetState extends State<MenuSeleccionWidget> {
         onTap: () async {
           FFAppState().seleccionMenu = widget!.textseleccion!;
           _model.updatePage(() {});
+          if (widget.movil) Scaffold.of(context).closeDrawer();
           await widget.action?.call();
         },
         child: Container(
@@ -95,9 +98,11 @@ class _MenuSeleccionWidgetState extends State<MenuSeleccionWidget> {
                     width: 27.0,
                     height: 27.0,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox(width: 27, height: 27),
                   ),
                 ),
-                if (FFAppState().MenuAbierto)
+                if (widget.movil || FFAppState().MenuAbierto)
                   Expanded(
                     child: Padding(
                       padding:

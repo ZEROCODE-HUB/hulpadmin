@@ -1,4 +1,6 @@
 import '/components/texto_tabla_completo.dart';
+import '/components/responsive_layout_rows.dart';
+import '/app_state.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -32,6 +34,66 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Widget _buildRecentFilterPanel() {
+    final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          font: GoogleFonts.inter(),
+          color: const Color(0xFF4A4A4A),
+          fontSize: 16.0,
+          letterSpacing: 0.0,
+        );
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(color: const Color(0x7C766C4D), width: 0.5),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: ResponsiveProviderFilterLayout(
+          breakpoint: 900.0,
+          label: Text('Filtrar por:', style: textStyle),
+          filters: [
+            FlutterFlowDropDown<String>(
+              controller: _model.dropDownValueController ??=
+                  FormFieldController<String>(null),
+              options: const ['Ultimos 7 dias', 'Ultimos 30 dias'],
+              onChanged: (val) =>
+                  safeSetState(() => _model.dropDownValue = val),
+              width: 200.0,
+              height: 48.0,
+              textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                    font: GoogleFonts.inter(),
+                    fontSize: 16.0,
+                    letterSpacing: 0.0,
+                  ),
+              hintText: 'Recientes',
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: FlutterFlowTheme.of(context).secondaryText,
+                size: 24.0,
+              ),
+              fillColor: const Color(0xFFFBFAF9),
+              elevation: 2.0,
+              borderColor: const Color(0xFFDFDFDF),
+              borderWidth: 1.0,
+              borderRadius: 8.0,
+              margin: const EdgeInsetsDirectional.fromSTEB(
+                  12.0, 0.0, 12.0, 0.0),
+              hidesUnderline: true,
+              isOverButton: false,
+              isSearchable: false,
+              isMultiSelect: false,
+            ),
+          ],
+          summary: const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,12 +114,26 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final menuAbierto = context.watch<FFAppState>().MenuAbierto;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final contentWidth = viewportWidth -
+        (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
+    final pagePadding = contentWidth < 600.0
+        ? 16.0
+        : (contentWidth < 1000.0 ? 24.0 : 40.0);
+    final searchSidePadding = contentWidth < 600.0 ? 16.0 : 40.0;
+    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 56.0)
+        .clamp(120.0, 394.0)
+        .toDouble();
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -77,7 +153,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: double.infinity,
                         height: 72.0,
                         decoration: BoxDecoration(
                           color: Color(0xFFEEECE8),
@@ -91,10 +167,10 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  40.0, 0.0, 0.0, 0.0),
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  searchSidePadding, 0.0, 0.0, 0.0),
                               child: Container(
-                                width: 394.0,
+                                width: searchFieldWidth,
                                 child: TextFormField(
                                   controller: _model.textController,
                                   focusNode: _model.textFieldFocusNode,
@@ -226,7 +302,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, 40.0, 12.0),
+                                  0.0, 12.0, searchSidePadding, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -271,7 +347,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                               decoration: BoxDecoration(),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    40.0, 24.0, 40.0, 0.0),
+                                    pagePadding, 24.0, pagePadding, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -387,12 +463,9 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 16.0, 0.0, 0.0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
+                                      child: ResponsiveSpaceBetween(
+                                        breakpoint: 720.0,
+                                        leading: Text(
                                             'Proveedores',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -418,148 +491,9 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                           .fontStyle,
                                                 ),
                                           ),
-                                        ],
                                       ),
                                     ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 24.0, 0.0, 0.0),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFFBFAF9),
-                                          borderRadius:
-                                              BorderRadius.circular(16.0),
-                                          border: Border.all(
-                                            color: Color(0x7C766C4D),
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 6.0, 0.0, 6.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 32.0, 0.0),
-                                                child: Text(
-                                                  'Filtrar por:',
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFF4A4A4A),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 0.0, 0.0),
-                                                child:
-                                                    FlutterFlowDropDown<String>(
-                                                  controller: _model
-                                                          .dropDownValueController ??=
-                                                      FormFieldController<
-                                                          String>(null),
-                                                  options: [
-                                                    'Ultimos 7 dias',
-                                                    'Ultimos 30 dias'
-                                                  ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                          .dropDownValue = val),
-                                                  width: 200.0,
-                                                  height: 48.0,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  hintText: 'Recientes',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                  fillColor: Color(0xFFFBFAF9),
-                                                  elevation: 2.0,
-                                                  borderColor:
-                                                      Color(0xFFDFDFDF),
-                                                  borderWidth: 1.0,
-                                                  borderRadius: 8.0,
-                                                  margin: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          12.0, 0.0, 12.0, 0.0),
-                                                  hidesUnderline: true,
-                                                  isOverButton: false,
-                                                  isSearchable: false,
-                                                  isMultiSelect: false,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                    _buildRecentFilterPanel(),
                                     Expanded(
                                       child: Container(
                                         decoration: BoxDecoration(),
@@ -917,10 +851,8 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                       hidePaginator: false,
                                                       showFirstLastButtons:
                                                           true,
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          1.0,
+                                                      width: double.infinity,
+                                                      minWidth: 900.0,
                                                       headingRowColor:
                                                           Color(0xFFFBFAF9),
                                                       borderRadius:
