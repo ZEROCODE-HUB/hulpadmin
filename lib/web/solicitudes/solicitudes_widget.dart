@@ -16,9 +16,9 @@ import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/web/menu/menu_widget.dart';
 import '/web/solicitudes/solicitudes_filter_bar.dart';
 import '/web/solicitudes/solicitudes_data_table.dart';
+import '/web/solicitudes/menu_estado_solicitud.dart';
 import '/index.dart';
 import 'dart:async';
-import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -153,17 +153,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
 
   // -- Action handlers --------------------------------------------------------
 
-  void _onStatusTap(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item, int index) {
-    showAlignedDialog(
-      barrierColor: Colors.transparent,
-      context: context,
-      isGlobal: false,
-      avoidOverflow: true,
-      targetAnchor:
-          AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-      followerAnchor:
-          AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
+  void _onStatusTap(BuildContext anchorContext,
+      VwSolicitudesServiciosCompletaRow item, int index) {
+    mostrarMenuEstadoSolicitud(
+      anchorContext: anchorContext,
       builder: (dialogContext) {
         return Material(
           color: Colors.transparent,
@@ -374,7 +367,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     final tabla = SolicitudesDataTable(
       data: solicitudesDatos,
       controller: _model.paginatedDataTableController,
-      onStatusTap: (item, index) => _onStatusTap(context, item, index),
+      onStatusTap: (anchorContext, item, index) =>
+          _onStatusTap(anchorContext, item, index),
       onDelete: (item) => _onDelete(context, item),
       onViewDetails: (item) => _onViewDetails(context, item),
       onEdit: (item) => _onEdit(context, item),

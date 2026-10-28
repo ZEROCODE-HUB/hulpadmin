@@ -265,7 +265,7 @@ class _DropdownSolicitudEstadoWidgetState
                                   ),
                                 ),
                               ),
-                              Padding(
+                              Flexible(child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 4.0, 0.0, 4.0),
                                 child: Text(
@@ -304,7 +304,7 @@ class _DropdownSolicitudEstadoWidgetState
                                             .fontStyle,
                                       ),
                                 ),
-                              ),
+                              )),
                             ].divide(SizedBox(width: 10.0)),
                           ),
                         ),

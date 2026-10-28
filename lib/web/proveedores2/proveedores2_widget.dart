@@ -41,6 +41,7 @@ class Proveedores2Widget extends StatefulWidget {
 
 class _Proveedores2WidgetState extends State<Proveedores2Widget> {
   late Proveedores2Model _model;
+  final _scrollHorizontal = ScrollController();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -117,6 +118,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
 
   @override
   void dispose() {
+    _scrollHorizontal.dispose();
     _model.dispose();
 
     super.dispose();
@@ -543,7 +545,16 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                 constraints.maxWidth < 1080.0
                                                     ? 1080.0
                                                     : constraints.maxWidth;
-                                            return SingleChildScrollView(
+                                            return ScrollConfiguration(
+                                              behavior: const _ScrollProveedores(),
+                                              child: Scrollbar(
+                                                controller: _scrollHorizontal,
+                                                thumbVisibility: true,
+                                                trackVisibility: true,
+                                                notificationPredicate: (notification) =>
+                                                    notification.metrics.axis == Axis.horizontal,
+                                                child: SingleChildScrollView(
+                                              controller: _scrollHorizontal,
                                               scrollDirection: Axis.horizontal,
                                               child: SizedBox(
                                                 width: tableWidth,
@@ -1290,6 +1301,8 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                         ],
                                                 ),
                                               ),
+                                                ),
+                                              ),
                                             );
                                           },
                                         ),
@@ -1311,5 +1324,25 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
         ),
       ),
     );
+  }
+}
+
+/// La barra horizontal explícita sustituye la automática; la vertical conserva
+/// el comportamiento habitual de la aplicación.
+class _ScrollProveedores extends MaterialScrollBehavior {
+  const _ScrollProveedores();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
+
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    if (details.direction == AxisDirection.left || details.direction == AxisDirection.right) {
+      return child;
+    }
+    return super.buildScrollbar(context, child, details);
   }
 }

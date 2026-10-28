@@ -52,7 +52,7 @@ void main() {
         body: SolicitudesDataTable(
           data: [item],
           controller: controller,
-          onStatusTap: (_, index) {},
+          onStatusTap: (anchorContext, item, index) {},
           onDelete: (_) {},
           onViewDetails: (_) {},
           onEdit: (_) => ediciones++,

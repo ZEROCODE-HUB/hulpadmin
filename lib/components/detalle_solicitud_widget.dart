@@ -1,4 +1,5 @@
 import '/components/modal_con_encabezado_fijo.dart';
+import '/web/solicitudes/menu_estado_solicitud.dart';
 import 'solicitud_responsive_fields.dart';
 import '/backend/pagos_manuales.dart';
 import '/flutter_flow/solicitud_payment_helpers.dart';
@@ -12,7 +13,6 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
-import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -422,21 +422,8 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                           hoverColor: Colors.transparent,
                                           highlightColor: Colors.transparent,
                                           onTap: () async {
-                                            await showAlignedDialog(
-                                              barrierColor: Colors.transparent,
-                                              context: context,
-                                              isGlobal: false,
-                                              avoidOverflow: true,
-                                              targetAnchor:
-                                                  AlignmentDirectional(0.0, 0.0)
-                                                      .resolve(
-                                                          Directionality.of(
-                                                              context)),
-                                              followerAnchor:
-                                                  AlignmentDirectional(0.0, 0.0)
-                                                      .resolve(
-                                                          Directionality.of(
-                                                              context)),
+                                            await mostrarMenuEstadoSolicitud(
+                                              anchorContext: context,
                                               builder: (dialogContext) {
                                                 return Material(
                                                   color: Colors.transparent,

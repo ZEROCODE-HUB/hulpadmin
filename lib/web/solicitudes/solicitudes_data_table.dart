@@ -28,8 +28,8 @@ class SolicitudesDataTable extends StatelessWidget {
   final List<VwSolicitudesServiciosCompletaRow> data;
   final FlutterFlowDataTableController<VwSolicitudesServiciosCompletaRow>
       controller;
-  final void Function(VwSolicitudesServiciosCompletaRow item, int index)
-      onStatusTap;
+  final void Function(BuildContext anchorContext,
+      VwSolicitudesServiciosCompletaRow item, int index) onStatusTap;
   final void Function(VwSolicitudesServiciosCompletaRow item) onDelete;
   final void Function(VwSolicitudesServiciosCompletaRow item) onViewDetails;
   final void Function(VwSolicitudesServiciosCompletaRow item) onEdit;
@@ -142,11 +142,12 @@ class SolicitudesDataTable extends StatelessWidget {
           ),
         )),
         // Estado
-        DataCell(SolicitudStatusBadgeWidget(
-          estado: item.estadoSolicitud ?? '',
-          showArrow: true,
-          onTap: () => onStatusTap(item, index),
-        )),
+        DataCell(Builder(
+            builder: (anchorContext) => SolicitudStatusBadgeWidget(
+                  estado: item.estadoSolicitud ?? '',
+                  showArrow: true,
+                  onTap: () => onStatusTap(anchorContext, item, index),
+                ))),
         // Fecha y hora
         DataCell(_textoCelda(
           valueOrDefault<String>(

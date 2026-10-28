@@ -14,6 +14,8 @@ import 'package:hulp_admin/components/crear_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
 import 'package:hulp_admin/components/edicion_solicitud_widget.dart';
 import 'package:hulp_admin/components/hulp_date_range_picker_widget.dart';
+import 'package:hulp_admin/components/solicitud_status_badge_widget.dart';
+import 'package:hulp_admin/components/dropdown_solicitud_estado_widget.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_data_table.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_filter_bar.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_widget.dart';
@@ -182,6 +184,36 @@ void main() {
     });
   }
 
+  testWidgets(
+      'menú de estado se abre junto al botón de la fila y cierra al desplazar',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await cargar(tester, const SolicitudesWidget(), 1600, 900);
+    final boton = find.byType(SolicitudStatusBadgeWidget).first;
+    final rect = tester.getRect(boton);
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+    final menu = find.byType(DropdownSolicitudEstadoWidget);
+    expect(menu, findsOneWidget);
+    final posicion = tester.getRect(menu);
+    expect(posicion.left, closeTo(rect.left, 1));
+    expect(posicion.top, closeTo(rect.bottom, 1));
+    final horizontales = find.descendant(
+        of: find.byType(SolicitudesDataTable),
+        matching: find.byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.right));
+    final scroll = tester.state<ScrollableState>(horizontales.first).position;
+    expect(scroll.maxScrollExtent, greaterThan(0));
+    scroll.jumpTo(60);
+    await tester.pumpAndSettle();
+    expect(menu, findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
   for (final (width, selected) in [
     (700.0, false),
     (900.0, false),
@@ -262,6 +294,25 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
       await cargar(tester, Scaffold(body: form), 320, 640);
       expect(find.byType(TextFormField), findsWidgets);
+      if (name == 'editar' || name == 'detalles') {
+        final icon = find
+            .byIcon(name == 'editar'
+                ? Icons.keyboard_arrow_down
+                : Icons.keyboard_arrow_down_sharp)
+            .first;
+        final scroll = Scrollable.of(tester.element(icon)).position;
+        await tester.tap(icon);
+        await tester.pumpAndSettle();
+        final menu = find.byType(DropdownSolicitudEstadoWidget);
+        expect(menu, findsOneWidget);
+        final rect = tester.getRect(menu);
+        expect(rect.right, lessThanOrEqualTo(320));
+        expect(rect.bottom, lessThanOrEqualTo(640));
+        expect(scroll.maxScrollExtent, greaterThan(0));
+        scroll.jumpTo(100);
+        await tester.pumpAndSettle();
+        expect(menu, findsNothing);
+      }
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

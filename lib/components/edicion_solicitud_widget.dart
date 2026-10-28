@@ -1,4 +1,5 @@
 import '/components/modal_con_encabezado_fijo.dart';
+import '/web/solicitudes/menu_estado_solicitud.dart';
 import 'solicitud_responsive_fields.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/actualizar_cliente_solicitud.dart';
@@ -337,15 +338,10 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
       children: [
         _buildFieldLabel(context, 'Estado'),
         const SizedBox(height: 8.0),
-        OutlinedButton.icon(
+        Builder(builder: (anchorContext) => OutlinedButton.icon(
           onPressed: () async {
-            await showMapSafeAlignedDialog<void>(
-              barrierColor: Colors.transparent,
-              context: context,
-              isGlobal: false,
-              avoidOverflow: false,
-              targetAnchor: AlignmentDirectional.center.resolve(Directionality.of(context)),
-              followerAnchor: AlignmentDirectional.center.resolve(Directionality.of(context)),
+            await mostrarMenuEstadoSolicitud(
+              anchorContext: anchorContext,
               builder: (dialogContext) => Material(
                 color: Colors.transparent,
                 child: DropdownSolicitudEstadoWidget(
@@ -369,7 +365,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
             side: BorderSide(color: FlutterFlowTheme.of(context).alternate, width: 0.5),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
           ),
-        ),
+        )),
       ],
     );
   }
