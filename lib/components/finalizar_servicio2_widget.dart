@@ -284,15 +284,12 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
                                 .fontStyle,
                           ),
                     ),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        Navigator.pop(context);
-                      },
-                      child: Icon(
+                    IconButton(
+                      tooltip: 'Cerrar',
+                      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                      padding: const EdgeInsets.all(12),
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(
                         Icons.close,
                         color: FlutterFlowTheme.of(context).primaryText,
                         size: 24.0,

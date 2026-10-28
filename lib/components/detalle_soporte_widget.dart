@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import 'solicitud_responsive_fields.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -121,62 +122,27 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                       ? columnSoporteRowList.first
                       : null;
 
-                  return SingleChildScrollView(
-                    child: Column(
+                  return ModalConEncabezadoFijo(
+                    encabezado: EncabezadoModal(
+                      titulo: Text(
+                        'Detalles del soporte',
+                        textAlign: TextAlign.center,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              ),
+                              fontSize: 22.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            ),
+                      ),
+                    ),
+                    cuerpo: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Opacity(
-                              opacity: 0.0,
-                              child: Icon(
-                                Icons.close,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 24.0,
-                              ),
-                            ),
-                            Flexible(child: Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: Text(
-                                'Detalles del soporte',
-                                textAlign: TextAlign.center,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      fontSize: 22.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                            )),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                Navigator.pop(context);
-                              },
-                              child: Icon(
-                                Icons.close,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 24.0,
-                              ),
-                            ),
-                          ],
-                        ),
                         Flexible(
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -947,7 +913,9 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                                                 ?.toString(),
                                                             'Seleccione fecha',
                                                           )
-                                                        : '${dateTimeFormat("d/M/y", columnSoporteRow?.fechaHora)}, ${dateTimeFormat("jms", columnSoporteRow?.fechaHora)}',
+                                                        : columnSoporteRow?.fechaHora == null
+                                                            ? 'Sin fecha'
+                                                            : '${dateTimeFormat("d/M/y", columnSoporteRow?.fechaHora)}, ${dateTimeFormat("jms", columnSoporteRow?.fechaHora)}',
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .bodyMedium

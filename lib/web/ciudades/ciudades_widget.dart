@@ -5,6 +5,7 @@ import '/web/menu/menu_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'ciudades_model.dart';
+import 'ciudad_formulario_dialog.dart';
 export 'ciudades_model.dart';
 
 /// Mantenimiento de las ciudades en las que opera Hulp.
@@ -25,6 +26,7 @@ class CiudadesWidget extends StatefulWidget {
 class _CiudadesWidgetState extends State<CiudadesWidget> {
   late CiudadesModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _formularioAbierto = false;
 
   @override
   void initState() {
@@ -56,136 +58,52 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
 
   /// Alta y edición comparten formulario: cambia el título y poco más.
   Future<void> _abrirFormulario({CiudadesRow? ciudad}) async {
-    final tema = FlutterFlowTheme.of(context);
-    final nombreCtrl = TextEditingController(text: ciudad?.nombre ?? '');
-    bool activo = ciudad?.activo ?? true;
-    bool guardando = false;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, actualizar) => AlertDialog(
-          backgroundColor: tema.secondaryBackground,
-          title: Text(
-            ciudad == null ? 'Nueva ciudad' : 'Editar ciudad',
-            style: tema.headlineSmall.override(
-              font: GoogleFonts.interTight(fontWeight: FontWeight.w600),
-              fontSize: 20.0,
-            ),
-          ),
-          content: SizedBox(
-            width: 380.0,
-            // Con scroll: en pantallas bajas una Column suelta se recorta sin
-            // avisar y deja campos fuera de la vista.
-            child: SingleChildScrollView(
-              child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: nombreCtrl,
-                  autofocus: true,
-                  enabled: !guardando,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    hintText: 'Bogotá D.C.',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 6.0),
-                SwitchListTile(
-                  value: activo,
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Activa'),
-                  // Una ciudad inactiva desaparece de los formularios pero no
-                  // rompe las solicitudes ni los proveedores que ya la tienen.
-                  subtitle: const Text(
-                    'Si se desactiva, deja de ofrecerse al registrarse o al crear solicitudes',
-                    style: TextStyle(fontSize: 12.0),
-                  ),
-                  onChanged: guardando
-                      ? null
-                      : (val) => actualizar(() => activo = val),
-                ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: guardando ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: guardando
-                  ? null
-                  : () async {
-                      final nombre = nombreCtrl.text.trim();
-                      if (nombre.isEmpty) {
-                        _aviso('El nombre no puede estar vacío');
-                        return;
-                      }
-                      // El nombre es la clave con la que cruzan las fichas de
-                      // usuario, que lo guardan como texto: no puede repetirse.
-                      final repetida = _model.ciudades.any((c) =>
-                          c.id != ciudad?.id &&
-                          c.nombre.toLowerCase() == nombre.toLowerCase());
-                      if (repetida) {
-                        _aviso('Ya existe una ciudad con ese nombre');
-                        return;
-                      }
-
-                      actualizar(() => guardando = true);
-                      try {
-                        if (ciudad == null) {
-                          await CiudadesTable().insert({
-                            'nombre': nombre,
-                            'activo': activo,
-                            // La columna provincia_id viene del esquema viejo y
-                            // no se pide en el formulario: si sigue siendo
-                            // obligatoria se rellena sola, y si no, va nula.
-                            if (_model.provinciaPorDefecto != null)
-                              'provincia_id': _model.provinciaPorDefecto,
-                          });
-                        } else {
-                          await CiudadesTable().update(
-                            data: {
-                              'nombre': nombre,
-                              'activo': activo,
-                            },
-                            matchingRows: (rows) =>
-                                rows.eqOrNull('id', ciudad.id),
-                          );
-                          // Las fichas guardan el nombre, no el id: si cambia,
-                          // hay que arrastrarlo o quedan huérfanas.
-                          if (ciudad.nombre != nombre) {
-                            await UsuariosTable().update(
-                              data: {'ciudad': nombre},
-                              matchingRows: (rows) =>
-                                  rows.eqOrNull('ciudad', ciudad.nombre),
-                            );
-                          }
-                        }
-                        if (ctx.mounted) Navigator.pop(ctx);
-                        await _model.cargar();
-                        safeSetState(() {});
-                        _aviso(
-                            ciudad == null
-                                ? 'Ciudad creada'
-                                : 'Ciudad actualizada',
-                            exito: true);
-                      } catch (e) {
-                        actualizar(() => guardando = false);
-                        _aviso('No se pudo guardar: $e');
-                      }
-                    },
-              child: Text(guardando ? 'Guardando...' : 'Guardar'),
-            ),
-          ],
-        ),
-      ),
-    );
-    nombreCtrl.dispose();
+    if (_formularioAbierto || !mounted) return;
+    _formularioAbierto = true;
+    try {
+      final guardado = await mostrarFormularioCiudad(
+        context: context,
+        nombreInicial: ciudad?.nombre,
+        activoInicial: ciudad?.activo ?? true,
+        validarNombre: (nombre) {
+          if (nombre.isEmpty) return 'El nombre no puede estar vacío';
+          final repetida = _model.ciudades.any((c) =>
+              c.id != ciudad?.id &&
+              c.nombre.toLowerCase() == nombre.toLowerCase());
+          return repetida ? 'Ya existe una ciudad con ese nombre' : null;
+        },
+        onGuardar: (nombre, activo) async {
+          if (ciudad == null) {
+            await CiudadesTable().insert({
+              'nombre': nombre,
+              'activo': activo,
+              if (_model.provinciaPorDefecto != null)
+                'provincia_id': _model.provinciaPorDefecto,
+            });
+          } else {
+            await CiudadesTable().update(
+              data: {'nombre': nombre, 'activo': activo},
+              matchingRows: (rows) => rows.eqOrNull('id', ciudad.id),
+            );
+            // Las fichas guardan el nombre, no el id.
+            if (ciudad.nombre != nombre) {
+              await UsuariosTable().update(
+                data: {'ciudad': nombre},
+                matchingRows: (rows) => rows.eqOrNull('ciudad', ciudad.nombre),
+              );
+            }
+          }
+        },
+      );
+      if (!mounted || !guardado) return;
+      await _model.cargar();
+      if (!mounted) return;
+      setState(() {});
+      _aviso(ciudad == null ? 'Ciudad creada' : 'Ciudad actualizada',
+          exito: true);
+    } finally {
+      _formularioAbierto = false;
+    }
   }
 
   Future<void> _eliminar(CiudadesRow ciudad) async {

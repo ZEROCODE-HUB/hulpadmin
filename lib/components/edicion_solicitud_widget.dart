@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import 'solicitud_responsive_fields.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/actualizar_cliente_solicitud.dart';
@@ -127,11 +128,11 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                 key: _model.formKey,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
-                  child: SingleChildScrollView(
-                    child: Column(
+                  child: ModalConEncabezadoFijo(
+                    encabezado: _buildEditHeader(context),
+                    cuerpo: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildEditHeader(context),
                         const SizedBox(height: 24.0),
                         _buildTwoColumnRow(
                           _buildTicketField(context, solicitud),
@@ -203,31 +204,15 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
   }
 
   Widget _buildEditHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const SizedBox(width: 24.0, height: 24.0),
-        Flexible(child: Text(
-          'Editar solicitud',
-          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                font: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                fontSize: 22.0,
-                letterSpacing: 0.0,
-              ),
-        )),
-        InkWell(
-          splashColor: Colors.transparent,
-          focusColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: () => Navigator.pop(context),
-          child: Icon(
-            Icons.close,
-            color: FlutterFlowTheme.of(context).primaryText,
-            size: 24.0,
-          ),
-        ),
-      ],
+    return EncabezadoModal(
+      titulo: Text(
+        'Editar solicitud',
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              fontSize: 22.0,
+              letterSpacing: 0.0,
+            ),
+      ),
     );
   }
 

@@ -720,8 +720,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                             controller: _model.dropDownValueController1 ??=
                                                                                 FormFieldController<String>(null),
                                                                             options: _model.dropDownValue2 != null && _model.dropDownValue2 != ''
-                                                                                ? containerestadoSoporteRowList.unique((e) => e.estado!).map((e) => e.estado).withoutNulls.toList()
-                                                                                : containerfiltroSoporteRowList.unique((e) => e.estado!).map((e) => e.estado).withoutNulls.toList(),
+                                                                                ? containerestadoSoporteRowList.map((e) => e.estado).withoutNulls.where((e) => e.trim().isNotEmpty).toSet().toList()
+                                                                                : containerfiltroSoporteRowList.map((e) => e.estado).withoutNulls.where((e) => e.trim().isNotEmpty).toSet().toList(),
                                                                             onChanged: (val) =>
                                                                                 safeSetState(() => _model.dropDownValue1 = val),
                                                                             width:
@@ -1224,7 +1224,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                     TextoTablaCompleto(
                                                                       valueOrDefault<
                                                                           String>(
-                                                                        '${dateTimeFormat("yMd", solicitudesDatosItem.fechaHora)} -  ${dateTimeFormat("jms", solicitudesDatosItem.fechaHora)}',
+                                                                        solicitudesDatosItem.fechaHora == null ? 'Sin fecha' : '${dateTimeFormat("yMd", solicitudesDatosItem.fechaHora)} -  ${dateTimeFormat("jms", solicitudesDatosItem.fechaHora)}',
                                                                         'sin fecha',
                                                                       ),
                                                                       style: FlutterFlowTheme.of(
@@ -1336,7 +1336,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                       FocusManager.instance.primaryFocus?.unfocus();
                                                                                     },
                                                                                     child: DropdownSoporteWidget(
-                                                                                      estadoActual: solicitudesDatosItem.estado!,
+                                                                                      estadoActual: solicitudesDatosItem.estado,
                                                                                       index: 0,
                                                                                       soporteId: solicitudesDatosItem.id,
                                                                                       actionnavegacion: () async {
@@ -1387,7 +1387,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                   child: Padding(
                                                                                     padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                     child: TextoTablaCompleto(
-                                                                                      solicitudesDatosItem.estado == 'pendiente' ? 'Pendiente' : (solicitudesDatosItem.estado == 'en proceso' ? 'En proceso' : (solicitudesDatosItem.estado == 'rechazado' ? 'Cancelado' : (solicitudesDatosItem.estado == 'completado' ? 'Completado' : 'Escalado'))),
+                                                                                      (solicitudesDatosItem.estado?.trim().isEmpty ?? true) ? 'Sin estado' : (solicitudesDatosItem.estado == 'pendiente' ? 'Pendiente' : (solicitudesDatosItem.estado == 'en proceso' ? 'En proceso' : (solicitudesDatosItem.estado == 'rechazado' ? 'Cancelado' : (solicitudesDatosItem.estado == 'completado' ? 'Completado' : 'Escalado')))),
                                                                                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                             font: GoogleFonts.inter(
                                                                                               fontWeight: FontWeight.w500,

@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/components/documentos_proveedor.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -2689,8 +2690,26 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   maxWidth: 480,
                   maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
                 ),
-                child: SingleChildScrollView(
-                  child: Padding(
+                child: ModalConEncabezadoFijo(
+                  encabezado: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24),
+                    child: EncabezadoModal(
+                      titulo: Text(
+                        'Agregar referencia',
+                        style: FlutterFlowTheme.of(ctx).bodyMedium.override(
+                              font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                              fontSize: 18,
+                              letterSpacing: 0,
+                              fontWeight: FontWeight.w700,
+                              color: FlutterFlowTheme.of(ctx).primaryText,
+                            ),
+                      ),
+                      habilitado: !saving,
+                      onCerrar: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                  cuerpo: Padding(
                     padding: EdgeInsets.all(
                       MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
                     ),
@@ -2700,43 +2719,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.person_add_alt_1_outlined,
-                                    size: 20,
-                                    color: FlutterFlowTheme.of(ctx).primary),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Agregar referencia',
-                                  style: FlutterFlowTheme.of(ctx)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w700),
-                                        fontSize: 18,
-                                        letterSpacing: 0,
-                                        fontWeight: FontWeight.w700,
-                                        color: FlutterFlowTheme.of(ctx)
-                                            .primaryText,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            InkWell(
-                              borderRadius: BorderRadius.circular(20),
-                              onTap:
-                                  saving ? null : () => Navigator.of(ctx).pop(),
-                              child: Icon(Icons.close,
-                                  size: 22,
-                                  color:
-                                      FlutterFlowTheme.of(ctx).secondaryText),
-                            ),
-                          ],
-                        ),
                         const SizedBox(height: 20),
                         field('Nombre *', nombreCtrl),
                         const SizedBox(height: 14),
@@ -2832,7 +2814,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                     ),
                   ),
                 ),
-              ),
+                ),
             ),
             );
           },
@@ -3416,12 +3398,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                           ],
                         ),
                       ),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => Navigator.of(ctx).pop(),
-                        child: Icon(Icons.close,
-                            size: 22,
-                            color: FlutterFlowTheme.of(ctx).secondaryText),
+                      IconButton(
+                        tooltip: 'Cerrar',
+                        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        padding: const EdgeInsets.all(12),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: Icon(Icons.close,
+                            size: 22, color: FlutterFlowTheme.of(ctx).secondaryText),
                       ),
                     ],
                   ),

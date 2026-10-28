@@ -268,6 +268,60 @@ void main() {
     });
   }
 
+  for (final width in [320.0, 1200.0]) {
+    testWidgets(
+        'crear solicitud mantiene el cierre fuera del scroll a $width px',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      await cargar(tester, Scaffold(body: Builder(builder: (context) {
+        return TextButton(
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => const Dialog(
+              insetPadding: EdgeInsets.zero,
+              backgroundColor: Colors.transparent,
+              child: CrearSolicitudWidget(),
+            ),
+          ),
+          child: const Text('Abrir crear solicitud'),
+        );
+      })), width, 480, scale: width < 600 ? 1 : 1.3);
+      await tester.tap(find.text('Abrir crear solicitud'));
+      for (var i = 0; i < 5; i++) {
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 50)));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final cierre = find.byTooltip('Cerrar');
+      expect(cierre, findsOneWidget);
+      expect(tester.getSize(cierre).width, greaterThanOrEqualTo(48));
+      expect(tester.getSize(cierre).height, greaterThanOrEqualTo(48));
+      expect(
+          find.ancestor(
+              of: cierre, matching: find.byType(SingleChildScrollView)),
+          findsNothing);
+      final posicion = tester.getRect(cierre);
+      final cuerpo = find
+          .descendant(
+              of: find.byType(CrearSolicitudWidget),
+              matching: find.byType(SingleChildScrollView))
+          .first;
+      expect(tester.getRect(cuerpo).top, greaterThanOrEqualTo(posicion.bottom));
+      await tester.drag(cuerpo, const Offset(0, -600));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(cierre), posicion);
+      // También cierra pulsando el margen del botón, fuera del icono de 24 px.
+      await tester.tapAt(Offset(posicion.right - 2, posicion.center.dy));
+      await tester.pumpAndSettle();
+      expect(find.byType(CrearSolicitudWidget), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
+  }
+
   testWidgets(
       'calendario móvil permite seleccionar, aplicar y limpiar un rango',
       (tester) async {

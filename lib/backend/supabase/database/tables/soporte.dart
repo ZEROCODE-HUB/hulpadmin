@@ -23,8 +23,8 @@ class SoporteRow extends SupabaseDataRow {
   String get asunto => getField<String>('asunto')!;
   set asunto(String value) => setField<String>('asunto', value);
 
-  DateTime get fechaHora => getField<DateTime>('fecha_hora')!;
-  set fechaHora(DateTime value) => setField<DateTime>('fecha_hora', value);
+  DateTime? get fechaHora => getField<DateTime>('fecha_hora');
+  set fechaHora(DateTime? value) => setField<DateTime>('fecha_hora', value);
 
   String? get servicio => getField<String>('servicio');
   set servicio(String? value) => setField<String>('servicio', value);

@@ -377,7 +377,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     return Align(
       alignment: AlignmentDirectional.center,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: MediaQuery.sizeOf(context).width < 700 ? 8 : 0),
+        padding: EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: MediaQuery.sizeOf(context).width < 700 ? 8 : 0),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1200.0),
           decoration: BoxDecoration(
@@ -406,64 +408,71 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(context),
-                        const SizedBox(height: 24.0),
-                        _buildTwoColumnRow(
-                          _buildUsuarioField(context, snapshot.data!),
-                          _buildProfesionalField(context),
-                        ),
-                        const SizedBox(height: 16.0),
-                        _buildTwoColumnRow(
-                          _buildServicioField(context),
-                          _buildCiudadField(context),
-                        ),
-                        const SizedBox(height: 16.0),
-                        _buildTwoColumnRow(
-                          _buildPrecioField(context),
-                          _buildPreciosAdicionalesSection(context),
-                        ),
-                        const SizedBox(height: 16.0),
-                        _buildTwoColumnRow(
-                          _buildFechaHoraField(context),
-                          _buildDireccionYUbicacionField(context),
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                        ),
-                        const SizedBox(height: 16.0),
-                        _buildTwoColumnRow(
-                          _buildDescripcionField(context),
-                          _buildNotasField(context),
-                        ),
-                        const SizedBox(height: 24.0),
-                        Align(
-                          alignment: AlignmentDirectional.center,
-                          child: FFButtonWidget(
-                            onPressed: () => _guardarSolicitud(context),
-                            text: 'Continuar',
-                            options: FFButtonOptions(
-                              height: 48.0,
-                              width: 320.0,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 32.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w500),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHeader(context),
+                      const SizedBox(height: 24.0),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTwoColumnRow(
+                                _buildUsuarioField(context, snapshot.data!),
+                                _buildProfesionalField(context),
+                              ),
+                              const SizedBox(height: 16.0),
+                              _buildTwoColumnRow(
+                                _buildServicioField(context),
+                                _buildCiudadField(context),
+                              ),
+                              const SizedBox(height: 16.0),
+                              _buildTwoColumnRow(
+                                _buildPrecioField(context),
+                                _buildPreciosAdicionalesSection(context),
+                              ),
+                              const SizedBox(height: 16.0),
+                              _buildTwoColumnRow(
+                                _buildFechaHoraField(context),
+                                _buildDireccionYUbicacionField(context),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                              const SizedBox(height: 16.0),
+                              _buildTwoColumnRow(
+                                _buildDescripcionField(context),
+                                _buildNotasField(context),
+                              ),
+                              const SizedBox(height: 24.0),
+                              Align(
+                                alignment: AlignmentDirectional.center,
+                                child: FFButtonWidget(
+                                  onPressed: () => _guardarSolicitud(context),
+                                  text: 'Continuar',
+                                  options: FFButtonOptions(
+                                    height: 48.0,
+                                    width: 320.0,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 32.0),
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    textStyle: FlutterFlowTheme.of(context)
+                                        .titleSmall
+                                        .override(
+                                          font: GoogleFonts.interTight(
+                                              fontWeight: FontWeight.w500),
+                                          color: Colors.white,
+                                          letterSpacing: 0.0,
+                                        ),
+                                    elevation: 0.0,
+                                    borderRadius: BorderRadius.circular(8.0),
                                   ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -478,8 +487,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const SizedBox(width: 24.0, height: 24.0),
-        Flexible(child: Text(
+        const SizedBox(width: 48.0, height: 48.0),
+        Flexible(
+            child: Text(
           'Crear solicitud',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(fontWeight: FontWeight.w500),
@@ -487,13 +497,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                 letterSpacing: 0.0,
               ),
         )),
-        InkWell(
-          splashColor: Colors.transparent,
-          focusColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: () => Navigator.pop(context),
-          child: Icon(
+        IconButton(
+          tooltip: 'Cerrar',
+          constraints: const BoxConstraints(minWidth: 48.0, minHeight: 48.0),
+          padding: const EdgeInsets.all(12.0),
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(
             Icons.close,
             color: FlutterFlowTheme.of(context).primaryText,
             size: 24.0,

@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -66,67 +67,29 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
         ),
         child: Padding(
           padding: EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
-            child: Padding(
+          child: ModalConEncabezadoFijo(
+            encabezado: EncabezadoModal(
+              titulo: Text(
+                'Rechazar inscripción de proveedores',
+                textAlign: TextAlign.center,
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      font: GoogleFonts.inter(
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                      fontSize: 22.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w500,
+                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                    ),
+              ),
+            ),
+            cuerpo: Padding(
               padding: EdgeInsets.zero,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ResponsiveToolbarRow(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    breakpoint: 520.0,
-                    wrapAlignment: WrapAlignment.spaceBetween,
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: [
-                      Opacity(
-                        opacity: 0.0,
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          'Rechazar inscripción de proveedores',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    fontSize: 22.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                    ],
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 10.0),

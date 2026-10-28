@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacioneliminar_widget.dart';
@@ -106,61 +107,27 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
             padding: EdgeInsets.all(
               MediaQuery.sizeOf(context).width < 600.0 ? 12.0 : 24.0,
             ),
-            child: SingleChildScrollView(
-              child: Column(
+            child: ModalConEncabezadoFijo(
+              encabezado: EncabezadoModal(
+                titulo: Text(
+                  'Historial de servicios',
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                        fontSize: 22.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                ),
+              ),
+              cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Opacity(
-                        opacity: 0.0,
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          'Historial de servicios',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    fontSize: 22.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                    ],
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),

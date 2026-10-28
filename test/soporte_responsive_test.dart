@@ -82,6 +82,7 @@ class _FuentesPrueba implements AssetManifest {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late ByteData fontBytes;
+  Map<String, dynamic>? soporteAlternativo;
   setUpAll(() async {
     final config =
         jsonDecode(await File('.dart_tool/package_config.json').readAsString())
@@ -104,7 +105,7 @@ void main() {
         expect(request.method,
             'GET'); // Rendering must never change payments or requests.
         var rows = <Map<String, dynamic>>[
-          _soporte,
+          soporteAlternativo ?? _soporte,
           {
             ..._soporte,
             'id': 'soporte-2',
@@ -121,13 +122,16 @@ void main() {
                 .replaceAll('%', '')
                 .toLowerCase();
             rows = rows
-                .where((row) =>
-                    (row[field] as String).toLowerCase().contains(search))
+                .where((row) => (row[field] as String? ?? '')
+                    .toLowerCase()
+                    .contains(search))
                 .toList();
           }
         }
         final Object data = request.url.path.endsWith('/soporte')
-            ? (request.url.queryParameters['limit'] == '1' ? _soporte : rows)
+            ? (request.url.queryParameters['limit'] == '1'
+                ? soporteAlternativo ?? _soporte
+                : rows)
             : [];
         return http.Response(jsonEncode(data), 200,
             request: request, headers: {'content-type': 'application/json'});
@@ -138,6 +142,7 @@ void main() {
   tearDownAll(() => Supabase.instance.dispose());
 
   setUp(() {
+    soporteAlternativo = null;
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
@@ -169,6 +174,50 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 50)));
       await tester.pump(const Duration(milliseconds: 100));
     }
+  }
+
+  for (final variante in ['nulos', 'ausentes', 'estado vacío']) {
+    testWidgets('Soporte muestra registros con datos $variante',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      soporteAlternativo = {
+        ..._soporte,
+        'fecha_hora': null,
+        'estado': variante == 'estado vacío' ? ' ' : null,
+      };
+      if (variante == 'ausentes') {
+        soporteAlternativo!.remove('fecha_hora');
+        soporteAlternativo!.remove('estado');
+      }
+      expect(SoporteRow(soporteAlternativo!).fechaHora, isNull);
+      await cargar(tester, const SoporteWidget(), 1600, 900);
+      for (var i = 0; i < 3; i++) {
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 50)));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.text('Sin fecha'), findsOneWidget);
+      expect(find.text('Sin estado'), findsOneWidget);
+      expect(find.byType(ErrorWidget), findsNothing);
+      expect(tester.takeException(), isNull);
+      final tabla = tester.widget<FlutterFlowDataTable<SoporteRow>>(
+          find.byType(FlutterFlowDataTable<SoporteRow>));
+      expect(tabla.data, hasLength(2));
+      expect(tabla.data.first.fechaHora, isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await cargar(
+          tester,
+          const Scaffold(body: DetalleSoporteWidget(idSoporte: 'soporte-1')),
+          1600,
+          900);
+      expect(find.text('Sin fecha'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
   }
 
   for (final (width, height, scale, keyboard) in [

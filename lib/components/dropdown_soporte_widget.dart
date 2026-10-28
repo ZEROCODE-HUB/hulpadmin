@@ -113,7 +113,9 @@ class _DropdownSoporteWidgetState extends State<DropdownSoporteWidget> {
                       padding:
                           EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                       child: Text(
-                        widget!.estadoActual == 'pendiente'
+                        (widget.estadoActual?.trim().isEmpty ?? true)
+                            ? 'Sin estado'
+                            : widget!.estadoActual == 'pendiente'
                             ? 'Pendiente'
                             : (widget!.estadoActual == 'en proceso'
                                 ? 'En proceso'

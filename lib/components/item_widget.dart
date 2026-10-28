@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/schema/structs/index.dart';
 import '/components/responsive_layout_rows.dart';
 import '/components/notificacion2_widget.dart';
@@ -90,27 +91,11 @@ class _ItemWidgetState extends State<ItemWidget> {
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
               padding: EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
+            child: ModalConEncabezadoFijo(
+              encabezado: EncabezadoModal(),
+              cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Align(
-                    alignment: AlignmentDirectional(1.0, 0.0),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        Navigator.pop(context);
-                      },
-                      child: Icon(
-                        Icons.close,
-                        color: FlutterFlowTheme.of(context).primaryText,
-                        size: 24.0,
-                      ),
-                    ),
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
@@ -1103,7 +1088,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                   ),
                 ].divide(SizedBox(height: 16.0)),
               ),
-              ),
+            ),
             ),
           ),
         ),
