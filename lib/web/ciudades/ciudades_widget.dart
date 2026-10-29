@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/web/menu/menu_widget.dart';
@@ -301,17 +302,29 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
                                           ],
                                         ),
                                       ),
-                                      IconButton(
-                                        tooltip: 'Editar',
-                                        icon: const Icon(Icons.edit_outlined),
-                                        onPressed: () =>
-                                            _abrirFormulario(ciudad: ciudad),
+                                      Tooltip(
+                                        message: 'Editar',
+                                        child: FlutterFlowIconButton(
+                                          borderRadius: 10.0,
+                                          buttonSize: 34.0,
+                                          fillColor: tema.warning,
+                                          icon: Icon(Icons.edit,
+                                              color: tema.info, size: 18.0),
+                                          onPressed: () =>
+                                              _abrirFormulario(ciudad: ciudad),
+                                        ),
                                       ),
-                                      IconButton(
-                                        tooltip: 'Eliminar',
-                                        icon: Icon(Icons.delete_outline,
-                                            color: tema.error),
-                                        onPressed: () => _eliminar(ciudad),
+                                      const SizedBox(width: 3.0),
+                                      Tooltip(
+                                        message: 'Eliminar',
+                                        child: FlutterFlowIconButton(
+                                          borderRadius: 10.0,
+                                          buttonSize: 35.0,
+                                          fillColor: const Color(0xFFB81C2C),
+                                          icon: Icon(Icons.close,
+                                              color: tema.info, size: 18.0),
+                                          onPressed: () => _eliminar(ciudad),
+                                        ),
                                       ),
                                     ],
                                   ),

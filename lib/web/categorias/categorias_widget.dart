@@ -1369,35 +1369,16 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                           },
                                                                         );
                                                                       },
-                                                                      child:
-                                                                          Container(
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              Color(0xFF0D70E7),
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(4.0),
+                                                                      child: Container(
+                                                                        width: 34.0,
+                                                                        height: 34.0,
+                                                                        decoration: BoxDecoration(
+                                                                          color: FlutterFlowTheme.of(context).warning,
+                                                                          borderRadius: BorderRadius.circular(10.0),
                                                                         ),
-                                                                        child:
-                                                                            Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              8.0,
-                                                                              4.0,
-                                                                              8.0,
-                                                                              4.0),
-                                                                          child:
-                                                                              ClipRRect(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(8.0),
-                                                                            child:
-                                                                                Image.asset(
-                                                                              'assets/images/Frame_1321314786.png',
-                                                                              width: 16.0,
-                                                                              height: 16.0,
-                                                                              fit: BoxFit.cover,
-                                                                            ),
-                                                                          ),
-                                                                        ),
+                                                                        child: Icon(Icons.edit,
+                                                                            color: FlutterFlowTheme.of(context).info,
+                                                                            size: 18.0),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1487,35 +1468,16 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                           },
                                                                         );
                                                                       },
-                                                                      child:
-                                                                          Container(
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              Color(0xFFB81C2C),
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(4.0),
+                                                                      child: Container(
+                                                                        width: 35.0,
+                                                                        height: 35.0,
+                                                                        decoration: BoxDecoration(
+                                                                          color: const Color(0xFFB81C2C),
+                                                                          borderRadius: BorderRadius.circular(10.0),
                                                                         ),
-                                                                        child:
-                                                                            Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              8.0,
-                                                                              4.0,
-                                                                              8.0,
-                                                                              4.0),
-                                                                          child:
-                                                                              ClipRRect(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(8.0),
-                                                                            child:
-                                                                                Image.asset(
-                                                                              'assets/images/delete.png',
-                                                                              width: 16.0,
-                                                                              height: 16.0,
-                                                                              fit: BoxFit.cover,
-                                                                            ),
-                                                                          ),
-                                                                        ),
+                                                                        child: Icon(Icons.close,
+                                                                            color: FlutterFlowTheme.of(context).info,
+                                                                            size: 18.0),
                                                                       ),
                                                                     ),
                                                                   ),

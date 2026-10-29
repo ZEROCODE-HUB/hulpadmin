@@ -113,11 +113,11 @@ class _MenuWidgetState extends State<MenuWidget> {
                         Image.network(
                           'https://zexegravzidwloxeimxx.supabase.co/storage/v1/object/public/fotoservocops/servicios/Logo-3.png',
                           width: valueOrDefault<double>(
-                            menuExpandido ? 82.0 : 60.0,
+                            menuExpandido ? 120.0 : 60.0,
                             60.0,
                           ),
                           height: valueOrDefault<double>(
-                            menuExpandido ? 42.0 : 28.0,
+                            menuExpandido ? 60.0 : 28.0,
                             28.0,
                           ),
                           fit: BoxFit.contain,
@@ -196,12 +196,10 @@ class _MenuWidgetState extends State<MenuWidget> {
                           ),
                         ),
                         if (menuExpandido)
-                          Text(
-                            FFAppState().user.nombres.maybeHandleOverflow(
-                                  maxChars: 13,
-                                  replacement: '…',
-                                ),
-                            style: FlutterFlowTheme.of(context)
+                          Flexible(
+                            child: Text(
+                              FFAppState().user.nombres,
+                              style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
                                   font: GoogleFonts.inter(
@@ -219,6 +217,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                       .bodyMedium
                                       .fontStyle,
                                 ),
+                            ),
                           ),
                       ].divide(SizedBox(width: 12.0)),
                     ),

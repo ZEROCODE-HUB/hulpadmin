@@ -8,6 +8,7 @@ import '/components/historial_servicios_widget.dart';
 import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -1335,7 +1336,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                     .merge(
                                                               softWrap: true,
                                                               child: Text(
-                                                                'Editar perfil',
+                                                                'Origen',
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium
@@ -1369,7 +1370,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                     .merge(
                                                               softWrap: true,
                                                               child: Text(
-                                                                'Origen',
+                                                                'Editar perfil',
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium
@@ -1690,47 +1691,6 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            // El perfil se actualiza mediante la Edge Function;
-                                                            // la tabla nunca modifica datos de Auth directamente.
-                                                            InkWell(
-                                                              splashColor: Colors
-                                                                  .transparent,
-                                                              focusColor: Colors
-                                                                  .transparent,
-                                                              hoverColor: Colors
-                                                                  .transparent,
-                                                              highlightColor:
-                                                                  Colors
-                                                                      .transparent,
-                                                              onTap: () =>
-                                                                  _editarPerfilCliente(
-                                                                      usersItem),
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                        0.0,
-                                                                        6.0,
-                                                                        0.0,
-                                                                        0.0),
-                                                                child: TextoTablaCompleto(
-                                                                  'Editar perfil',
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .inter(),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primary,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        decoration:
-                                                                            TextDecoration.underline,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ),
                                                             FutureBuilder<
                                                                 List<
                                                                     UsuariosRow>>(
@@ -1810,6 +1770,20 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                       ),
                                                                 );
                                                               },
+                                                            ),
+                                                            // El perfil se actualiza mediante la Edge Function;
+                                                            // la tabla nunca modifica datos de Auth directamente.
+                                                            Tooltip(
+                                                              message: 'Editar perfil',
+                                                              child: FlutterFlowIconButton(
+                                                                borderRadius: 10.0,
+                                                                buttonSize: 34.0,
+                                                                fillColor: FlutterFlowTheme.of(context).warning,
+                                                                icon: Icon(Icons.edit,
+                                                                    color: FlutterFlowTheme.of(context).info,
+                                                                    size: 18.0),
+                                                                onPressed: () => _editarPerfilCliente(usersItem),
+                                                              ),
                                                             ),
                                                           ]
                                                               .map((c) =>

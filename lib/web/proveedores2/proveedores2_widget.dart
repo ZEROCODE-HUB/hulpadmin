@@ -1152,19 +1152,19 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                           child:
                                                                               Container(
                                                                             width:
-                                                                                32.0,
+                                                                                34.0,
                                                                             height:
-                                                                                24.0,
+                                                                                34.0,
                                                                             decoration:
                                                                                 BoxDecoration(
-                                                                              color: Color(0xFF0D70E7),
-                                                                              borderRadius: BorderRadius.circular(8.0),
+                                                                              color: FlutterFlowTheme.of(context).warning,
+                                                                              borderRadius: BorderRadius.circular(10.0),
                                                                             ),
                                                                             child:
                                                                                 Icon(
-                                                                              Icons.edit_rounded,
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              size: 16.0,
+                                                                              Icons.edit,
+                                                                              color: FlutterFlowTheme.of(context).info,
+                                                                              size: 18.0,
                                                                             ),
                                                                           ),
                                                                         ),
@@ -1263,19 +1263,19 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                           child:
                                                                               Container(
                                                                             width:
-                                                                                32.0,
+                                                                                35.0,
                                                                             height:
-                                                                                24.0,
+                                                                                35.0,
                                                                             decoration:
                                                                                 BoxDecoration(
                                                                               color: Color(0xFFB81C2C),
-                                                                              borderRadius: BorderRadius.circular(8.0),
+                                                                              borderRadius: BorderRadius.circular(10.0),
                                                                             ),
                                                                             child:
                                                                                 Icon(
-                                                                              Icons.delete_outline,
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              size: 16.0,
+                                                                              Icons.close,
+                                                                              color: FlutterFlowTheme.of(context).info,
+                                                                              size: 18.0,
                                                                             ),
                                                                           ),
                                                                         ),

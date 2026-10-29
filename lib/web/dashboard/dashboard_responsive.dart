@@ -79,8 +79,48 @@ class DashboardMetricLink extends StatelessWidget {
           crossAxisAlignment: crossAxisAlignment,
           children: [
             for (final child in children)
-              child is Text ? Flexible(child: child) : child,
+              child is Text
+                  ? (mainAxisSize == MainAxisSize.max
+                      ? Expanded(child: child)
+                      : Flexible(child: child))
+                  : child,
           ]);
+}
+
+class DashboardMetricHeader extends StatelessWidget {
+  const DashboardMetricHeader({
+    super.key,
+    required this.icon,
+    required this.child,
+    this.vertical = false,
+  });
+
+  final IconData icon;
+  final Widget child;
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    final icono = Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE9F4EC),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 22, color: const Color(0xFF075D3F)),
+          );
+    if (vertical) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [icono, const SizedBox(height: 8), child],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [icono, const SizedBox(width: 10), Expanded(child: child)],
+    );
+  }
 }
 
 /// Keeps headers and rows aligned inside a single horizontal scroll area.
