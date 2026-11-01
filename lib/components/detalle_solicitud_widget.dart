@@ -1,13 +1,18 @@
+import '/components/modal_con_encabezado_fijo.dart';
+import '/web/solicitudes/menu_estado_solicitud.dart';
+import 'solicitud_responsive_fields.dart';
+import '/backend/pagos_manuales.dart';
+import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/chat_usuario_proveedor_widget.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
 import '/components/enlace_mapa_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/cliente_nombre_helpers.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
-import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +33,36 @@ class DetalleSolicitudWidget extends StatefulWidget {
 
 class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
   late DetalleSolicitudModel _model;
+  bool _guardandoPago = false;
+
+  Future<void> _marcarPagoRecibido(
+    VwSolicitudesServiciosCompletaRow solicitud,
+  ) async {
+    final solicitudId = solicitud.solicitudId;
+    if (_guardandoPago ||
+        solicitudId == null ||
+        !isPaymentPending(solicitud.estadoPago)) {
+      return;
+    }
+    setState(() => _guardandoPago = true);
+    try {
+      await registrarPagoRecibidoQr(solicitudId);
+      if (!mounted) return;
+      setState(() => solicitud.estadoPago = 'pagado');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago marcado como recibido.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo registrar el pago. Intenta de nuevo.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _guardandoPago = false);
+    }
+  }
 
   @override
   void setState(VoidCallback callback) {
@@ -130,63 +165,38 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                           ? columnVwSolicitudesServiciosCompletaRowList.first
                           : null;
 
-                  return SingleChildScrollView(
-                    child: Column(
+                  final nombreCliente = nombreClienteVisible(
+                    columnVwSolicitudesServiciosCompletaRow
+                        ?.clienteNombreCompleto,
+                  );
+                  final nombreController = _model.nombreTextController1 ??=
+                      TextEditingController();
+                  if (nombreController.text != nombreCliente) {
+                    nombreController.text = nombreCliente;
+                  }
+
+                  return ModalConEncabezadoFijo(
+                    encabezado: EncabezadoModal(
+                      titulo: Text(
+                        'Detalles de la solicitud',
+                        textAlign: TextAlign.center,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              ),
+                              fontSize: 22.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                            ),
+                      ),
+                    ),
+                    cuerpo: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Opacity(
-                              opacity: 0.0,
-                              child: Icon(
-                                Icons.close,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 24.0,
-                              ),
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: Text(
-                                'Detalles de la solicitud',
-                                textAlign: TextAlign.center,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      fontSize: 22.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                            ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                Navigator.pop(context);
-                              },
-                              child: Icon(
-                                Icons.close,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                size: 24.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
+                        SolicitudResponsiveFields(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -412,21 +422,8 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                           hoverColor: Colors.transparent,
                                           highlightColor: Colors.transparent,
                                           onTap: () async {
-                                            await showAlignedDialog(
-                                              barrierColor: Colors.transparent,
-                                              context: context,
-                                              isGlobal: false,
-                                              avoidOverflow: false,
-                                              targetAnchor:
-                                                  AlignmentDirectional(0.0, 0.0)
-                                                      .resolve(
-                                                          Directionality.of(
-                                                              context)),
-                                              followerAnchor:
-                                                  AlignmentDirectional(0.0, 0.0)
-                                                      .resolve(
-                                                          Directionality.of(
-                                                              context)),
+                                            await mostrarMenuEstadoSolicitud(
+                                              anchorContext: context,
                                               builder: (dialogContext) {
                                                 return Material(
                                                   color: Colors.transparent,
@@ -461,7 +458,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               ),
                                               Expanded(
                                                 child: Container(
-                                                  height: 32.0,
+                                                  constraints: const BoxConstraints(minHeight: 32),
                                                   decoration: BoxDecoration(
                                                     color: columnVwSolicitudesServiciosCompletaRow
                                                                 ?.estadoSolicitud ==
@@ -634,7 +631,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 24.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -672,17 +669,12 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                     .width *
                                                 1.0,
                                             child: TextFormField(
-                                              controller: _model
-                                                      .nombreTextController1 ??=
-                                                  TextEditingController(
-                                                text:
-                                                    columnVwSolicitudesServiciosCompletaRow
-                                                        ?.clienteNombres,
-                                              ),
+                                              controller: nombreController,
                                               focusNode:
                                                   _model.nombreFocusNode1,
                                               autofocus: false,
                                               readOnly: true,
+                                              maxLines: null,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -1277,7 +1269,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                   ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -1673,7 +1665,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -1924,6 +1916,9 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                               ),
                                               focusNode:
                                                   _model.nombreFocusNode7,
+                                              minLines: 2,
+                                              maxLines: null,
+                                              keyboardType: TextInputType.multiline,
                                               autofocus: false,
                                               readOnly: true,
                                               obscureText: false,
@@ -2100,7 +2095,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -2546,10 +2541,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                         width: 0.5,
                                       ),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
+                                    child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                         Text(
                                           'Precio adicional',
                                           style: FlutterFlowTheme.of(context)
@@ -2614,7 +2606,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 0.0),
-                                child: Row(
+                                child: SolicitudResponsiveFields(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Flexible(
@@ -3311,9 +3303,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0.0, 20.0, 0.0, 20.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
+                                  child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                       Text(
                                         'Pago Recibido',
                                         style: FlutterFlowTheme.of(context)
@@ -3358,11 +3348,18 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                   .alternate,
                                         ),
                                         child: Checkbox(
-                                          value: _model.checkboxValue1 ??= true,
-                                          onChanged: (newValue) async {
-                                            safeSetState(() => _model
-                                                .checkboxValue1 = newValue!);
-                                          },
+                                          value: isPaymentReceived(
+                                            columnVwSolicitudesServiciosCompletaRow?.estadoPago,
+                                          ),
+                                          onChanged: _guardandoPago ||
+                                                  columnVwSolicitudesServiciosCompletaRow == null ||
+                                                  !isPaymentPending(columnVwSolicitudesServiciosCompletaRow.estadoPago)
+                                              ? null
+                                              : (newValue) async {
+                                                  if (newValue == true) {
+                                                    await _marcarPagoRecibido(columnVwSolicitudesServiciosCompletaRow);
+                                                  }
+                                                },
                                           side: (FlutterFlowTheme.of(context)
                                                       .alternate !=
                                                   null)
@@ -3422,12 +3419,10 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                                   .alternate,
                                         ),
                                         child: Checkbox(
-                                          value: _model.checkboxValue2 ??=
-                                              false,
-                                          onChanged: (newValue) async {
-                                            safeSetState(() => _model
-                                                .checkboxValue2 = newValue!);
-                                          },
+                                          value: isPaymentPending(
+                                            columnVwSolicitudesServiciosCompletaRow?.estadoPago,
+                                          ),
+                                          onChanged: null,
                                           side: (FlutterFlowTheme.of(context)
                                                       .alternate !=
                                                   null)
@@ -3759,10 +3754,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 8.0, 0.0, 8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                            child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8, runSpacing: 8, children: [
                                 Text(
                                   'Proveedor: ${columnVwSolicitudesServiciosCompletaRow?.proveedorNombreCompleto}',
                                   style: FlutterFlowTheme.of(context)
@@ -3788,7 +3780,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
                                       ),
                                 ),
                                 Text(
-                                  'Cliente: ${columnVwSolicitudesServiciosCompletaRow?.clienteNombres}',
+                                  'Cliente: $nombreCliente',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(

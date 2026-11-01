@@ -1,6 +1,8 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/responsive_layout_rows.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,69 +61,40 @@ class _NotificacioneliminarWidgetState
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 620.0,
+          maxHeight: MediaQuery.sizeOf(context).height - 32.0,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 600.0 ? 12.0 : 24.0,
+          ),
+          child: ModalConEncabezadoFijo(
+            encabezado: EncabezadoModal(
+              titulo: Text(
+                valueOrDefault<String>(
+                  widget!.titulo,
+                  'Título',
+                ),
+                textAlign: TextAlign.center,
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      font: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                      fontSize: 22.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w600,
+                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                    ),
+              ),
+            ),
+            cuerpo: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Opacity(
-                    opacity: 0.0,
-                    child: Icon(
-                      Icons.close,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      size: 24.0,
-                    ),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
-                    child: Text(
-                      valueOrDefault<String>(
-                        widget!.titulo,
-                        'Título',
-                      ),
-                      textAlign: TextAlign.center,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .fontStyle,
-                            ),
-                            fontSize: 22.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .fontStyle,
-                          ),
-                    ),
-                  ),
-                  InkWell(
-                    splashColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () async {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(
-                      Icons.close,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      size: 24.0,
-                    ),
-                  ),
-                ],
-              ),
               Align(
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: Padding(
@@ -178,9 +151,10 @@ class _NotificacioneliminarWidgetState
                   ),
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 20.0,
+                runSpacing: 8.0,
                 children: [
                   Align(
                     alignment: AlignmentDirectional(0.0, 0.0),
@@ -260,9 +234,10 @@ class _NotificacioneliminarWidgetState
                       ),
                     ),
                   ),
-                ].divide(SizedBox(width: 20.0)),
+                ],
               ),
             ],
+          ),
           ),
         ),
       ),

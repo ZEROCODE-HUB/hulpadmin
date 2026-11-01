@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -5,6 +6,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
+import '/components/responsive_layout_rows.dart';
 import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
@@ -90,6 +92,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
         child: Container(
           constraints: BoxConstraints(
             maxWidth: 800.0,
+            maxHeight: MediaQuery.sizeOf(context).height - 72.0,
           ),
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -100,62 +103,27 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
               padding: EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                child: Column(
+              child: ModalConEncabezadoFijo(
+                encabezado: EncabezadoModal(
+                  titulo: Text(
+                    'Registrar proveedores',
+                    textAlign: TextAlign.center,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          fontSize: 22.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                ),
+                cuerpo: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Opacity(
-                          opacity: 0.0,
-                          child: Icon(
-                            Icons.close,
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            size: 24.0,
-                          ),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Text(
-                            'Registrar proveedores',
-                            textAlign: TextAlign.center,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  fontSize: 22.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                          ),
-                        ),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          focusColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          onTap: () async {
-                            Navigator.pop(context);
-                          },
-                          child: Icon(
-                            Icons.close,
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            size: 24.0,
-                          ),
-                        ),
-                      ],
-                    ),
                     Padding(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
@@ -188,7 +156,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                               ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -218,8 +186,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller: _model.nombreTextController,
                                         focusNode: _model.nombreFocusNode,
@@ -392,8 +359,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.apellidoTextController,
@@ -541,7 +507,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -581,9 +547,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                         options: _model.ciudades,
                                         onChanged: (val) => safeSetState(
                                             () => _model.ciudadValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -663,9 +627,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.direccionTextController,
@@ -820,7 +782,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -863,9 +825,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                         ],
                                         onChanged: (val) => safeSetState(() =>
                                             _model.tipodocumentoValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -945,9 +905,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller: _model
                                               .numerodocumentoTextController,
@@ -1104,7 +1062,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -1141,9 +1099,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                         options: ['+57'],
                                         onChanged: (val) => safeSetState(
                                             () => _model.paisValue = val),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         height: 48.0,
                                         textStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -1222,9 +1178,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.telefonoTextController,
@@ -1411,7 +1365,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                               ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1458,8 +1412,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                       ],
                                       onChanged: (val) => safeSetState(
                                           () => _model.entidadValue = val),
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       height: 48.0,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -1542,8 +1495,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                       options: ['Ahorro', 'Corriente'],
                                       onChanged: (val) => safeSetState(
                                           () => _model.tipocuentaValue = val),
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       height: 48.0,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -1598,7 +1550,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -1629,9 +1581,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.numerocuentaTextController,
@@ -1788,7 +1738,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -1819,9 +1769,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.rutnitTextController,
@@ -2009,7 +1957,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                               ),
                             ),
                           ),
-                          Row(
+                          ResponsiveFormRow(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -2039,8 +1987,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.correo1TextController,
@@ -2221,8 +2168,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           ),
                                     ),
                                     Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          1.0,
+                                      width: double.infinity,
                                       child: TextFormField(
                                         controller:
                                             _model.correo2TextController,
@@ -2381,7 +2327,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
-                            child: Row(
+                            child: ResponsiveFormRow(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Flexible(
@@ -2412,9 +2358,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.password1TextController,
@@ -2624,9 +2568,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                             ),
                                       ),
                                       Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
+                                        width: double.infinity,
                                         child: TextFormField(
                                           controller:
                                               _model.password2TextController,
@@ -2851,7 +2793,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 8.0, 0.0, 0.0),
                             child: custom_widgets.CrearProveedor(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              width: double.infinity,
                               height: 400.0,
                               serviciosid: _model.serviciosid,
                               action: (serviciosidsss) async {
@@ -2897,7 +2839,10 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                     context: context,
                                     builder: (dialogContext) => Dialog(
                                       elevation: 0,
-                                      insetPadding: EdgeInsets.zero,
+                                      insetPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 16.0,
+                                      ),
                                       backgroundColor: Colors.transparent,
                                       alignment: AlignmentDirectional(0.0, 0.0)
                                           .resolve(Directionality.of(context)),
@@ -2985,7 +2930,10 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: EdgeInsets.zero,
+                                    insetPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                      vertical: 16.0,
+                                    ),
                                     backgroundColor: Colors.transparent,
                                     alignment: AlignmentDirectional(0.0, 0.0)
                                         .resolve(Directionality.of(context)),

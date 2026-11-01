@@ -92,6 +92,9 @@ class VwProfesionalesCompletoRow extends SupabaseDataRow {
   set categoriaNombre(String? value) =>
       setField<String>('categoria_nombre', value);
 
+  String? get ciudad => getField<String>('ciudad');
+  set ciudad(String? value) => setField<String>('ciudad', value);
+
   String? get estado => getField<String>('estado');
   set estado(String? value) => setField<String>('estado', value);
 

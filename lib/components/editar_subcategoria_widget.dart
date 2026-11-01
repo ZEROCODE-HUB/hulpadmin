@@ -1,4 +1,6 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -69,6 +71,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 620.0,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -78,64 +81,28 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Column(
+            padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600.0 ? 16.0 : 24.0),
+            child: ModalConEncabezadoFijo(
+              encabezado: EncabezadoModal(
+                titulo: Text(
+                  widget!.ver ? 'Ver subcategoría' : 'Editar subcategoría',
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                        fontSize: 22.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                ),
+              ),
+              cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Opacity(
-                        opacity: 0.0,
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          widget!.ver
-                              ? 'Ver subcategoría'
-                              : 'Editar subcategoría',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    fontSize: 22.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                    ],
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
@@ -162,7 +129,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                   ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           child: TextFormField(
                             controller: _model.textController1,
                             focusNode: _model.textFieldFocusNode,
@@ -420,7 +387,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                             ),
                       ),
                       Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: double.infinity,
                         child: TextFormField(
                           controller: _model.descripcionTextController,
                           focusNode: _model.descripcionFocusNode,
@@ -528,7 +495,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                       ),
                     ].divide(SizedBox(height: 8.0)),
                   ),
-                  Row(
+                  ResponsiveFormRow(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Flexible(
@@ -567,7 +534,7 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                 options: ['activo', 'inactivo'],
                                 onChanged: (val) => safeSetState(
                                     () => _model.dropDownValue = val),
-                                width: MediaQuery.sizeOf(context).width * 1.0,
+                                width: double.infinity,
                                 height: 48.0,
                                 textStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium

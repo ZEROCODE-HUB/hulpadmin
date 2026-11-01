@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/components/documentos_proveedor.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6,6 +7,8 @@ import '/web/menu/menu_widget.dart';
 import '/flutter_flow/upload_data.dart';
 import '/components/notificacion2_widget.dart';
 import '/components/notificacioneliminar_widget.dart';
+import '/components/responsive_layout_rows.dart';
+import '/app_state.dart';
 import 'dart:math' show min;
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -226,6 +229,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
           const SizedBox(width: 8),
           Text(
             texto,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: FlutterFlowTheme.of(context).bodyMedium.override(
                   font: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   fontSize: 20,
@@ -346,14 +351,21 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
         return StatefulBuilder(
           builder: (ctx, setLocal) {
             return Dialog(
-              insetPadding: const EdgeInsets.all(24),
+              insetPadding: EdgeInsets.all(
+                MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+              ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
+                constraints: BoxConstraints(
+                  maxWidth: 480,
+                  maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+                ),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(
+                      MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+                    ),
                     child: Form(
                       key: formKey,
                       child: Column(
@@ -407,8 +419,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             ),
                             const SizedBox(height: 4),
                           ],
-                          Row(
+                          ResponsiveToolbarRow(
+                            breakpoint: 440,
                             mainAxisAlignment: MainAxisAlignment.end,
+                            wrapAlignment: WrapAlignment.end,
+                            spacing: 12,
                             children: [
                               OutlinedButton(
                                 style: OutlinedButton.styleFrom(
@@ -425,7 +440,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                     : () => Navigator.of(ctx).pop(),
                                 child: const Text('Cancelar'),
                               ),
-                              const SizedBox(width: 12),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
@@ -638,7 +652,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       builder: (dctx) {
         return Dialog(
           elevation: 0,
-          insetPadding: EdgeInsets.zero,
+          insetPadding: const EdgeInsets.all(16.0),
           backgroundColor: Colors.transparent,
           alignment: AlignmentDirectional(0.0, 0.0)
               .resolve(Directionality.of(context)),
@@ -687,14 +701,21 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   ? usuario!.fotoPerfilUrl
                   : null);
           return Dialog(
-            insetPadding: const EdgeInsets.all(24),
+            insetPadding: EdgeInsets.all(
+              MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+            ),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: BoxConstraints(
+                maxWidth: 480,
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+              ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(
+                    MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+                  ),
                   child: Form(
                     key: formKey,
                     child: Column(
@@ -814,8 +835,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         const SizedBox(height: 14),
                         _dialogField(ctx, 'Facebook', fbCtrl, saving: saving),
                         const SizedBox(height: 24),
-                        Row(
+                        ResponsiveToolbarRow(
+                          breakpoint: 440,
                           mainAxisAlignment: MainAxisAlignment.end,
+                          wrapAlignment: WrapAlignment.end,
+                          spacing: 12,
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
@@ -831,7 +855,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                   saving ? null : () => Navigator.of(ctx).pop(),
                               child: const Text('Cancelar'),
                             ),
-                            const SizedBox(width: 12),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -981,13 +1004,20 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setLocal) {
           return Dialog(
-            insetPadding: const EdgeInsets.all(24),
+            insetPadding: EdgeInsets.all(
+              MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+            ),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640, maxHeight: 600),
+              constraints: BoxConstraints(
+                maxWidth: 640,
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,8 +1114,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         ),
                       ),
                     const SizedBox(height: 20),
-                    Row(
+                    ResponsiveToolbarRow(
+                      breakpoint: 460,
                       mainAxisAlignment: MainAxisAlignment.end,
+                      wrapAlignment: WrapAlignment.end,
+                      spacing: 12,
                       children: [
                         OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -1100,7 +1133,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                               saving ? null : () => Navigator.of(ctx).pop(),
                           child: const Text('Cancelar'),
                         ),
-                        const SizedBox(width: 12),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: FlutterFlowTheme.of(ctx).primary,
@@ -1186,7 +1218,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       builder: (dctx) {
         return Dialog(
           elevation: 0,
-          insetPadding: EdgeInsets.zero,
+          insetPadding: const EdgeInsets.all(16.0),
           backgroundColor: Colors.transparent,
           alignment: AlignmentDirectional(0.0, 0.0)
               .resolve(Directionality.of(context)),
@@ -1380,6 +1412,46 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
           Widget regRow(String label, String? url, String campo, String folder,
               void Function(String?) set) {
             final cargado = url != null && url.isNotEmpty;
+            final compacto = MediaQuery.sizeOf(ctx).width < 600;
+            final detalle = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label,
+                    style: GoogleFonts.inter(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(
+                  cargado ? _nombreArchivo(url) : 'Sin documento cargado',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: cargado
+                        ? FlutterFlowTheme.of(ctx).secondaryText
+                        : FlutterFlowTheme.of(ctx).error,
+                  ),
+                ),
+              ],
+            );
+            final subirButton = TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: FlutterFlowTheme.of(ctx).primary,
+              ),
+              onPressed:
+                  busy ? null : () => subirRegistro(campo, folder, url, set),
+              child: Text(cargado ? 'Reemplazar' : 'Subir',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+            );
+            final eliminarButton = cargado
+                ? IconButton(
+                    tooltip: 'Eliminar',
+                    onPressed:
+                        busy ? null : () => eliminarRegistro(campo, url, set),
+                    icon: Icon(Icons.delete_outline,
+                        size: 20, color: FlutterFlowTheme.of(ctx).error),
+                  )
+                : null;
             // Se ensena el documento que hay, no solo la palabra «cargado»:
             // reemplazar o borrar sin ver que se esta tocando es como firmar
             // a ciegas, y estos son documentos de identidad.
@@ -1392,69 +1464,57 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFE0E0E0)),
                 ),
-                child: Row(
-                  children: [
-                    _miniatura(ctx, url),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                child: compacto
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(label,
-                              style: GoogleFonts.inter(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 2),
-                          Text(
-                            cargado
-                                ? _nombreArchivo(url)
-                                : 'Sin documento cargado',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: cargado
-                                  ? FlutterFlowTheme.of(ctx).secondaryText
-                                  : FlutterFlowTheme.of(ctx).error,
-                            ),
+                          Row(
+                            children: [
+                              _miniatura(ctx, url),
+                              const SizedBox(width: 10),
+                              Expanded(child: detalle),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            alignment: WrapAlignment.end,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 4,
+                            children: [
+                              subirButton,
+                              if (eliminarButton != null) eliminarButton,
+                            ],
                           ),
                         ],
+                      )
+                    : Row(
+                        children: [
+                          _miniatura(ctx, url),
+                          const SizedBox(width: 10),
+                          Expanded(child: detalle),
+                          subirButton,
+                          if (eliminarButton != null) eliminarButton,
+                        ],
                       ),
-                    ),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: FlutterFlowTheme.of(ctx).primary,
-                      ),
-                      onPressed: busy
-                          ? null
-                          : () => subirRegistro(campo, folder, url, set),
-                      child: Text(cargado ? 'Reemplazar' : 'Subir',
-                          style:
-                              GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                    ),
-                    if (cargado)
-                      IconButton(
-                        tooltip: 'Eliminar',
-                        onPressed: busy
-                            ? null
-                            : () => eliminarRegistro(campo, url, set),
-                        icon: Icon(Icons.delete_outline,
-                            size: 20, color: FlutterFlowTheme.of(ctx).error),
-                      ),
-                  ],
-                ),
               ),
             );
           }
 
           return Dialog(
-            insetPadding: const EdgeInsets.all(24),
+            insetPadding: EdgeInsets.all(
+              MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+            ),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560, maxHeight: 640),
+              constraints: BoxConstraints(
+                maxWidth: 560,
+                maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(
+                  MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1627,7 +1687,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                     ),
                                   )),
                             const SizedBox(height: 8),
-                            Row(
+                            ResponsiveFormRow(
+                              breakpoint: 520.0,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Expanded(
@@ -1748,13 +1809,17 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       children: [
         Icon(icon, size: 16, color: FlutterFlowTheme.of(context).primary),
         const SizedBox(width: 6),
-        Text(
-          texto,
-          style: FlutterFlowTheme.of(context).bodySmall.override(
-                font: GoogleFonts.inter(),
-                fontSize: 13,
-                letterSpacing: 0,
-                color: _labelGray,
+        Flexible(
+          child: Text(
+            texto,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  font: GoogleFonts.inter(),
+                  fontSize: 13,
+                  letterSpacing: 0,
+                  color: _labelGray,
+                ),
               ),
         ),
       ],
@@ -1818,12 +1883,22 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final menuAbierto = context.watch<FFAppState>().MenuAbierto;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final contentWidth = viewportWidth -
+        (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
+    final pagePadding = contentWidth < 600.0
+        ? 16.0
+        : (contentWidth < 1000.0 ? 24.0 : 40.0);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: SafeArea(
@@ -1860,7 +1935,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
 
                     return SingleChildScrollView(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(40, 24, 40, 40),
+                        padding: EdgeInsets.fromLTRB(
+                            pagePadding, 24.0, pagePadding, 40.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1892,8 +1968,10 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
   Widget _buildTopBar(BuildContext context, UsuariosRow? usuario) {
     final nombre =
         '${usuario?.nombres ?? ''} ${usuario?.apellidos ?? ''}'.trim();
-    return Row(
+    return ResponsiveToolbarRow(
+      breakpoint: 720.0,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      wrapAlignment: WrapAlignment.spaceBetween,
       children: [
         Flexible(
           child: Row(
@@ -2279,10 +2357,12 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          ResponsiveToolbarRow(
+            breakpoint: 560.0,
+            spacing: 12.0,
+            runSpacing: 4.0,
             children: [
               _sectionTitle(context, Icons.description_outlined, 'Documentos'),
-              const SizedBox(width: 12),
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Container(
@@ -2304,7 +2384,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
               _editIconButton(
                   context, () => _gestionarDocumentosDialog(context, usuario)),
             ],
@@ -2601,56 +2680,45 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
             }
 
             return Dialog(
-              insetPadding: const EdgeInsets.all(24),
+              insetPadding: EdgeInsets.all(
+                MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+              ),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
+                constraints: BoxConstraints(
+                  maxWidth: 480,
+                  maxHeight: MediaQuery.sizeOf(ctx).height * 0.9,
+                ),
+                child: ModalConEncabezadoFijo(
+                  encabezado: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24),
+                    child: EncabezadoModal(
+                      titulo: Text(
+                        'Agregar referencia',
+                        style: FlutterFlowTheme.of(ctx).bodyMedium.override(
+                              font: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                              fontSize: 18,
+                              letterSpacing: 0,
+                              fontWeight: FontWeight.w700,
+                              color: FlutterFlowTheme.of(ctx).primaryText,
+                            ),
+                      ),
+                      habilitado: !saving,
+                      onCerrar: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                  cuerpo: Padding(
+                    padding: EdgeInsets.all(
+                      MediaQuery.sizeOf(ctx).width < 600 ? 16 : 24,
+                    ),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.person_add_alt_1_outlined,
-                                    size: 20,
-                                    color: FlutterFlowTheme.of(ctx).primary),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Agregar referencia',
-                                  style: FlutterFlowTheme.of(ctx)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w700),
-                                        fontSize: 18,
-                                        letterSpacing: 0,
-                                        fontWeight: FontWeight.w700,
-                                        color: FlutterFlowTheme.of(ctx)
-                                            .primaryText,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            InkWell(
-                              borderRadius: BorderRadius.circular(20),
-                              onTap:
-                                  saving ? null : () => Navigator.of(ctx).pop(),
-                              child: Icon(Icons.close,
-                                  size: 22,
-                                  color:
-                                      FlutterFlowTheme.of(ctx).secondaryText),
-                            ),
-                          ],
-                        ),
                         const SizedBox(height: 20),
                         field('Nombre *', nombreCtrl),
                         const SizedBox(height: 14),
@@ -2659,8 +2727,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         const SizedBox(height: 14),
                         field('Relación *', relCtrl),
                         const SizedBox(height: 24),
-                        Row(
+                        ResponsiveToolbarRow(
+                          breakpoint: 440,
                           mainAxisAlignment: MainAxisAlignment.end,
+                          wrapAlignment: WrapAlignment.end,
+                          spacing: 12,
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
@@ -2676,7 +2747,6 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                   saving ? null : () => Navigator.of(ctx).pop(),
                               child: const Text('Cancelar'),
                             ),
-                            const SizedBox(width: 12),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -2744,7 +2814,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                     ),
                   ),
                 ),
-              ),
+                ),
+            ),
             );
           },
         );
@@ -2884,6 +2955,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.all(16),
+        scrollable: true,
         title: Text(r.nombreReferencia,
             style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         content: Column(
@@ -3325,12 +3398,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                           ],
                         ),
                       ),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => Navigator.of(ctx).pop(),
-                        child: Icon(Icons.close,
-                            size: 22,
-                            color: FlutterFlowTheme.of(ctx).secondaryText),
+                      IconButton(
+                        tooltip: 'Cerrar',
+                        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        padding: const EdgeInsets.all(12),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: Icon(Icons.close,
+                            size: 22, color: FlutterFlowTheme.of(ctx).secondaryText),
                       ),
                     ],
                   ),

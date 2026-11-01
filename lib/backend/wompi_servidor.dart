@@ -8,10 +8,9 @@ import '/backend/supabase/supabase.dart';
 /// desde aqui: las hace la funcion, que es la unica que la conoce. Este
 /// archivo solo traduce la llamada y normaliza la respuesta.
 ///
-/// Lo que se queda en el cliente es lo que va con la clave PUBLICA: pedir el
-/// token de aceptacion, tokenizar la tarjeta, los `/tokens/*` de Nequi y
-/// DaviPlata, y consultar el estado de la transaccion. Esa clave esta pensada
-/// para viajar en el cliente.
+/// En admin, los tokens de aceptación también se solicitan por esta función
+/// mediante obtener_tokens_aceptacion, para evitar CORS en el navegador.
+/// La consulta del estado pasa por consultar_transaccion.
 ///
 /// La respuesta conserva la forma que devolvian las acciones de FlutterFlow
 /// —`success`, `transactionId`, `status`...— para que los widgets no cambien.
@@ -32,7 +31,14 @@ Future<Map<String, dynamic>> llamarWompi(Map<String, dynamic> cuerpo) async {
     // La funcion responde con el detalle en el cuerpo tambien cuando el
     // codigo no es 2xx, y ahi viene el motivo legible del rechazo.
     final detalle = e.details;
-    if (detalle is Map) return Map<String, dynamic>.from(detalle);
+    if (detalle is Map) {
+      final datos = Map<String, dynamic>.from(detalle);
+      return {
+        ...datos,
+        'success': false,
+        'statusCode': datos['statusCode'] ?? e.status,
+      };
+    }
     return {
       'success': false,
       'error': 'Error del servidor de pagos',

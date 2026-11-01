@@ -92,11 +92,14 @@ class EdicionSolicitudModel extends FlutterFlowModel<EdicionSolicitudWidget> {
   TextEditingController? nombreTextController11;
   String? Function(BuildContext, String?)? nombreTextController11Validator;
   // State field(s) for profesionalNuevo widget.
+  String? ciudadNuevaValue;
   // Servicio elegido en el selector (antes el campo era de solo lectura).
   String? servicioNuevoValue;
   String? servicioNuevoNombre;
   String? profesionalNuevoValue;
   FormFieldController<String>? profesionalNuevoValueController;
+  final Map<String, Future<List<VwProfesionalesCompletoRow>>>
+      profesionalesPorServicio = {};
   // State field(s) for nombre widget.
   FocusNode? nombreFocusNode12;
   TextEditingController? nombreTextController12;

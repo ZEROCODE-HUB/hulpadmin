@@ -1,3 +1,4 @@
+import '/backend/pagos_manuales.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_solicitud_widget.dart';
 import '/components/detalle_solicitud_widget.dart';
@@ -11,12 +12,13 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/dialog_helpers.dart';
+import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/web/menu/menu_widget.dart';
 import '/web/solicitudes/solicitudes_filter_bar.dart';
 import '/web/solicitudes/solicitudes_data_table.dart';
+import '/web/solicitudes/menu_estado_solicitud.dart';
 import '/index.dart';
 import 'dart:async';
-import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,6 +40,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   StreamSubscription<List<Map<String, dynamic>>>? _solicitudesTriggerSub;
+  final Set<String> _paymentUpdatesInProgress = <String>{};
 
   static String? _trimOrNull(String? s) {
     if (s == null) return null;
@@ -79,8 +82,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
 
     _solicitudesTriggerSub = SupaFlow.client
         .from('solicitudes_servicio')
-        .stream(primaryKey: ['id'])
-        .listen((_) {
+        .stream(primaryKey: ['id']).listen((_) {
       if (!mounted) return;
       safeSetState(() {
         _model.containerSupabaseStream = null;
@@ -112,10 +114,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     Iterable<VwSolicitudesServiciosCompletaRow> result = allData;
 
     if (hasText) {
-      final allowedIds = searchFiltered
-          .map((e) => e.solicitudId)
-          .whereType<String>()
-          .toSet();
+      final allowedIds =
+          searchFiltered.map((e) => e.solicitudId).whereType<String>().toSet();
       result = result.where(
         (e) => e.solicitudId != null && allowedIds.contains(e.solicitudId!),
       );
@@ -153,17 +153,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
 
   // -- Action handlers --------------------------------------------------------
 
-  void _onStatusTap(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item, int index) {
-    showAlignedDialog(
-      barrierColor: Colors.transparent,
-      context: context,
-      isGlobal: false,
-      avoidOverflow: false,
-      targetAnchor:
-          AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-      followerAnchor:
-          AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
+  void _onStatusTap(BuildContext anchorContext,
+      VwSolicitudesServiciosCompletaRow item, int index) {
+    mostrarMenuEstadoSolicitud(
+      anchorContext: anchorContext,
       builder: (dialogContext) {
         return Material(
           color: Colors.transparent,
@@ -188,8 +181,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
   }
 
-  void _onDelete(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item) {
+  void _onDelete(BuildContext context, VwSolicitudesServiciosCompletaRow item) {
     showCenteredDialog(
       context,
       Notificacion2Widget(
@@ -218,20 +210,68 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
   }
 
-  void _onViewDetails(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item) {
-    showCenteredDialog(
+  Future<void> _onViewDetails(
+      BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    await showCenteredDialog(
       context,
       DetalleSolicitudWidget(solicitudId: item.solicitudId!),
     );
+    _refrescarClientes();
   }
 
-  void _onEdit(
-      BuildContext context, VwSolicitudesServiciosCompletaRow item) {
-    showCenteredDialog(
+  Future<void> _onEdit(
+      BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    await showCenteredDialog(
       context,
       EdicionSolicitudWidget(solicitudId: item.solicitudId!),
     );
+    _refrescarClientes();
+  }
+
+  void _refrescarClientes() {
+    if (!mounted) return;
+    safeSetState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+  }
+
+  Future<void> _onMarkPaymentReceived(
+    BuildContext context,
+    VwSolicitudesServiciosCompletaRow item,
+  ) async {
+    final solicitudId = item.solicitudId;
+    if (solicitudId == null ||
+        solicitudId.isEmpty ||
+        !isPaymentPending(item.estadoPago) ||
+        _paymentUpdatesInProgress.contains(solicitudId)) {
+      return;
+    }
+
+    safeSetState(() => _paymentUpdatesInProgress.add(solicitudId));
+    try {
+      await registrarPagoRecibidoQr(solicitudId);
+
+      if (!mounted) return;
+      safeSetState(() {
+        _model.requestCompleter = null;
+        _model.containerSupabaseStream = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago marcado como recibido.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo actualizar el estado del pago.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        safeSetState(() => _paymentUpdatesInProgress.remove(solicitudId));
+      }
+    }
   }
 
   // -- Build ------------------------------------------------------------------
@@ -244,6 +284,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -273,8 +315,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     return FutureBuilder<List<VwSolicitudesServiciosCompletaRow>>(
       future: (_model.requestCompleter ??=
               Completer<List<VwSolicitudesServiciosCompletaRow>>()
-                ..complete(
-                    VwSolicitudesServiciosCompletaTable().queryRows(
+                ..complete(VwSolicitudesServiciosCompletaTable().queryRows(
                   queryFn: (q) => q
                       .ilike('cliente_nombre_completo',
                           '%${_model.textController.text}%')
@@ -323,76 +364,76 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
       allData: allData,
       searchFiltered: searchFiltered,
     );
+    final tabla = SolicitudesDataTable(
+      data: solicitudesDatos,
+      controller: _model.paginatedDataTableController,
+      onStatusTap: (anchorContext, item, index) =>
+          _onStatusTap(anchorContext, item, index),
+      onDelete: (item) => _onDelete(context, item),
+      onViewDetails: (item) => _onViewDetails(context, item),
+      onEdit: (item) => _onEdit(context, item),
+      onMarkPaymentReceived: (item) => _onMarkPaymentReceived(context, item),
+      updatingPaymentIds: _paymentUpdatesInProgress,
+    );
 
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          _buildHeaderBar(context),
-          Flexible(
-            child: Padding(
+    return LayoutBuilder(builder: (context, viewport) {
+      final horizontal = viewport.maxWidth < 700 ? 12.0 : 24.0;
+      return CustomScrollView(slivers: [
+        SliverToBoxAdapter(child: _buildHeaderBar(context)),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 0),
+          sliver: SliverList.list(children: [
+            _buildBreadcrumb(context),
+            _buildTitleRow(context),
+            Padding(
               padding:
-                  const EdgeInsetsDirectional.fromSTEB(40.0, 24.0, 40.0, 0.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  _buildBreadcrumb(context),
-                  _buildTitleRow(context),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                        0.0, 24.0, 0.0, 0.0),
-                    child: SolicitudesFilterBar(
-                      estadoOptions: _getEstadoOptions(allData),
-                      categoriaOptions: _getCategoriaOptions(allData),
-                      dropDownValue1: _model.dropDownValue1,
-                      dropDownValue2: _model.dropDownValue2,
-                      dateStart: _model.dateStart,
-                      dateEnd: _model.dateEnd,
-                      resultCount: solicitudesDatos.length,
-                      onEstadoChanged: (val) =>
-                          safeSetState(() => _model.dropDownValue1 = val),
-                      onCategoriaChanged: (val) =>
-                          safeSetState(() => _model.dropDownValue2 = val),
-                      onEstadoReset: () =>
-                          safeSetState(() => _model.dropDownValue1 = null),
-                      onCategoriaReset: () =>
-                          safeSetState(() => _model.dropDownValue2 = null),
-                      onDateRangeSelected: (start, end) => safeSetState(() {
-                        _model.dateStart = start;
-                        _model.dateEnd = end;
-                        _model.datePicked = start;
-                      }),
-                      onDateReset: () => safeSetState(() {
-                        _model.dateStart = null;
-                        _model.dateEnd = null;
-                        _model.datePicked = null;
-                      }),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 12.0, 0.0, 8.0),
-                      child: SolicitudesDataTable(
-                        data: solicitudesDatos,
-                        controller: _model.paginatedDataTableController,
-                        onStatusTap: (item, index) =>
-                            _onStatusTap(context, item, index),
-                        onDelete: (item) => _onDelete(context, item),
-                        onViewDetails: (item) =>
-                            _onViewDetails(context, item),
-                        onEdit: (item) => _onEdit(context, item),
-                      ),
-                    ),
-                  ),
-                ],
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+              child: SolicitudesFilterBar(
+                estadoOptions: _getEstadoOptions(allData),
+                categoriaOptions: _getCategoriaOptions(allData),
+                dropDownValue1: _model.dropDownValue1,
+                dropDownValue2: _model.dropDownValue2,
+                dateStart: _model.dateStart,
+                dateEnd: _model.dateEnd,
+                resultCount: solicitudesDatos.length,
+                onEstadoChanged: (val) =>
+                    safeSetState(() => _model.dropDownValue1 = val),
+                onCategoriaChanged: (val) =>
+                    safeSetState(() => _model.dropDownValue2 = val),
+                onEstadoReset: () =>
+                    safeSetState(() => _model.dropDownValue1 = null),
+                onCategoriaReset: () =>
+                    safeSetState(() => _model.dropDownValue2 = null),
+                onDateRangeSelected: (start, end) => safeSetState(() {
+                  _model.dateStart = start;
+                  _model.dateEnd = end;
+                  _model.datePicked = start;
+                }),
+                onDateReset: () => safeSetState(() {
+                  _model.dateStart = null;
+                  _model.dateEnd = null;
+                  _model.datePicked = null;
+                }),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ]),
+        ),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, 8),
+          sliver: SliverLayoutBuilder(builder: (context, constraints) {
+            final height = (constraints.viewportMainAxisExtent -
+                    constraints.precedingScrollExtent -
+                    8)
+                .clamp(360.0, double.infinity);
+            return SliverToBoxAdapter(
+                child: SizedBox(
+              height: height,
+              child: tabla,
+            ));
+          }),
+        ),
+      ]);
+    });
   }
 
   // -- Helper methods ---------------------------------------------------------
@@ -432,8 +473,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         .withoutNulls
         .toList();
     final cur = _trimOrNull(_model.dropDownValue2);
-    if (cur != null &&
-        !list.any((o) => _normCompare(o) == _normCompare(cur))) {
+    if (cur != null && !list.any((o) => _normCompare(o) == _normCompare(cur))) {
       list = [...list, cur];
     }
     list.sort((a, b) => _normCompare(a).compareTo(_normCompare(b)));
@@ -443,6 +483,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   // -- Sub-widgets ------------------------------------------------------------
 
   Widget _buildHeaderBar(BuildContext context) {
+    final horizontal = MenuWidget.esMovil(context) ? 12.0 : 24.0;
     return Container(
       width: MediaQuery.sizeOf(context).width * 1.0,
       height: 72.0,
@@ -454,10 +495,11 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(40.0, 0.0, 0.0, 0.0),
-            child: SizedBox(
-              width: 394.0,
+          Flexible(
+              child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(horizontal, 0.0, 12.0, 0.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 394.0),
               child: TextFormField(
                 controller: _model.textController,
                 focusNode: _model.textFieldFocusNode,
@@ -508,13 +550,13 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                       letterSpacing: 0.0,
                     ),
                 cursorColor: FlutterFlowTheme.of(context).primaryText,
-                validator:
-                    _model.textControllerValidator.asValidator(context),
+                validator: _model.textControllerValidator.asValidator(context),
               ),
             ),
-          ),
+          )),
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 40.0, 12.0),
+            padding:
+                EdgeInsetsDirectional.fromSTEB(0.0, 12.0, horizontal, 12.0),
             child: Icon(
               Icons.notifications_none,
               color: FlutterFlowTheme.of(context).accent3,
@@ -537,8 +579,9 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
           fontStyle: FontStyle.italic,
         );
 
-    return Row(
-      mainAxisSize: MainAxisSize.max,
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 8,
       children: [
         InkWell(
           splashColor: Colors.transparent,
@@ -547,7 +590,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         ),
         const Padding(
           padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 4.0, 0.0),
-          child: Icon(Icons.chevron_right, color: Color(0xFF5E252B), size: 24.0),
+          child:
+              Icon(Icons.chevron_right, color: Color(0xFF5E252B), size: 24.0),
         ),
         InkWell(
           splashColor: Colors.transparent,
@@ -561,9 +605,11 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   Widget _buildTitleRow(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 16,
+        runSpacing: 12,
         children: [
           Text(
             'Solicitudes',
@@ -575,8 +621,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               FlutterFlowDropDown<String>(
                 controller: _model.dropDownOrdenValueController ??=
@@ -601,8 +649,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 borderColor: Colors.transparent,
                 borderWidth: 0.0,
                 borderRadius: 8.0,
-                margin: const EdgeInsetsDirectional.fromSTEB(
-                    12.0, 0.0, 12.0, 0.0),
+                margin:
+                    const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
                 hidesUnderline: true,
                 isOverButton: false,
                 isSearchable: false,
@@ -611,8 +659,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               Builder(
                 builder: (context) => FFButtonWidget(
                   onPressed: () async {
-                    await showCenteredDialog(
-                        context, CrearSolicitudWidget());
+                    await showCenteredDialog(context, CrearSolicitudWidget());
                   },
                   text: 'Nuevo',
                   options: FFButtonOptions(
@@ -622,18 +669,17 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                     iconPadding: const EdgeInsetsDirectional.fromSTEB(
                         0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).primary,
-                    textStyle:
-                        FlutterFlowTheme.of(context).titleSmall.override(
-                              font: GoogleFonts.interTight(),
-                              color: Colors.white,
-                              letterSpacing: 0.0,
-                            ),
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          font: GoogleFonts.interTight(),
+                          color: Colors.white,
+                          letterSpacing: 0.0,
+                        ),
                     elevation: 0.0,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
               ),
-            ].divide(const SizedBox(width: 5.0)),
+            ],
           ),
         ],
       ),

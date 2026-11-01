@@ -46,7 +46,9 @@ String limpiarTerminoBusqueda(String texto) =>
 /// fila por proveedor.
 Future<List<VwProfesionalesCompletoRow>> consultarProfesionales({
   String? verificado,
+  String? estado,
   String? categoriaId,
+  String? servicioId,
   String busqueda = '',
 }) async {
   final termino = limpiarTerminoBusqueda(busqueda);
@@ -58,8 +60,14 @@ Future<List<VwProfesionalesCompletoRow>> consultarProfesionales({
     if (verificado != null && verificado.isNotEmpty) {
       query = query.eq('verificado', verificado);
     }
+    if (estado != null && estado.isNotEmpty) {
+      query = query.eq('estado', estado);
+    }
     if (categoriaId != null && categoriaId.isNotEmpty) {
       query = query.eq('categoria_id', categoriaId);
+    }
+    if (servicioId != null && servicioId.isNotEmpty) {
+      query = query.eq('servicio_id', servicioId);
     }
     if (termino.isNotEmpty) {
       query = query.or(filtroBusquedaProfesionales(termino));

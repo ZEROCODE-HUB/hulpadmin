@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'rendimiento_model.dart';
+import 'rendimiento_responsive_layout.dart';
 export 'rendimiento_model.dart';
 
 class RendimientoWidget extends StatefulWidget {
@@ -50,6 +51,8 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -105,14 +108,8 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
+                                    Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
+                                        Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
                                             InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -217,7 +214,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 14.0, 0.0, 14.0),
-                                      child: Row(
+                                      child: RendimientoHeading(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Text(
@@ -267,7 +264,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -353,7 +350,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                           rowVwResenasRecientesRowList =
                                                           snapshot.data!;
 
-                                                      return Row(
+                                                      return RendimientoGrid(minWidth: 280, charts: false,
                                                         mainAxisSize:
                                                             MainAxisSize.max,
                                                         children: List.generate(
@@ -394,13 +391,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                       CrossAxisAlignment
                                                                           .start,
                                                                   children: [
-                                                                    Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
+                                                                    Wrap(alignment: WrapAlignment.spaceBetween, spacing: 8, runSpacing: 8,
                                                                       children: [
                                                                         Text(
                                                                           valueOrDefault<
@@ -527,7 +518,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -632,7 +623,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                         8.0,
                                                                         0.0,
                                                                         0.0),
-                                                            child: Row(
+                                                            child: RendimientoGrid(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .max,
@@ -644,7 +635,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                             .width *
                                                                         1.0,
                                                                     height:
-                                                                        204.0,
+                                                                        rendimientoChartHeight(context),
                                                                     decoration:
                                                                         BoxDecoration(
                                                                       color: FlutterFlowTheme.of(
@@ -667,13 +658,13 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                       width:
                                                                           500.0,
                                                                       height:
-                                                                          204.0,
+                                                                          rendimientoChartHeight(context),
                                                                       child: custom_widgets
                                                                           .GraficoCrecimientoUsuarios(
                                                                         width:
                                                                             500.0,
                                                                         height:
-                                                                            204.0,
+                                                                            rendimientoChartHeight(context),
                                                                         rol:
                                                                             'usuario',
                                                                         tiempo:
@@ -689,7 +680,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                             .width *
                                                                         1.0,
                                                                     height:
-                                                                        204.0,
+                                                                        rendimientoChartHeight(context),
                                                                     decoration:
                                                                         BoxDecoration(
                                                                       color: FlutterFlowTheme.of(
@@ -712,13 +703,13 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                       width:
                                                                           500.0,
                                                                       height:
-                                                                          204.0,
+                                                                          rendimientoChartHeight(context),
                                                                       child: custom_widgets
                                                                           .GraficoCrecimientoUsuarios(
                                                                         width:
                                                                             500.0,
                                                                         height:
-                                                                            204.0,
+                                                                            rendimientoChartHeight(context),
                                                                         rol:
                                                                             'usuario',
                                                                         tiempo:
@@ -804,7 +795,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                         8.0,
                                                                         0.0,
                                                                         0.0),
-                                                            child: Row(
+                                                            child: RendimientoGrid(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .max,
@@ -816,7 +807,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                             .width *
                                                                         1.0,
                                                                     height:
-                                                                        204.0,
+                                                                        rendimientoChartHeight(context),
                                                                     decoration:
                                                                         BoxDecoration(
                                                                       color: FlutterFlowTheme.of(
@@ -839,13 +830,13 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                       width:
                                                                           500.0,
                                                                       height:
-                                                                          204.0,
+                                                                          rendimientoChartHeight(context),
                                                                       child: custom_widgets
                                                                           .GraficoCrecimientoUsuarios(
                                                                         width:
                                                                             500.0,
                                                                         height:
-                                                                            204.0,
+                                                                            rendimientoChartHeight(context),
                                                                         rol:
                                                                             'proveedor',
                                                                         tiempo:
@@ -861,7 +852,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                             .width *
                                                                         1.0,
                                                                     height:
-                                                                        204.0,
+                                                                        rendimientoChartHeight(context),
                                                                     decoration:
                                                                         BoxDecoration(
                                                                       color: FlutterFlowTheme.of(
@@ -884,13 +875,13 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                       width:
                                                                           500.0,
                                                                       height:
-                                                                          204.0,
+                                                                          rendimientoChartHeight(context),
                                                                       child: custom_widgets
                                                                           .GraficoCrecimientoUsuarios(
                                                                         width:
                                                                             500.0,
                                                                         height:
-                                                                            204.0,
+                                                                            rendimientoChartHeight(context),
                                                                         rol:
                                                                             'proveedor',
                                                                         tiempo:
@@ -927,7 +918,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoGrid(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -938,7 +929,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                         context)
                                                                     .width *
                                                                 1.0,
-                                                        height: 204.0,
+                                                        height: rendimientoChartHeight(context),
                                                         decoration:
                                                             BoxDecoration(
                                                           color: FlutterFlowTheme
@@ -988,7 +979,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                         context)
                                                                     .width *
                                                                 1.0,
-                                                        height: 204.0,
+                                                        height: rendimientoChartHeight(context),
                                                         decoration:
                                                             BoxDecoration(
                                                           color: FlutterFlowTheme
@@ -1038,7 +1029,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                         context)
                                                                     .width *
                                                                 1.0,
-                                                        height: 204.0,
+                                                        height: rendimientoChartHeight(context),
                                                         decoration:
                                                             BoxDecoration(
                                                           color: FlutterFlowTheme
@@ -1103,7 +1094,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -1144,7 +1135,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
-                                                  child: Row(
+                                                  child: RendimientoGrid(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     children: [
@@ -1155,7 +1146,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1205,7 +1196,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1271,7 +1262,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -1312,7 +1303,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
-                                                  child: Row(
+                                                  child: RendimientoGrid(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     children: [
@@ -1323,7 +1314,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1374,7 +1365,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1425,7 +1416,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1492,7 +1483,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -1533,7 +1524,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
-                                                  child: Row(
+                                                  child: RendimientoGrid(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     children: [
@@ -1544,7 +1535,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1594,7 +1585,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1644,7 +1635,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1710,7 +1701,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
-                                                Row(
+                                                RendimientoHeading(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
@@ -1751,7 +1742,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                   padding: EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
-                                                  child: Row(
+                                                  child: RendimientoGrid(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     children: [
@@ -1762,7 +1753,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1812,7 +1803,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1862,7 +1853,7 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                                                                           context)
                                                                       .width *
                                                                   1.0,
-                                                          height: 204.0,
+                                                          height: rendimientoChartHeight(context),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme

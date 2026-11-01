@@ -1,5 +1,7 @@
 import '/components/buscador_direccion_widget.dart';
 import '/components/mapa_punto_widget.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/centro_ciudad_controller.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/places_service.dart';
@@ -27,6 +29,8 @@ class SelectorUbicacionWidget extends StatefulWidget {
     this.coordenadasIniciales,
     this.direccionActual,
     this.onDireccionSugerida,
+    this.ciudadId,
+    this.nombreCiudad,
     this.etiqueta = 'Ubicación exacta (opcional)',
   });
 
@@ -46,6 +50,10 @@ class SelectorUbicacionWidget extends StatefulWidget {
   /// no se pasa, el punto se captura igual y la dirección la escribe el admin.
   final ValueChanged<String>? onDireccionSugerida;
 
+  /// Contexto del servicio. Solo encuadra la cámara; nunca selecciona un punto.
+  final String? ciudadId;
+  final String? nombreCiudad;
+
   final String etiqueta;
 
   @override
@@ -56,6 +64,8 @@ class SelectorUbicacionWidget extends StatefulWidget {
 class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
   late final TextEditingController _controlador;
   late final PlacesService? _places;
+  late final CentroCiudadController _centroCiudad;
+  final _contextosCiudad = <String, ({String nombre, String? departamento})>{};
   Coordenadas? _punto;
   String? _error;
   bool _avisoFueraDeColombia = false;
@@ -73,6 +83,11 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
     // Si ya hay punto guardado se muestra en el campo, para que se vea que
     // está puesto y se pueda corregir sin tener que borrarlo a ciegas.
     _controlador = TextEditingController(text: _punto?.formateadas ?? '');
+    _centroCiudad = CentroCiudadController(_resolverCentroCiudad)
+      ..addListener(_actualizarEncuadre);
+    if (_conMapa) {
+      _centroCiudad.actualizar(widget.ciudadId, widget.nombreCiudad);
+    }
 
     // Se le avisa al padre del punto de partida. Sin esto, en el formulario de
     // edición abrir y guardar sin tocar la ubicación la borraría: el padre
@@ -87,11 +102,55 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
 
   @override
   void dispose() {
+    _centroCiudad.dispose();
     _controlador.dispose();
     super.dispose();
   }
 
-  void _fijar(Coordenadas? punto, {String? error, bool sincronizarTexto = true}) {
+  @override
+  void didUpdateWidget(SelectorUbicacionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_conMapa &&
+        (oldWidget.ciudadId != widget.ciudadId ||
+            oldWidget.nombreCiudad != widget.nombreCiudad)) {
+      _centroCiudad.actualizar(widget.ciudadId, widget.nombreCiudad);
+    }
+  }
+
+  void _actualizarEncuadre() {
+    if (mounted) setState(() {});
+  }
+
+  Future<Coordenadas?> _resolverCentroCiudad(String? id, String? nombre) async {
+    final clave = '${id ?? ''}|${nombre ?? ''}';
+    var contexto = _contextosCiudad[clave];
+    if (contexto == null) {
+      final ciudades = await CiudadesTable().queryRows(
+        queryFn: (q) => (id?.isNotEmpty ?? false)
+            ? q.eq('id', id!).limit(1)
+            : q.eq('nombre', nombre!.trim()).limit(2),
+      );
+      if (ciudades.length > 1) return null;
+      final ciudad = ciudades.firstOrNull;
+      final nombreEfectivo = ciudad?.nombre ?? nombre?.trim() ?? '';
+      if (nombreEfectivo.isEmpty) return null;
+      String? departamento;
+      final provinciaId = ciudad?.provinciaId;
+      if (provinciaId != null && provinciaId.isNotEmpty) {
+        final provincias = await ProvinciasTable().querySingleRow(
+          queryFn: (q) => q.eq('id', provinciaId),
+        );
+        departamento = provincias.firstOrNull?.nombre;
+      }
+      contexto = (nombre: nombreEfectivo, departamento: departamento);
+      _contextosCiudad[clave] = contexto;
+    }
+    return _places?.resolverCentroCiudad(contexto.nombre,
+        departamento: contexto.departamento);
+  }
+
+  void _fijar(Coordenadas? punto,
+      {String? error, bool sincronizarTexto = true}) {
     setState(() {
       _punto = punto;
       _error = error;
@@ -180,6 +239,7 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
             claveApi: _clave,
             mapId: FFDevEnvironmentValues().googleMapsMapId,
             punto: _punto,
+            centroCiudad: _centroCiudad.centro,
             onPunto: _puntoDelMapa,
           ),
           const SizedBox(height: 6.0),
@@ -191,6 +251,13 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
             icono: Icons.error_outline_rounded,
             color: tema.error,
             texto: _error!,
+          ),
+        if (_centroCiudad.fallo && _punto == null)
+          const _Aviso(
+            icono: Icons.info_outline,
+            color: Color(0xFF8A8A8A),
+            texto: 'No se pudo centrar el mapa en la ciudad. Puedes buscar '
+                'la dirección o elegir el punto manualmente.',
           ),
         if (_punto != null) ...[
           _Aviso(

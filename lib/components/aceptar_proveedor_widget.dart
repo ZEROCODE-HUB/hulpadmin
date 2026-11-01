@@ -1,7 +1,9 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
 import '/index.dart';
@@ -56,6 +58,7 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
       child: Container(
         constraints: BoxConstraints(
           maxWidth: 800.0,
+          maxHeight: MediaQuery.sizeOf(context).height - 32.0,
         ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -66,61 +69,27 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
             padding: EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Column(
+            child: ModalConEncabezadoFijo(
+              encabezado: EncabezadoModal(
+                titulo: Text(
+                  'Aceptar inscripción de proveedores',
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                        fontSize: 22.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                ),
+              ),
+              cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Opacity(
-                        opacity: 0.0,
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          'Aceptar inscripción de proveedores',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    fontSize: 22.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                    ],
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
@@ -420,8 +389,10 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                         .fontStyle,
                                   ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
+                        Wrap(
+                          spacing: 20.0,
+                          runSpacing: 12.0,
+                          crossAxisAlignment: WrapCrossAlignment.start,
                           children: [
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -951,7 +922,7 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                 ),
                               ].divide(SizedBox(height: 12.0)),
                             ),
-                          ].divide(SizedBox(width: 20.0)),
+                          ],
                         ),
                       ].divide(SizedBox(height: 16.0)),
                     ),
@@ -959,9 +930,13 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 42.0, 0.0, 0.0),
-                    child: Row(
+                    child: ResponsiveToolbarRow(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
+                      breakpoint: 520.0,
+                      wrapAlignment: WrapAlignment.center,
+                      spacing: 12.0,
+                      runSpacing: 12.0,
                       children: [
                         FFButtonWidget(
                           onPressed: () async {

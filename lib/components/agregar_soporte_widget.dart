@@ -1,3 +1,5 @@
+import '/components/modal_con_encabezado_fijo.dart';
+import 'solicitud_responsive_fields.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -99,62 +101,27 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
             autovalidateMode: AutovalidateMode.disabled,
             child: Padding(
               padding: EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                child: Column(
+              child: ModalConEncabezadoFijo(
+                encabezado: EncabezadoModal(
+                  titulo: Text(
+                    'Nuevo soporte',
+                    textAlign: TextAlign.center,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          font: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          ),
+                          fontSize: 22.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                  ),
+                ),
+                cuerpo: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Opacity(
-                          opacity: 0.0,
-                          child: Icon(
-                            Icons.close,
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            size: 24.0,
-                          ),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Text(
-                            'Nuevo soporte',
-                            textAlign: TextAlign.center,
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  fontSize: 22.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                ),
-                          ),
-                        ),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          focusColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          onTap: () async {
-                            Navigator.pop(context);
-                          },
-                          child: Icon(
-                            Icons.close,
-                            color: FlutterFlowTheme.of(context).primaryText,
-                            size: 24.0,
-                          ),
-                        ),
-                      ],
-                    ),
                     Padding(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
@@ -271,7 +238,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -653,7 +620,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                               ),
                             ],
                           ),
-                          Row(
+                          SolicitudResponsiveFields(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1069,7 +1036,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                               ),
                             ].divide(SizedBox(width: 8.0)),
                           ),
-                          Row(
+                          SolicitudResponsiveFields(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
@@ -1447,7 +1414,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -2044,7 +2011,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       ),
                                 ),
                               ),
-                              Row(
+                              SolicitudResponsiveFields(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Flexible(
@@ -2772,9 +2739,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                       child: Padding(
                         padding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        child: Wrap(alignment: WrapAlignment.end, spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
@@ -2931,7 +2896,7 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(width: 8.0)),
+                          ],
                         ),
                       ),
                     ),

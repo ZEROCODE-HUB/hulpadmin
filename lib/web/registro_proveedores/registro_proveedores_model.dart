@@ -38,6 +38,8 @@ class RegistroProveedoresModel
   // State field(s) for DropDown widget.
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;
+  String? ciudadDropdownValue;
+  FormFieldController<String>? ciudadDropdownValueController;
   // State field(s) for PaginatedDataTable widget.
   final paginatedDataTableController =
       FlutterFlowDataTableController<VwProfesionalesCompletoRow>();

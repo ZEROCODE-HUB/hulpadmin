@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dashboard_model.dart';
+import 'dashboard_responsive.dart';
 export 'dashboard_model.dart';
 
 class DashboardWidget extends StatefulWidget {
@@ -55,6 +56,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       child: PopScope(
         canPop: false,
         child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           body: SafeArea(
@@ -77,7 +80,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         children: [
                           Container(
                             width: MediaQuery.sizeOf(context).width * 1.0,
-                            height: 72.0,
+                            height: MenuWidget.esMovil(context) ? 48.0 : 72.0,
                             decoration: BoxDecoration(
                               color: Color(0xFFEEECE8),
                               border: Border.all(
@@ -104,7 +107,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                           Flexible(
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  40.0, 24.0, 40.0, 0.0),
+                                  MenuWidget.esMovil(context) ? 12.0 : 24.0, 16.0, MenuWidget.esMovil(context) ? 12.0 : 24.0, 0.0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -157,7 +160,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 20.0, 0.0, 20.0),
+                                                    16.0, 20.0, 16.0, 20.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -165,18 +168,16 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                   alignment:
                                                       AlignmentDirectional(
                                                           -1.0, 0.0),
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
+                                                  child: DashboardMetricGrid(minWidth: 170, children: [
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -186,7 +187,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -205,7 +206,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.description_outlined,
+                                                                  child: Text(
                                                                   'Solicitudes pendientes',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -220,7 +224,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -231,6 +235,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -252,8 +257,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -265,6 +269,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -296,7 +301,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -315,7 +320,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -326,7 +331,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -340,10 +345,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -353,7 +362,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -372,7 +381,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.work_outline,
+                                                                  child: Text(
                                                                   'Servicios activos',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -387,7 +399,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -398,6 +410,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -419,8 +432,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -432,6 +444,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -463,7 +476,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -482,7 +495,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -493,7 +506,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -507,10 +520,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -520,7 +537,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -539,7 +556,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.play_arrow_outlined,
+                                                                  child: Text(
                                                                   'Servicios en curso',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -554,7 +574,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -565,6 +585,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -586,8 +607,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -599,6 +619,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -630,7 +651,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -649,7 +670,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -660,7 +681,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -674,10 +695,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -687,7 +712,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -706,7 +731,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.check_circle_outline,
+                                                                  child: Text(
                                                                   'Servicios finalizados',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -721,7 +749,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -732,6 +760,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -753,8 +782,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -766,6 +794,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -797,7 +826,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -816,7 +845,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -827,7 +856,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -841,10 +870,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -854,7 +887,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -873,7 +906,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.layers_outlined,
+                                                                  child: Text(
                                                                   'Total de Solicitudes/Servicios',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -888,7 +924,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -899,6 +935,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -920,8 +957,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -933,6 +969,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -964,7 +1001,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -983,7 +1020,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -994,7 +1031,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -1008,10 +1045,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 162.0,
-                                                          height: 160.0,
+                                                          constraints: const BoxConstraints(minHeight: 215),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -1021,7 +1062,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -1040,7 +1081,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  vertical: true,
+                                                                  icon: Icons.people_alt_outlined,
+                                                                  child: Text(
                                                                   'Proveedores activos',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -1055,7 +1099,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -1066,6 +1110,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -1087,8 +1132,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -1100,6 +1144,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1131,7 +1176,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -1150,7 +1195,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -1161,7 +1206,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -1174,30 +1219,22 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                      ]
-                                                          .divide(SizedBox(
-                                                              width: 16.0))
-                                                          .addToEnd(SizedBox(
-                                                              width: 20.0)),
-                                                    ),
-                                                  ),
+                                                      ],),
                                                 ),
                                                 Align(
                                                   alignment:
                                                       AlignmentDirectional(
                                                           -1.0, 0.0),
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
+                                                  child: DashboardMetricGrid(minWidth: 180, children: [
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 220),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -1207,7 +1244,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -1226,7 +1263,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  icon: Icons.calendar_today_outlined,
+                                                                  child: Text(
                                                                   'Hoy',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -1241,7 +1280,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -1252,6 +1291,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 InkWell(
                                                                   splashColor:
@@ -1284,7 +1324,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1315,16 +1355,15 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Icon(
                                                                         Icons
                                                                             .arrow_forward,
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        size:
-                                                                            24.0,
+                                                                        color: const Color(0xFF075D3F),
+                                                                        size: 20.0,
                                                                       ),
                                                                     ].divide(SizedBox(
                                                                         width:
                                                                             4.0)),
                                                                   ),
                                                                 ),
+                                                                const Divider(height: 12.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1356,7 +1395,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1387,16 +1426,15 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Icon(
                                                                         Icons
                                                                             .arrow_forward,
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        size:
-                                                                            24.0,
+                                                                        color: const Color(0xFF075D3F),
+                                                                        size: 20.0,
                                                                       ),
                                                                     ].divide(SizedBox(
                                                                         width:
                                                                             4.0)),
                                                                   ),
                                                                 ),
+                                                                const Divider(height: 12.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1428,7 +1466,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1459,10 +1497,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Icon(
                                                                         Icons
                                                                             .arrow_forward,
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        size:
-                                                                            24.0,
+                                                                        color: const Color(0xFF075D3F),
+                                                                        size: 20.0,
                                                                       ),
                                                                     ].divide(SizedBox(
                                                                         width:
@@ -1474,10 +1510,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 220),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -1487,7 +1527,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -1506,7 +1546,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  icon: Icons.calendar_today_outlined,
+                                                                  child: Text(
                                                                   'Mañana',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -1521,7 +1563,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -1532,6 +1574,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 InkWell(
                                                                   splashColor:
@@ -1564,7 +1607,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1595,16 +1638,15 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Icon(
                                                                         Icons
                                                                             .arrow_forward,
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        size:
-                                                                            24.0,
+                                                                        color: const Color(0xFF075D3F),
+                                                                        size: 20.0,
                                                                       ),
                                                                     ].divide(SizedBox(
                                                                         width:
                                                                             4.0)),
                                                                   ),
                                                                 ),
+                                                                const Divider(height: 12.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1636,7 +1678,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .max,
@@ -1667,10 +1709,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Icon(
                                                                         Icons
                                                                             .arrow_forward,
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        size:
-                                                                            24.0,
+                                                                        color: const Color(0xFF075D3F),
+                                                                        size: 20.0,
                                                                       ),
                                                                     ].divide(SizedBox(
                                                                         width:
@@ -1682,10 +1722,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 220),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -1695,7 +1739,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -1714,7 +1758,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  icon: Icons.bar_chart,
+                                                                  child: Text(
                                                                   'Ingresos totales semanales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -1729,7 +1775,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -1740,6 +1786,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -1768,8 +1815,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -1781,6 +1827,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1812,7 +1859,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -1831,7 +1878,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -1842,7 +1889,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -1856,10 +1903,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 220),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -1869,7 +1920,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -1888,7 +1939,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  icon: Icons.bar_chart,
+                                                                  child: Text(
                                                                   'Ingresos totales mensuales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -1903,7 +1956,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -1914,6 +1967,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -1942,8 +1996,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -1955,6 +2008,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -1986,7 +2040,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -2005,7 +2059,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -2016,7 +2070,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -2030,10 +2084,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                           ),
                                                         ),
                                                         Container(
-                                                          width: 200.0,
-                                                          height: 196.0,
+                                                          constraints: const BoxConstraints(minHeight: 220),
+                                                          clipBehavior: Clip.antiAlias,
+                                                          foregroundDecoration: const BoxDecoration(
+                                                            border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3.0)),
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
+                                                            boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 8.0, offset: Offset(0, 2))],
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .secondaryBackground,
@@ -2043,7 +2101,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         12.0),
                                                             border: Border.all(
                                                               color: Color(
-                                                                  0xFFD9C19C),
+                                                                  0xFFE0EAE2),
                                                               width: 1.0,
                                                             ),
                                                           ),
@@ -2062,7 +2120,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Text(
+                                                                DashboardMetricHeader(
+                                                                  icon: Icons.bar_chart,
+                                                                  child: Text(
                                                                   'Ingresos totales anuales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
@@ -2077,7 +2137,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .fontStyle,
                                                                         ),
                                                                         color: Color(
-                                                                            0xFF757575),
+                                                                            0xFF4B5563),
                                                                         fontSize:
                                                                             16.0,
                                                                         letterSpacing:
@@ -2088,6 +2148,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .bodyMedium
                                                                             .fontStyle,
                                                                       ),
+                                                                ),
                                                                 ),
                                                                 Text(
                                                                   valueOrDefault<
@@ -2116,8 +2177,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               .bodyMedium
                                                                               .fontStyle,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
+                                                                        color: const Color(0xFF102D22),
                                                                         fontSize:
                                                                             28.0,
                                                                         letterSpacing:
@@ -2129,6 +2189,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                             .fontStyle,
                                                                       ),
                                                                 ),
+                                                                const Divider(height: 16.0, thickness: 1.0, color: Color(0xFFECEDEB)),
                                                                 InkWell(
                                                                   splashColor:
                                                                       Colors
@@ -2160,7 +2221,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       },
                                                                     );
                                                                   },
-                                                                  child: Row(
+                                                                  child: DashboardMetricLink(
                                                                     mainAxisSize:
                                                                         MainAxisSize
                                                                             .min,
@@ -2179,7 +2240,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                   fontWeight: FontWeight.w500,
                                                                                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                 ),
-                                                                                color: Color(0xFF0D70E7),
+                                                                                color: Color(0xFF075D3F),
                                                                                 letterSpacing: 0.0,
                                                                                 fontWeight: FontWeight.w500,
                                                                                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -2190,7 +2251,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         Icons
                                                                             .arrow_right_alt_outlined,
                                                                         color: Color(
-                                                                            0xFF0D70E7),
+                                                                            0xFF075D3F),
                                                                         size:
                                                                             20.0,
                                                                       ),
@@ -2203,13 +2264,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                      ]
-                                                          .divide(SizedBox(
-                                                              width: 16.0))
-                                                          .addToEnd(SizedBox(
-                                                              width: 20.0)),
-                                                    ),
-                                                  ),
+                                                      ],),
                                                 ),
                                               ].divide(SizedBox(height: 24.0)),
                                             ),
@@ -2333,7 +2388,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .max,
@@ -2379,7 +2434,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -2553,7 +2609,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -2614,7 +2670,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                 solicitudesItem.ticket?.toString(),
                                                                                 '-',
                                                                               )}',
-                                                                              maxLines: 2,
+                                                                              maxLines: null,
                                                                               style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                     font: GoogleFonts.inter(
                                                                                       fontWeight: FontWeight.normal,
@@ -2658,7 +2714,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                         barrierColor: Colors.transparent,
                                                                                         context: context,
                                                                                         isGlobal: false,
-                                                                                        avoidOverflow: false,
+                                                                                        avoidOverflow: true,
                                                                                         targetAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                         followerAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                         builder: (dialogContext) {
@@ -2702,7 +2758,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                         ),
                                                                                         Expanded(
                                                                                           child: Container(
-                                                                                            height: 32.0,
+                                                                                            constraints: const BoxConstraints(minHeight: 32),
                                                                                             decoration: BoxDecoration(
                                                                                               color: solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFFE9EBEC) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFFD6EAFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFFDFF9D2) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
                                                                                               borderRadius: BorderRadius.circular(24.0),
@@ -2716,7 +2772,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                               padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                               child: Text(
                                                                                                 solicitudesItem.estadoSolicitud == 'entrantes' ? 'Pendiente' : (solicitudesItem.estadoSolicitud == 'aceptadas' ? 'Activo' : (solicitudesItem.estadoSolicitud == 'canceladas' ? 'Cancelado' : (solicitudesItem.estadoSolicitud == 'finalizadas' ? 'Finalizado' : 'En curso'))),
-                                                                                                maxLines: 2,
+                                                                                                maxLines: null,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       font: GoogleFonts.inter(
                                                                                                         fontWeight: FontWeight.w500,
@@ -2749,8 +2805,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.servicioNombre,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -2772,8 +2827,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.clienteNombreCompleto,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -2795,6 +2849,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),
@@ -2808,7 +2863,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 24.0, 0.0, 24.0),
-                                      child: Row(
+                                      child: DashboardSummaryLayout(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -2926,7 +2981,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .min,
@@ -2972,7 +3027,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -3117,7 +3173,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -3174,8 +3230,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.nombreCompleto,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3197,8 +3252,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               solicitudesItem.categoriaNombre,
                                                                               '-',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3263,6 +3317,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),
@@ -3375,7 +3430,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 },
                                                               );
                                                             },
-                                                            child: Row(
+                                                            child: DashboardTituloResumen(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .min,
@@ -3421,7 +3476,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
+                                                        DashboardTablaScroll(children: [
+                                                          Container(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -3599,7 +3655,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                               padding:
                                                                   EdgeInsets
                                                                       .zero,
-                                                              shrinkWrap: true,
+                                                              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                                                               scrollDirection:
                                                                   Axis.vertical,
                                                               itemCount:
@@ -3658,8 +3714,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.nro.toString(),
                                                                               '0',
                                                                             )}',
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3697,7 +3752,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                     barrierColor: Colors.transparent,
                                                                                     context: context,
                                                                                     isGlobal: false,
-                                                                                    avoidOverflow: false,
+                                                                                    avoidOverflow: true,
                                                                                     targetAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                     followerAnchor: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                     builder: (dialogContext) {
@@ -3744,7 +3799,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                     ),
                                                                                     Expanded(
                                                                                       child: Container(
-                                                                                        height: 32.0,
+                                                                                        constraints: const BoxConstraints(minHeight: 32),
                                                                                         decoration: BoxDecoration(
                                                                                           color: soportelItem.estado == 'pendiente' ? Color(0xFFE9EBEC) : (soportelItem.estado == 'en proceso' ? Color(0xFFD6EAFF) : (soportelItem.estado == 'completado' ? Color(0xFFDFF9D2) : (soportelItem.estado == 'rechazado' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
                                                                                           borderRadius: BorderRadius.circular(24.0),
@@ -3758,7 +3813,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                           padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                           child: Text(
                                                                                             soportelItem.estado == 'pendiente' ? 'Pendiente' : (soportelItem.estado == 'en proceso' ? 'En proceso' : (soportelItem.estado == 'rechazado' ? 'Cancelado' : (soportelItem.estado == 'completado' ? 'Completado' : 'Escalado'))),
-                                                                                            maxLines: 2,
+                                                                                            maxLines: null,
                                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                   font: GoogleFonts.inter(
                                                                                                     fontWeight: FontWeight.w500,
@@ -3789,8 +3844,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.asunto,
                                                                               'Sin asunto',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3814,8 +3868,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               soportelItem.nombreUsuario,
                                                                               'Sin usuario',
                                                                             ),
-                                                                            maxLines:
-                                                                                2,
+                                                                            maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(
                                                                                     fontWeight: FontWeight.normal,
@@ -3837,6 +3890,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                             );
                                                           },
                                                         ),
+                                                        ],),
                                                       ],
                                                     ),
                                                   ),

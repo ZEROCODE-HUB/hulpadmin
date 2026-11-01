@@ -1,3 +1,4 @@
+import '/components/modal_con_encabezado_fijo.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -13,6 +14,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
     this.placeholder = 'Rango de fecha',
     this.firstDate,
     this.lastDate,
+    this.expandido = false,
   });
 
   final DateTime? dateStart;
@@ -22,6 +24,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
   final String placeholder;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final bool expandido;
 
   bool get _hasSelection => dateStart != null && dateEnd != null;
 
@@ -51,67 +54,66 @@ class HulpDateRangePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final boton = InkWell(
+      borderRadius: BorderRadius.circular(8.0),
+      splashColor: Colors.transparent,
+      hoverColor: FlutterFlowTheme.of(context).primary.withOpacity(0.04),
+      onTap: () => _openPicker(context),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(
+            color: _hasSelection
+                ? FlutterFlowTheme.of(context).primary
+                : const Color(0xFFDFDFDF),
+            width: _hasSelection ? 1.5 : 1.0,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                color: FlutterFlowTheme.of(context).primary,
+                size: 18.0,
+              ),
+              Flexible(
+                  child: Padding(
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
+                child: Text(
+                  _displayText,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                        color: _hasSelection
+                            ? FlutterFlowTheme.of(context).primaryText
+                            : FlutterFlowTheme.of(context).secondaryText,
+                        fontSize: 14.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(8.0),
-          splashColor: Colors.transparent,
-          hoverColor: FlutterFlowTheme.of(context).primary.withOpacity(0.04),
-          onTap: () => _openPicker(context),
-          child: Container(
-            height: 48.0,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBFAF9),
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(
-                color: _hasSelection
-                    ? FlutterFlowTheme.of(context).primary
-                    : const Color(0xFFDFDFDF),
-                width: _hasSelection ? 1.5 : 1.0,
-              ),
-            ),
-            child: Padding(
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.calendar_today_rounded,
-                    color: FlutterFlowTheme.of(context).primary,
-                    size: 18.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                        8.0, 0.0, 0.0, 0.0),
-                    child: Text(
-                      _displayText,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                            color: _hasSelection
-                                ? FlutterFlowTheme.of(context).primaryText
-                                : FlutterFlowTheme.of(context).secondaryText,
-                            fontSize: 14.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        if (expandido) Expanded(child: boton) else boton,
         if (_hasSelection)
           Padding(
-            padding:
-                const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12.0),
-              splashColor: Colors.transparent,
-              onTap: onReset,
-              child: const Icon(
+            padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
+            child: IconButton(
+              tooltip: 'Limpiar fechas',
+              onPressed: onReset,
+              icon: const Icon(
                 Icons.close,
                 color: Color(0xFFE20E0E),
                 size: 24.0,
@@ -194,8 +196,18 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
 
   String get _monthLabel {
     const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ];
     return '${months[_focusedMonth.month - 1]} ${_focusedMonth.year}';
   }
@@ -220,134 +232,141 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
       child: Container(
         width: 380,
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(Icons.date_range_rounded, color: primary, size: 22.0),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    'Rango de fechas',
-                    style: FlutterFlowTheme.of(context).titleMedium.override(
-                          font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
+        child: ModalConEncabezadoFijo(
+          encabezado: Row(
+            children: [
+              Icon(Icons.date_range_rounded, color: primary, size: 22.0),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Text(
+                  'Rango de fechas',
+                  style: FlutterFlowTheme.of(context).titleMedium.override(
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                        color: FlutterFlowTheme.of(context).primaryText,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 20.0),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              _rangeLabel,
-              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                    font: GoogleFonts.inter(),
+              ),
+              IconButton(
+                tooltip: 'Cerrar',
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                padding: const EdgeInsets.all(12),
+                icon: const Icon(Icons.close, size: 20.0),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          cuerpo: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 8.0),
+              Text(
+                _rangeLabel,
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      font: GoogleFonts.inter(),
+                      color: primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.0,
+                    ),
+              ),
+              const SizedBox(height: 12.0),
+              const Divider(height: 1.0),
+              const SizedBox(height: 12.0),
+              // Month nav
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded),
                     color: primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14.0,
+                    onPressed: _prevMonth,
                   ),
-            ),
-            const SizedBox(height: 12.0),
-            const Divider(height: 1.0),
-            const SizedBox(height: 12.0),
-            // Month nav
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left_rounded),
-                  color: primary,
-                  onPressed: _prevMonth,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      _monthLabel,
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                            fontSize: 15.0,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        _monthLabel,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600),
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right_rounded),
-                  color: primary,
-                  onPressed: _nextMonth,
-                ),
-              ],
-            ),
-            // Weekday headers
-            Row(
-              children: ['L', 'M', 'M', 'J', 'V', 'S', 'D']
-                  .map((d) => Expanded(
-                        child: Center(
-                          child: Text(
-                            d,
-                            style: FlutterFlowTheme.of(context)
-                                .bodySmall
-                                .override(
-                                  font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 8.0),
-            // Calendar grid
-            _buildCalendarGrid(context, primary),
-            const SizedBox(height: 16.0),
-            // Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _start = null;
-                      _end = null;
-                    });
-                  },
-                  child: Text('Limpiar',
-                      style: TextStyle(color: FlutterFlowTheme.of(context).error)),
-                ),
-                const SizedBox(width: 8.0),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                const SizedBox(width: 8.0),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded),
+                    color: primary,
+                    onPressed: _nextMonth,
                   ),
-                  onPressed: (_start != null && _end != null)
-                      ? () => Navigator.of(context)
-                          .pop(DateTimeRange(start: _start!, end: _end!))
-                      : null,
-                  child: const Text('Aplicar'),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              // Weekday headers
+              Row(
+                children: ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+                    .map((d) => Expanded(
+                          child: Center(
+                            child: Text(
+                              d,
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .override(
+                                    font: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600),
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 8.0),
+              // Calendar grid
+              _buildCalendarGrid(context, primary),
+              const SizedBox(height: 16.0),
+              // Actions
+              Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _start = null;
+                        _end = null;
+                      });
+                    },
+                    child: Text('Limpiar',
+                        style: TextStyle(
+                            color: FlutterFlowTheme.of(context).error)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onPressed: (_start != null && _end != null)
+                        ? () => Navigator.of(context)
+                            .pop(DateTimeRange(start: _start!, end: _end!))
+                        : null,
+                    child: const Text('Aplicar'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -426,8 +445,7 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
           '${date.day}',
           style: FlutterFlowTheme.of(context).bodyMedium.override(
                 font: GoogleFonts.inter(
-                    fontWeight:
-                        isEdge ? FontWeight.w700 : FontWeight.w500),
+                    fontWeight: isEdge ? FontWeight.w700 : FontWeight.w500),
                 color: textColor,
                 fontSize: 14.0,
                 fontWeight: isEdge ? FontWeight.w700 : FontWeight.w500,

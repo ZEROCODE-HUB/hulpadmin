@@ -23,12 +23,14 @@ class MapaPuntoWidget extends StatefulWidget {
     required this.onPunto,
     this.mapId,
     this.punto,
+    this.centroCiudad,
     this.altura = 220.0,
   });
 
   final String claveApi;
   final String? mapId;
   final Coordenadas? punto;
+  final Coordenadas? centroCiudad;
   final ValueChanged<Coordenadas> onPunto;
   final double altura;
 
@@ -37,15 +39,15 @@ class MapaPuntoWidget extends StatefulWidget {
 }
 
 class _MapaPuntoWidgetState extends State<MapaPuntoWidget> {
-  /// Bogotá. Solo es el encuadre inicial cuando no hay punto todavía; en
-  /// cuanto hay uno, manda el punto.
-  static const _centroPorDefecto = Coordenadas(4.7109, -74.0721);
+  /// Vista general de Colombia mientras no hay ciudad resuelta ni punto.
+  static const _centroPorDefecto = Coordenadas(4.5, -73.5);
 
   static int _contador = 0;
 
   late final String _idVista;
   late final web.HTMLElement _div;
   MapaGoogle? _mapa;
+  void Function()? _liberarEventos;
   Coordenadas? _pintado;
   bool _fallo = false;
   bool _listo = false;
@@ -85,14 +87,14 @@ class _MapaPuntoWidgetState extends State<MapaPuntoWidget> {
       return;
     }
 
-    final inicial = widget.punto ?? _centroPorDefecto;
+    final inicial = widget.punto ?? widget.centroCiudad ?? _centroPorDefecto;
     final mapa = crearMapa(
       elemento: _div,
       latitud: inicial.latitud,
       longitud: inicial.longitud,
       // Con punto se entra de cerca, porque ya se sabe dónde es; sin punto,
       // una vista de ciudad para poder buscar.
-      zoom: widget.punto != null ? 17 : 12,
+      zoom: widget.punto != null ? 17 : (widget.centroCiudad != null ? 12 : 5),
       mapId: widget.mapId,
       conMarcador: widget.punto != null,
       alElegirPunto: (lat, lng) {
@@ -105,8 +107,15 @@ class _MapaPuntoWidgetState extends State<MapaPuntoWidget> {
       return;
     }
     _mapa = mapa;
+    _liberarEventos = aislarEventosMapa(_div);
     _pintado = widget.punto;
     setState(() => _listo = true);
+  }
+
+  @override
+  void dispose() {
+    _liberarEventos?.call();
+    super.dispose();
   }
 
   @override
@@ -119,14 +128,26 @@ class _MapaPuntoWidgetState extends State<MapaPuntoWidget> {
     // Comparar contra lo ya pintado, no contra el widget anterior: si el punto
     // vino del propio mapa, ya está en su sitio y volver a centrarlo daría un
     // salto de cámara en mitad del arrastre.
-    if (nuevo == _pintado) return;
+    if (nuevo == _pintado) {
+      if (nuevo == null && widget.centroCiudad != oldWidget.centroCiudad) {
+        _centrarCiudad(mapa);
+      }
+      return;
+    }
 
     if (nuevo == null) {
       mapa.quitarMarcador();
+      _centrarCiudad(mapa);
     } else {
       mapa.moverA(nuevo.latitud, nuevo.longitud, zoom: 17);
     }
     _pintado = nuevo;
+  }
+
+  void _centrarCiudad(MapaGoogle mapa) {
+    final centro = widget.centroCiudad ?? _centroPorDefecto;
+    mapa.centrarEn(centro.latitud, centro.longitud,
+        zoom: widget.centroCiudad != null ? 12 : 5);
   }
 
   @override

@@ -3,6 +3,8 @@ import '/backend/supabase/supabase.dart';
 import '/components/editar_proveedor_widget.dart';
 import '/components/historial_servicios_widget.dart';
 import '/components/notificacion2_widget.dart';
+import '/components/responsive_layout_rows.dart';
+import '/app_state.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -39,8 +41,69 @@ class Proveedores2Widget extends StatefulWidget {
 
 class _Proveedores2WidgetState extends State<Proveedores2Widget> {
   late Proveedores2Model _model;
+  final _scrollHorizontal = ScrollController();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Widget _buildRecentFilterPanel() {
+    final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          font: GoogleFonts.inter(),
+          color: const Color(0xFF4A4A4A),
+          fontSize: 16.0,
+          letterSpacing: 0.0,
+        );
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(color: const Color(0x7C766C4D), width: 0.5),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: ResponsiveProviderFilterLayout(
+          breakpoint: 900.0,
+          label: Text('Filtrar por:', style: textStyle),
+          filters: [
+            FlutterFlowDropDown<String>(
+              controller: _model.dropDownValueController ??=
+                  FormFieldController<String>(null),
+              options: const ['Ultimos 7 dias', 'Ultimos 30 dias'],
+              onChanged: (val) =>
+                  safeSetState(() => _model.dropDownValue = val),
+              width: 200.0,
+              height: 48.0,
+              textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                    font: GoogleFonts.inter(),
+                    fontSize: 16.0,
+                    letterSpacing: 0.0,
+                  ),
+              hintText: 'Recientes',
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: FlutterFlowTheme.of(context).secondaryText,
+                size: 24.0,
+              ),
+              fillColor: const Color(0xFFFBFAF9),
+              elevation: 2.0,
+              borderColor: const Color(0xFFDFDFDF),
+              borderWidth: 1.0,
+              borderRadius: 8.0,
+              margin: const EdgeInsetsDirectional.fromSTEB(
+                  12.0, 0.0, 12.0, 0.0),
+              hidesUnderline: true,
+              isOverButton: false,
+              isSearchable: false,
+              isMultiSelect: false,
+            ),
+          ],
+          summary: const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -55,6 +118,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
 
   @override
   void dispose() {
+    _scrollHorizontal.dispose();
     _model.dispose();
 
     super.dispose();
@@ -62,12 +126,26 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
 
   @override
   Widget build(BuildContext context) {
+    final menuAbierto = context.watch<FFAppState>().MenuAbierto;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final contentWidth = viewportWidth -
+        (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
+    final pagePadding = contentWidth < 600.0
+        ? 16.0
+        : (contentWidth < 1000.0 ? 24.0 : 40.0);
+    final searchSidePadding = contentWidth < 600.0 ? 16.0 : 40.0;
+    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 56.0)
+        .clamp(120.0, 394.0)
+        .toDouble();
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        appBar: MenuWidget.barraMovil(context),
+        drawer: MenuWidget.menuMovil(context),
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         body: SafeArea(
@@ -87,7 +165,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        width: double.infinity,
                         height: 72.0,
                         decoration: BoxDecoration(
                           color: Color(0xFFEEECE8),
@@ -101,10 +179,10 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  40.0, 0.0, 0.0, 0.0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                  searchSidePadding, 0.0, 0.0, 0.0),
                               child: Container(
-                                width: 394.0,
+                                width: searchFieldWidth,
                                 child: TextFormField(
                                   controller:
                                       _model.textFieldbuscarTextController,
@@ -238,7 +316,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, 40.0, 12.0),
+                                  0.0, 12.0, searchSidePadding, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -282,18 +360,13 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                               decoration: BoxDecoration(),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    40.0, 24.0, 40.0, 0.0),
+                                    pagePadding, 24.0, pagePadding, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                    ResponsiveToolbarRow(
+                                      breakpoint: 980.0,
                                       children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
                                             InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -459,161 +532,39 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                     ),
                                               ),
                                             ),
-                                          ],
-                                        ),
                                       ],
                                     ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 24.0, 0.0, 0.0),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFFBFAF9),
-                                          borderRadius:
-                                              BorderRadius.circular(16.0),
-                                          border: Border.all(
-                                            color: Color(0x7C766C4D),
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 6.0, 0.0, 6.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 32.0, 0.0),
-                                                child: Text(
-                                                  'Filtrar por:',
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFF4A4A4A),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 0.0, 0.0),
-                                                child:
-                                                    FlutterFlowDropDown<String>(
-                                                  controller: _model
-                                                          .dropDownValueController ??=
-                                                      FormFieldController<
-                                                          String>(null),
-                                                  options: [
-                                                    'Ultimos 7 dias',
-                                                    'Ultimos 30 dias'
-                                                  ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                          .dropDownValue = val),
-                                                  width: 200.0,
-                                                  height: 48.0,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  hintText: 'Recientes',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                  fillColor: Color(0xFFFBFAF9),
-                                                  elevation: 2.0,
-                                                  borderColor:
-                                                      Color(0xFFDFDFDF),
-                                                  borderWidth: 1.0,
-                                                  borderRadius: 8.0,
-                                                  margin: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          12.0, 0.0, 12.0, 0.0),
-                                                  hidesUnderline: true,
-                                                  isOverButton: false,
-                                                  isSearchable: false,
-                                                  isMultiSelect: false,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 20.0, 0.0, 16.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
+                                    _buildRecentFilterPanel(),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 20.0, 0.0, 16.0),
+                                        child: LayoutBuilder(
+                                          builder: (context, constraints) {
+                                            final tableWidth =
+                                                constraints.maxWidth < 1080.0
+                                                    ? 1080.0
+                                                    : constraints.maxWidth;
+                                            return ScrollConfiguration(
+                                              behavior: const _ScrollProveedores(),
+                                              child: Scrollbar(
+                                                controller: _scrollHorizontal,
+                                                thumbVisibility: true,
+                                                trackVisibility: true,
+                                                notificationPredicate: (notification) =>
+                                                    notification.metrics.axis == Axis.horizontal,
+                                                child: SingleChildScrollView(
+                                              controller: _scrollHorizontal,
+                                              scrollDirection: Axis.horizontal,
+                                              child: SizedBox(
+                                                width: tableWidth,
+                                                child: Column(
+                                        mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Container(
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                1.0,
+                                            width: double.infinity,
                                             decoration: BoxDecoration(
                                               color: Color(0xFFFBFAF9),
                                               borderRadius: BorderRadius.only(
@@ -793,8 +744,9 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                               ),
                                             ),
                                           ),
-                                          FutureBuilder<
-                                              List<VwProfesionalesCompletoRow>>(
+                                          Expanded(
+                                            child: FutureBuilder<
+                                                List<VwProfesionalesCompletoRow>>(
                                             future:
                                                 _model.listaCompletaRequest ??=
                                                     consultarProfesionales(
@@ -826,16 +778,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                   snapshot.data!;
 
                                               return Container(
-                                                constraints: BoxConstraints(
-                                                  maxWidth:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          1.0,
-                                                  maxHeight:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          1.0,
-                                                ),
+                                                width: double.infinity,
                                                 decoration: BoxDecoration(),
                                                 child: Builder(
                                                   builder: (context) {
@@ -857,7 +800,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                     return ListView.builder(
                                                       padding: EdgeInsets.zero,
                                                       primary: false,
-                                                      shrinkWrap: true,
+                                                      shrinkWrap: false,
                                                       scrollDirection:
                                                           Axis.vertical,
                                                       itemCount: items.length,
@@ -866,12 +809,11 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                         final itemsItem =
                                                             items[itemsIndex];
                                                         return Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          height: 90.0,
+                                                          width: double.infinity,
+                                                          constraints:
+                                                              const BoxConstraints(
+                                                            minHeight: 90.0,
+                                                          ),
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1064,7 +1006,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                                 (dialogContext) {
                                                                               return Dialog(
                                                                                 elevation: 0,
-                                                                                insetPadding: EdgeInsets.zero,
+                                                                                insetPadding: const EdgeInsets.all(16.0),
                                                                                 backgroundColor: Colors.transparent,
                                                                                 alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                 child: GestureDetector(
@@ -1191,7 +1133,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                               builder: (dialogContext) {
                                                                                 return Dialog(
                                                                                   elevation: 0,
-                                                                                  insetPadding: EdgeInsets.zero,
+                                                                                  insetPadding: const EdgeInsets.all(16.0),
                                                                                   backgroundColor: Colors.transparent,
                                                                                   alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                   child: GestureDetector(
@@ -1210,19 +1152,19 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                           child:
                                                                               Container(
                                                                             width:
-                                                                                32.0,
+                                                                                34.0,
                                                                             height:
-                                                                                24.0,
+                                                                                34.0,
                                                                             decoration:
                                                                                 BoxDecoration(
-                                                                              color: Color(0xFF0D70E7),
-                                                                              borderRadius: BorderRadius.circular(8.0),
+                                                                              color: FlutterFlowTheme.of(context).warning,
+                                                                              borderRadius: BorderRadius.circular(10.0),
                                                                             ),
                                                                             child:
                                                                                 Icon(
-                                                                              Icons.edit_rounded,
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              size: 16.0,
+                                                                              Icons.edit,
+                                                                              color: FlutterFlowTheme.of(context).info,
+                                                                              size: 18.0,
                                                                             ),
                                                                           ),
                                                                         ),
@@ -1246,7 +1188,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                               builder: (dialogContext) {
                                                                                 return Dialog(
                                                                                   elevation: 0,
-                                                                                  insetPadding: EdgeInsets.zero,
+                                                                                  insetPadding: const EdgeInsets.all(16.0),
                                                                                   backgroundColor: Colors.transparent,
                                                                                   alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                   child: GestureDetector(
@@ -1268,7 +1210,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                                           builder: (dialogContext) {
                                                                                             return Dialog(
                                                                                               elevation: 0,
-                                                                                              insetPadding: EdgeInsets.zero,
+                                                                                              insetPadding: const EdgeInsets.all(16.0),
                                                                                               backgroundColor: Colors.transparent,
                                                                                               alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
                                                                                               child: GestureDetector(
@@ -1321,19 +1263,19 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                           child:
                                                                               Container(
                                                                             width:
-                                                                                32.0,
+                                                                                35.0,
                                                                             height:
-                                                                                24.0,
+                                                                                35.0,
                                                                             decoration:
                                                                                 BoxDecoration(
                                                                               color: Color(0xFFB81C2C),
-                                                                              borderRadius: BorderRadius.circular(8.0),
+                                                                              borderRadius: BorderRadius.circular(10.0),
                                                                             ),
                                                                             child:
                                                                                 Icon(
-                                                                              Icons.delete_outline,
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              size: 16.0,
+                                                                              Icons.close,
+                                                                              color: FlutterFlowTheme.of(context).info,
+                                                                              size: 18.0,
                                                                             ),
                                                                           ),
                                                                         ),
@@ -1355,7 +1297,15 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                               );
                                             },
                                           ),
+                                          ),
                                         ],
+                                                ),
+                                              ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1374,5 +1324,25 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
         ),
       ),
     );
+  }
+}
+
+/// La barra horizontal explícita sustituye la automática; la vertical conserva
+/// el comportamiento habitual de la aplicación.
+class _ScrollProveedores extends MaterialScrollBehavior {
+  const _ScrollProveedores();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
+
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    if (details.direction == AxisDirection.left || details.direction == AxisDirection.right) {
+      return child;
+    }
+    return super.buildScrollbar(context, child, details);
   }
 }

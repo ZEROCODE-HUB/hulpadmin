@@ -1,5 +1,8 @@
+import '/components/modal_con_encabezado_fijo.dart';
+import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacioneliminar_widget.dart';
+import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -86,7 +89,10 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Container(
-        height: 750.0,
+        width: double.infinity,
+        height: MediaQuery.sizeOf(context).height < 840.0
+            ? MediaQuery.sizeOf(context).height * 0.9
+            : 750.0,
         constraints: BoxConstraints(
           maxWidth: 980.0,
         ),
@@ -98,62 +104,30 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.disabled,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Column(
+            padding: EdgeInsets.all(
+              MediaQuery.sizeOf(context).width < 600.0 ? 12.0 : 24.0,
+            ),
+            child: ModalConEncabezadoFijo(
+              encabezado: EncabezadoModal(
+                titulo: Text(
+                  'Historial de servicios',
+                  textAlign: TextAlign.center,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        ),
+                        fontSize: 22.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      ),
+                ),
+              ),
+              cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Opacity(
-                        opacity: 0.0,
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        child: Text(
-                          'Historial de servicios',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    fontSize: 22.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                          size: 24.0,
-                        ),
-                      ),
-                    ],
-                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
@@ -180,7 +154,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                   ),
                         ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
+                          width: double.infinity,
                           height: 40.0,
                           decoration: BoxDecoration(
                             color: Color(0xFFFBFAF9),
@@ -234,9 +208,9 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: ResponsiveToolbarRow(
+                      breakpoint: 760.0,
+                      wrapAlignment: WrapAlignment.spaceBetween,
                       children: [
                         Text(
                           'Resumen',
@@ -259,23 +233,13 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         .fontStyle,
                                   ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Text(
-                              'Activos actuales: ${_model.listaHistorial.where((e) => (e.estadoSolicitud != 'finalizadas') && (e.estadoSolicitud != 'canceladas')).toList().length.toString()}- Total completados:${_model.listaHistorial.where((e) => e.estadoSolicitud == 'finalizadas').toList().length.toString()}',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
+                        Flexible(
+                          child: Text(
+                            'Activos actuales: ${_model.listaHistorial.where((e) => (e.estadoSolicitud != 'finalizadas') && (e.estadoSolicitud != 'canceladas')).toList().length.toString()}- Total completados:${_model.listaHistorial.where((e) => e.estadoSolicitud == 'finalizadas').toList().length.toString()}',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  font: GoogleFonts.inter(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .fontWeight,
@@ -283,14 +247,23 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         .bodyMedium
                                         .fontStyle,
                                   ),
-                            ),
-                          ],
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                          ),
                         ),
-                      ].divide(SizedBox(width: 16.0)),
+                      ],
                     ),
                   ),
                   Container(
-                    height: 450.0,
+                    height: MediaQuery.sizeOf(context).width < 600.0
+                        ? 320.0
+                        : 450.0,
                     child: Builder(
                       builder: (context) {
                         final historialServicios =
@@ -514,7 +487,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                 FlutterFlowTheme.of(context)
                                     .secondaryBackground),
                             cells: [
-                              Text(
+                              TextoTablaCompleto(
                                 '#${valueOrDefault<String>(
                                   historialServiciosItem.ticket?.toString(),
                                   '000',
@@ -539,7 +512,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 '${dateTimeFormat("d/M/y", historialServiciosItem.fecha)} - ${dateTimeFormat("Hm", historialServiciosItem.hora?.time)}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -561,7 +534,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 valueOrDefault<String>(
                                   historialServiciosItem.servicioNombre,
                                   'Sin datos',
@@ -586,7 +559,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 valueOrDefault<String>(
                                   historialServiciosItem.proveedorIdUsuario
                                       ?.toString(),
@@ -612,7 +585,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                           .fontStyle,
                                     ),
                               ),
-                              Text(
+                              TextoTablaCompleto(
                                 '\$${historialServiciosItem.precioTotal?.toString()}',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -680,7 +653,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                 child: Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       8.0, 2.0, 8.0, 2.0),
-                                  child: Text(
+                                  child: TextoTablaCompleto(
                                     historialServiciosItem.estadoSolicitud ==
                                             'entrantes'
                                         ? 'Pendiente'
@@ -697,7 +670,6 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                                         'finalizadas'
                                                     ? 'Finalizado'
                                                     : 'En curso'))),
-                                    maxLines: 2,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -759,7 +731,8 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                                         builder: (dialogContext) {
                                           return Dialog(
                                             elevation: 0,
-                                            insetPadding: EdgeInsets.zero,
+                                            insetPadding:
+                                                const EdgeInsets.all(16.0),
                                             backgroundColor: Colors.transparent,
                                             alignment: AlignmentDirectional(
                                                     0.0, 0.0)
@@ -799,6 +772,7 @@ class _HistorialServiciosWidgetState extends State<HistorialServiciosWidget> {
                           selectable: false,
                           hidePaginator: false,
                           showFirstLastButtons: false,
+                          minWidth: 1100.0,
                           headingRowHeight: 56.0,
                           dataRowHeight: 48.0,
                           columnSpacing: 20.0,

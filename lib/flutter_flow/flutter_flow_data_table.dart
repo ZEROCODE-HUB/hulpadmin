@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'flutter_flow_util.dart';
 
 export 'package:data_table_2/data_table_2.dart' show DataColumn2;
@@ -202,6 +203,66 @@ class FlutterFlowDataTable<T> extends StatefulWidget {
 }
 
 class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
+  final _alturasCeldas = <int, Map<int, double>>{};
+  bool _actualizacionAlturasPendiente = false;
+  int _revisionDatos = 0;
+
+  DataRow? _construirFila(
+      T item, int index, bool selected, void Function(bool?)? onSelectChanged) {
+    final fila = widget.dataRowBuilder(item, index, selected, onSelectChanged);
+    if (fila == null) return null;
+    final revision = _revisionDatos;
+    var altura = fila is DataRow2
+        ? (fila.specificRowHeight ?? widget.dataRowHeight)
+        : widget.dataRowHeight;
+    for (final contenido in (_alturasCeldas[index] ?? {}).values) {
+      altura = math.max(altura, contenido + 24.0);
+    }
+    final celdas = <DataCell>[
+      for (var columna = 0; columna < fila.cells.length; columna++)
+        DataCell(
+          _CeldaAlturaContenido(
+            onAltura: (valor) =>
+                _registrarAltura(revision, index, columna, valor),
+            child: fila.cells[columna].child,
+          ),
+          placeholder: fila.cells[columna].placeholder,
+          showEditIcon: fila.cells[columna].showEditIcon,
+          onTap: fila.cells[columna].onTap,
+          onDoubleTap: fila.cells[columna].onDoubleTap,
+          onLongPress: fila.cells[columna].onLongPress,
+          onTapDown: fila.cells[columna].onTapDown,
+          onTapCancel: fila.cells[columna].onTapCancel,
+        ),
+    ];
+    if (fila is DataRow2) {
+      return fila.clone(cells: celdas, specificRowHeight: altura);
+    }
+    return DataRow2(
+      key: fila.key,
+      selected: fila.selected,
+      onSelectChanged: fila.onSelectChanged,
+      onLongPress: fila.onLongPress,
+      color: fila.color,
+      cells: celdas,
+      specificRowHeight: altura,
+    );
+  }
+
+  void _registrarAltura(int revision, int fila, int columna, double altura) {
+    if (revision != _revisionDatos || !altura.isFinite) return;
+    final celdas = _alturasCeldas.putIfAbsent(fila, () => {});
+    final medida = altura.ceilToDouble();
+    if (celdas[columna] == medida) return;
+    celdas[columna] = medida;
+    if (_actualizacionAlturasPendiente) return;
+    _actualizacionAlturasPendiente = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _actualizacionAlturasPendiente = false;
+      if (mounted) controller.updateData();
+    });
+  }
+
   FlutterFlowDataTableController<T> get controller => widget.controller;
   int get rowCount => controller.rowCount;
 
@@ -213,7 +274,7 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
     super.initState();
     dataTableShowLogs = false; // Disables noisy DataTable2 debug statements.
     controller.init(
-      dataRowBuilder: widget.dataRowBuilder,
+      dataRowBuilder: _construirFila,
       selectable: widget.selectable,
       initialData: widget.data,
       initialNumRows: widget.numRows,
@@ -229,6 +290,10 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
   @override
   void didUpdateWidget(FlutterFlowDataTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.data, widget.data)) {
+      _revisionDatos++;
+      _alturasCeldas.clear();
+    }
     controller.updateData(
       data: widget.data,
       numRows: widget.numRows,
@@ -410,4 +475,43 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
             ((widget.selectable ? 2 : 1) * _kDataTableHorizontalMargin) + 1,
             (sum, col) => sum + (col as DataColumn2).fixedWidth!,
           );
+}
+
+/// Mide la celda con su ancho real y sin limitar la altura del contenido.
+class _CeldaAlturaContenido extends SingleChildRenderObjectWidget {
+  const _CeldaAlturaContenido({required this.onAltura, required super.child});
+
+  final ValueChanged<double> onAltura;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderCeldaAlturaContenido(onAltura);
+
+  @override
+  void updateRenderObject(BuildContext context,
+      covariant _RenderCeldaAlturaContenido renderObject) {
+    renderObject.onAltura = onAltura;
+  }
+}
+
+class _RenderCeldaAlturaContenido extends RenderProxyBox {
+  _RenderCeldaAlturaContenido(this.onAltura);
+
+  ValueChanged<double> onAltura;
+
+  @override
+  void performLayout() {
+    final contenido = child;
+    if (contenido == null) {
+      size = constraints.smallest;
+      return;
+    }
+    contenido.layout(
+      BoxConstraints(
+          minWidth: constraints.minWidth, maxWidth: constraints.maxWidth),
+      parentUsesSize: true,
+    );
+    size = constraints.constrain(contenido.size);
+    onAltura(contenido.size.height);
+  }
 }
