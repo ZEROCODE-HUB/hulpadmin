@@ -17,6 +17,7 @@ class VwSolicitudesServiciosCompletaRow extends SupabaseDataRow {
   SupabaseTable get table => VwSolicitudesServiciosCompletaTable();
 
   String? get solicitudId => getField<String>('solicitud_id');
+  String? get direccionUsuarioId => getField<String>('direccion_usuario_id');
   set solicitudId(String? value) => setField<String>('solicitud_id', value);
 
   int? get ticket => getField<int>('ticket');

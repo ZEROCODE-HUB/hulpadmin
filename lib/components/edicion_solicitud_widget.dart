@@ -1,6 +1,7 @@
 import '/components/modal_con_encabezado_fijo.dart';
 import '/web/solicitudes/menu_estado_solicitud.dart';
 import 'solicitud_responsive_fields.dart';
+import '/components/direcciones_cliente_selector.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/actualizar_cliente_solicitud.dart';
 import '/backend/schema/structs/index.dart';
@@ -42,6 +43,10 @@ class EdicionSolicitudWidget extends StatefulWidget {
 
 class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
   late EdicionSolicitudModel _model;
+  bool _direccionInicializada = false;
+  String? _direccionId;
+  bool _puntoEditado = false;
+  int _revisionMapa = 0;
   final _fechaHoraKey = GlobalKey<FechaHoraSolicitudWidgetState>();
   bool get _legacyDateTimePickerEnabled => false;
 
@@ -560,8 +565,13 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
               values: ciudades.map((c) => c.id).toList(),
               labels: ciudades.map((c) => c.nombre ?? '').toList(),
               selectedValue: _model.ciudadNuevaValue ?? ciudadActual,
-              onChanged: (value) =>
-                  safeSetState(() => _model.ciudadNuevaValue = value),
+              onChanged: (value) => safeSetState(() {
+                _model.ciudadNuevaValue = value;
+                _direccionId = null;
+                _model.coordenadas = null;
+                _puntoEditado = true;
+                _revisionMapa++;
+              }),
               hint: 'Seleccionar ciudad...',
             );
           },
@@ -626,13 +636,39 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
       BuildContext context, VwSolicitudesServiciosCompletaRow solicitud) {
     _model.nombreTextController6 ??=
         TextEditingController(text: solicitud.ubicacion ?? '');
+    if (!_direccionInicializada) {
+      _direccionInicializada = true;
+      _direccionId = solicitud.direccionUsuarioId;
+      _model.coordenadas = solicitud.latitud != null && solicitud.longitud != null
+          ? Coordenadas(solicitud.latitud!, solicitud.longitud!) : null;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (solicitud.usuarioId != null)
+          DireccionesClienteSelector(
+            usuarioId: solicitud.usuarioId!,
+            nombreCliente: solicitud.clienteNombreCompleto ?? 'Cliente',
+            seleccionada: _direccionId,
+            onSeleccion: (direccion) => safeSetState(() {
+              _direccionId = direccion.id;
+              _model.nombreTextController6?.text = direccion.completa;
+              _model.ciudadNuevaValue = direccion.ciudadId;
+              _model.coordenadas = direccion.punto;
+              _puntoEditado = true;
+              _revisionMapa++;
+            }),
+          ),
         _buildFieldLabel(context, 'Dirección *'),
         const SizedBox(height: 8.0),
         TextFormField(
           controller: _model.nombreTextController6,
+          onChanged: (_) => safeSetState(() {
+            _direccionId = null;
+            _model.coordenadas = null;
+            _puntoEditado = true;
+            _revisionMapa++;
+          }),
           minLines: 2,
           maxLines: null,
           keyboardType: TextInputType.multiline,
@@ -641,16 +677,20 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
         ),
         const SizedBox(height: 8.0),
         SelectorUbicacionWidget(
-          key: ValueKey('ubicacion_${widget.solicitudId}'),
+          key: ValueKey('ubicacion_${widget.solicitudId}_$_revisionMapa'),
           ciudadId: _model.ciudadNuevaValue,
           nombreCiudad: _model.ciudadNuevaValue == null ? solicitud.solicitudCiudad : null,
-          coordenadasIniciales: solicitud.latitud != null && solicitud.longitud != null
-              ? Coordenadas(solicitud.latitud!, solicitud.longitud!)
-              : null,
+          coordenadasIniciales: _model.coordenadas,
           direccionActual: () => _model.nombreTextController6?.text ?? '',
-          onCambio: (punto) => _model.coordenadas = punto,
-          onDireccionSugerida: (valor) => safeSetState(
-              () => _model.nombreTextController6?.text = valor),
+          onCambio: (punto) => safeSetState(() {
+            if (punto != _model.coordenadas) _direccionId = null;
+            _model.coordenadas = punto;
+            _puntoEditado = true;
+          }),
+          onDireccionSugerida: (valor) => safeSetState(() {
+            _direccionId = null;
+            _model.nombreTextController6?.text = valor;
+          }),
         ),
       ],
     );
@@ -898,8 +938,9 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
         data: {
           'descripcion': _model.nombreTextController4?.text,
           'ubicacion': _model.nombreTextController6?.text,
-          'latitud': _model.coordenadas?.latitud ?? solicitud.latitud,
-          'longitud': _model.coordenadas?.longitud ?? solicitud.longitud,
+          'direccion_usuario_id': _direccionId,
+          'latitud': _puntoEditado ? _model.coordenadas?.latitud : solicitud.latitud,
+          'longitud': _puntoEditado ? _model.coordenadas?.longitud : solicitud.longitud,
           'fecha': supaSerialize<DateTime>(_model.datePicked1 ?? solicitud.fecha),
           'hora': supaSerialize<PostgresTime>(
               PostgresTime(_model.datePicked2 ?? solicitud.hora?.time)),

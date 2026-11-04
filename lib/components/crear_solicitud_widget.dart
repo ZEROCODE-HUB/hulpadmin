@@ -1,4 +1,7 @@
 import 'solicitud_responsive_fields.dart';
+import '/components/buscador_cliente_direcciones.dart';
+import '/backend/direcciones_cliente.dart';
+import '/components/direcciones_cliente_selector.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
@@ -33,6 +36,10 @@ class CrearSolicitudWidget extends StatefulWidget {
 
 class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   late CrearSolicitudModel _model;
+  DireccionCliente? _direccionGuardada;
+  int _revisionMapa = 0;
+  int _revisionDirecciones = 0;
+  String _clienteNombre = '';
   final _fechaHoraKey = GlobalKey<FechaHoraSolicitudWidgetState>();
   DateTime? _selectedServiceDate;
   DateTime? _selectedServiceTime;
@@ -75,6 +82,16 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         usuarios.where((usuario) => usuario.id == usuarioId).firstOrNull;
     safeSetState(() {
       _model.usuarioSeleccionadoValue = usuarioId;
+      _clienteNombre = [cliente?.nombres, cliente?.apellidos]
+          .whereType<String>().where((v) => v.trim().isNotEmpty).join(' ');
+      _direccionGuardada = null;
+      _model.direccionTextController?.clear();
+      _model.coordenadas = null;
+      _model.ciudadSeleccValue = null;
+      _model.direccionEditadaManualmente = false;
+      _model.direccionSugeridaPorCliente = false;
+      _model.ciudadEditadaManualmente = false;
+      _revisionMapa++;
       _model.clienteAutocompletadoId = usuarioId;
       _model.historialClienteId = null;
       _model.historialSolicitudesRequest = null;
@@ -99,7 +116,6 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     });
 
     if (cliente == null) return;
-    _aplicarDireccionCliente(cliente);
     _aplicarCiudadCliente(cliente);
     unawaited(_aplicarSugerenciasHistorial(cliente.id));
   }
@@ -300,6 +316,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   void _marcarDireccionComoManual() {
     safeSetState(() {
+      _direccionGuardada = null;
+      if (_model.coordenadas != null) _revisionMapa++;
+      _model.coordenadas = null;
       _model.direccionSugeridaPorCliente = false;
       _model.direccionEditadaManualmente = true;
     });
@@ -307,6 +326,11 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   void _seleccionarCiudadManualmente(String? ciudadId) {
     safeSetState(() {
+      if (ciudadId != _model.ciudadSeleccValue) {
+        _direccionGuardada = null;
+        _model.coordenadas = null;
+        _revisionMapa++;
+      }
       _model.ciudadSeleccValue = ciudadId;
       _model.ciudadSugeridaPorCliente = false;
       _model.ciudadSugeridaPorHistorial = false;
@@ -573,43 +597,22 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         .sortedList(keyOf: (e) => e.nombres ?? '', desc: false)
         .where((e) => e.rol == 'usuario')
         .toList();
-    final userLabels = users
-        .map((u) => '${u.nombres ?? ''} ${u.apellidos ?? ''}'.trim())
-        .toList();
-    final userSearchTexts = users
-        .map(
-          (u) => [
-            u.nombres ?? '',
-            u.apellidos ?? '',
-            u.telefono ?? '',
-            u.correoElectronico ?? '',
-          ].join(' '),
-        )
-        .toList();
-    final userDetails = users
-        .map(
-          (u) => [
-            if ((u.telefono ?? '').trim().isNotEmpty) u.telefono!.trim(),
-            if ((u.correoElectronico ?? '').trim().isNotEmpty)
-              u.correoElectronico!.trim(),
-          ].join(' · '),
-        )
-        .toList();
     final secondaryUsers = usuarios.where((e) => e.rol == 'usuario').toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFieldLabel(context, 'Usuario *'),
         const SizedBox(height: 8.0),
-        SearchableDropdown(
-          values: users.map((u) => u.id).toList(),
-          labels: userLabels,
-          searchTexts: userSearchTexts,
-          details: userDetails,
-          selectedValue: _model.usuarioSeleccionadoValue,
-          onChanged: (val) => _seleccionarCliente(val, users),
-          hint: 'Seleccionar usuario...',
-          searchHint: 'Nombre, teléfono o correo',
+        BuscadorClienteDirecciones(
+          clientes: users,
+          usuarioId: _model.usuarioSeleccionadoValue,
+          onSeleccion: (seleccion) {
+            _seleccionarCliente(seleccion.cliente.id, users);
+            if (seleccion.direccion != null) {
+              _aplicarDireccionGuardada(seleccion.direccion!);
+            }
+            safeSetState(() => _revisionDirecciones++);
+          },
         ),
         if (currentUserUid == '-1') ...[
           const SizedBox(height: 8.0),
@@ -839,10 +842,45 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     );
   }
 
+  void _aplicarDireccionGuardada(DireccionCliente direccion) {
+    safeSetState(() {
+      _direccionGuardada = direccion;
+      _model.direccionTextController.text = direccion.completa;
+      _model.ciudadSeleccValue = direccion.ciudadId;
+      _model.coordenadas = direccion.punto;
+      _model.ciudadEditadaManualmente = true;
+      _model.ciudadSugeridaPorHistorial = false;
+      _model.ciudadSugeridaPorCliente = false;
+      _model.direccionSugeridaPorCliente = false;
+      _model.direccionEditadaManualmente = true;
+      _model.ciudadHistorialNoDisponible = null;
+      _model.ciudadPerfilNoDisponible = null;
+      _revisionMapa++;
+    });
+  }
+
   Widget _buildDireccionYUbicacionField(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (_model.usuarioSeleccionadoValue != null)
+          DireccionesClienteSelector(
+            key: ValueKey((_model.usuarioSeleccionadoValue, _revisionDirecciones)),
+            usuarioId: _model.usuarioSeleccionadoValue!,
+            nombreCliente: _clienteNombre,
+            seleccionada: _direccionGuardada?.id,
+            onSinDirecciones: () {
+              final clienteId = _model.usuarioSeleccionadoValue;
+              UsuariosTable().queryRows(queryFn: (q) => q.eqOrNull('id', clienteId))
+                  .then((rows) {
+                if (mounted && clienteId == _model.usuarioSeleccionadoValue &&
+                    !_model.direccionEditadaManualmente && rows.isNotEmpty) {
+                  _aplicarDireccionCliente(rows.first);
+                }
+              }).catchError((Object _) {});
+            },
+            onSeleccion: _aplicarDireccionGuardada,
+          ),
         Row(
           children: [
             _buildFieldLabel(context, 'Dirección *'),
@@ -870,15 +908,19 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         ),
         const SizedBox(height: 8.0),
         SelectorUbicacionWidget(
+          key: ValueKey('direccion_$_revisionMapa'),
+          coordenadasIniciales: _model.coordenadas,
           ciudadId: _model.ciudadSeleccValue,
           direccionActual: () => _model.direccionTextController.text,
           onCambio: (punto) => safeSetState(() {
+            if (punto != _model.coordenadas) _direccionGuardada = null;
             _model.coordenadas = punto;
             _model.direccionSugeridaPorCliente = false;
             _model.direccionEditadaManualmente = true;
           }),
           onDireccionSugerida: (valor) {
             safeSetState(() {
+              _direccionGuardada = null;
               _model.direccionTextController?.text = valor;
               _model.direccionSugeridaPorCliente = false;
               _model.direccionEditadaManualmente = true;
@@ -954,6 +996,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         'usuario_id': _model.usuarioSeleccionadoValue,
         'descripcion': _model.descripcionTextController.text,
         'ubicacion': _model.direccionTextController.text,
+        'direccion_usuario_id': _direccionGuardada?.id,
         'fecha': supaSerialize<DateTime>(
             functions.formatTimestamp(_model.datePicked!, true)),
         'hora': supaSerialize<PostgresTime>(

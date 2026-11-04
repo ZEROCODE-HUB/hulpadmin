@@ -10,6 +10,7 @@ class SolicitudesServicioTable extends SupabaseTable<SolicitudesServicioRow> {
 }
 
 class SolicitudesServicioRow extends SupabaseDataRow {
+  String? get direccionUsuarioId => getField<String>('direccion_usuario_id');
   SolicitudesServicioRow(Map<String, dynamic> data) : super(data);
 
   @override
