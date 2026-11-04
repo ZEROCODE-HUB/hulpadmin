@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hulp_admin/backend/direcciones_cliente.dart';
 import 'package:hulp_admin/backend/supabase/supabase.dart';
 import 'package:hulp_admin/components/agregar_direccion_cliente_widget.dart';
+import 'package:hulp_admin/components/searchable_dropdown_widget.dart';
 import 'package:hulp_admin/components/direcciones_cliente_selector.dart';
 import 'package:hulp_admin/flutter_flow/ubicacion_helpers.dart';
 
@@ -225,8 +226,8 @@ void main() {
           find.byType(TextFormField).at(2), 'Apto 3, Torre A');
       await tester.enterText(
           find.byType(TextFormField).at(3), 'Portería norte');
-      await tester.ensureVisible(find.byType(DropdownButtonFormField<String>));
-      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.ensureVisible(find.byType(SearchableDropdown));
+      await tester.tap(find.byType(SearchableDropdown));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cali').last);
       await tester.pumpAndSettle();

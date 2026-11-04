@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:hulp_admin/app_state.dart';
 import 'package:hulp_admin/components/crear_solicitud_widget.dart';
+import 'package:hulp_admin/components/fecha_hora_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
 import 'package:hulp_admin/components/edicion_solicitud_widget.dart';
 import 'package:hulp_admin/components/hulp_date_range_picker_widget.dart';
@@ -294,6 +295,33 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
       await cargar(tester, Scaffold(body: form), 320, 640);
       expect(find.byType(TextFormField), findsWidgets);
+      if (name == 'crear') {
+        final calendario = find.byType(FechaHoraSolicitudWidget);
+        final hoy = DateUtils.dateOnly(DateTime.now());
+        expect(
+          DateUtils.dateOnly(tester
+              .widget<FechaHoraSolicitudWidget>(calendario)
+              .firstDate!),
+          hoy,
+        );
+        final anterior = find.descendant(
+            of: calendario,
+            matching: find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == 'Mes anterior'));
+        expect(tester.widget<IconButton>(anterior).onPressed, isNull);
+        if (hoy.day > 1) {
+          final ayer = find.descendant(
+              of: calendario, matching: find.text('${hoy.day - 1}'));
+          final botonAyer =
+              find.ancestor(of: ayer, matching: find.byType(InkWell));
+          expect(tester.widget<InkWell>(botonAyer).onTap, isNull);
+        }
+        final diaHoy = find.descendant(
+            of: calendario, matching: find.text('${hoy.day}'));
+        final botonHoy =
+            find.ancestor(of: diaHoy, matching: find.byType(InkWell));
+        expect(tester.widget<InkWell>(botonHoy).onTap, isNotNull);
+      }
       if (name == 'editar' || name == 'detalles') {
         final icon = find
             .byIcon(name == 'editar'

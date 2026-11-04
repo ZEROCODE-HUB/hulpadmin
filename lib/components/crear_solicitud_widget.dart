@@ -40,6 +40,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   int _revisionMapa = 0;
   int _revisionDirecciones = 0;
   String _clienteNombre = '';
+  Future<List<UsuariosRow>>? _clientesRequest;
+  final _clientesAgregados = <String, UsuariosRow>{};
   final _fechaHoraKey = GlobalKey<FechaHoraSolicitudWidgetState>();
   DateTime? _selectedServiceDate;
   DateTime? _selectedServiceTime;
@@ -411,7 +413,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: FutureBuilder<List<UsuariosRow>>(
-            future: UsuariosTable().queryRows(queryFn: (q) => q),
+            future: _clientesRequest ??= UsuariosTable().queryRows(queryFn: (q) => q),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
@@ -593,7 +595,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   Widget _buildUsuarioField(
       BuildContext context, List<UsuariosRow> usuarios) {
-    final users = usuarios
+    final clientes = {for (final c in usuarios) c.id: c, ..._clientesAgregados};
+    final users = clientes.values
         .sortedList(keyOf: (e) => e.nombres ?? '', desc: false)
         .where((e) => e.rol == 'usuario')
         .toList();
@@ -606,8 +609,13 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         BuscadorClienteDirecciones(
           clientes: users,
           usuarioId: _model.usuarioSeleccionadoValue,
+          ciudadInicial: _model.ciudadSeleccValue,
           onSeleccion: (seleccion) {
-            _seleccionarCliente(seleccion.cliente.id, users);
+            _clientesAgregados[seleccion.cliente.id] = seleccion.cliente;
+            _seleccionarCliente(seleccion.cliente.id, [
+              ...users.where((c) => c.id != seleccion.cliente.id),
+              seleccion.cliente,
+            ]);
             if (seleccion.direccion != null) {
               _aplicarDireccionGuardada(seleccion.direccion!);
             }
@@ -827,6 +835,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         const SizedBox(height: 8.0),
         FechaHoraSolicitudWidget(
           key: _fechaHoraKey,
+          firstDate: getCurrentTimestamp,
           showInstructions: false,
           timeLabel: 'Hora *',
           onDateChanged: (date) {
@@ -986,6 +995,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       return;
     }
     if (!(_fechaHoraKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    if (_selectedServiceDate == null ||
+        DateUtils.dateOnly(_selectedServiceDate!)
+            .isBefore(DateUtils.dateOnly(getCurrentTimestamp))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una fecha de hoy en adelante.')),
+      );
       return;
     }
 
@@ -2172,6 +2189,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 maxWidth: 480.0),
                                             child: FechaHoraSolicitudWidget(
                                               key: _fechaHoraKey,
+                                              firstDate: getCurrentTimestamp,
                                               onDateChanged: (date) {
                                                 _selectedServiceDate = date;
                                                 _updateSelectedServiceDateTime();
@@ -2194,7 +2212,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 context: context,
                                                 initialDate:
                                                     getCurrentTimestamp,
-                                                firstDate: DateTime(1900),
+                                                firstDate: getCurrentTimestamp,
                                                 lastDate: DateTime(2050),
                                                 builder: (context, child) {
                                                   return wrapInMaterialDatePickerTheme(

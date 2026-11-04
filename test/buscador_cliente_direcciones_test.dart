@@ -87,7 +87,7 @@ void main() {
     expect(find.byKey(const ValueKey('resultado_direccion_dir_a')),
         findsOneWidget);
     expect(find.textContaining('Última vez'), findsNothing);
-    expect(find.textContaining('Crear cliente nuevo'), findsNothing);
+    expect(find.byKey(const ValueKey('quick_add_cliente')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('resultado_direccion_dir_a')));
     await tester.pumpAndSettle();
     expect(elegido?.cliente.id, 'a');

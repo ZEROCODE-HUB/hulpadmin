@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '/backend/direcciones_cliente.dart';
+import '/backend/quick_add_cliente.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/dialog_helpers.dart';
@@ -18,11 +19,15 @@ class BuscadorClienteDirecciones extends StatelessWidget {
       required this.clientes,
       required this.onSeleccion,
       this.usuarioId,
-      this.repository});
+      this.repository,
+      this.quickAdd,
+      this.ciudadInicial});
   final List<UsuariosRow> clientes;
   final String? usuarioId;
   final ValueChanged<SeleccionClienteDireccion> onSeleccion;
   final DireccionesClienteRepository? repository;
+  final QuickAddClienteRepository? quickAdd;
+  final String? ciudadInicial;
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +186,30 @@ class _BuscadorState extends State<_ResultadosClienteDialog> {
     if (direccion != null) _elegir(cliente, direccion);
   }
 
+  Future<void> _crearCliente() async {
+    if (_agregando) return;
+    _foco.unfocus();
+    setState(() => _agregando = true);
+    final texto = _texto.text.trim();
+    final esTelefono = RegExp(r'^[+\d\s()-]+$').hasMatch(texto);
+    final resultado = await showDialog<ResultadoQuickAdd>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AgregarDireccionClienteWidget(
+        usuarioId: '',
+        nombreCliente: '',
+        repository: _repo,
+        quickAdd: widget.config.quickAdd ?? QuickAddClienteRepository(),
+        nombreInicial: esTelefono || texto.contains('@') ? '' : texto,
+        telefonoInicial: esTelefono ? texto : '',
+        ciudadInicial: widget.config.ciudadInicial,
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _agregando = false);
+    if (resultado != null) _elegir(resultado.cliente, resultado.direccion);
+  }
+
   @override
   Widget build(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
@@ -224,6 +253,15 @@ class _BuscadorState extends State<_ResultadosClienteDialog> {
                   onPressed: () => Navigator.pop(context),
                   icon: Icon(Icons.close, color: tema.secondaryText)),
             ]),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const ValueKey('quick_add_cliente'),
+                  onPressed: _agregando ? null : _crearCliente,
+                  style: TextButton.styleFrom(foregroundColor: tema.primary),
+                  icon: const Icon(Icons.person_add_alt_1, size: 18),
+                  label: const Text('Crear cliente nuevo'),
+                )),
             Flexible(
                 child: Padding(
                     padding: const EdgeInsets.only(top: 8),

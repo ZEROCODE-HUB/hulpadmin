@@ -173,6 +173,10 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                             ),
                             validator: (value) {
                               final correo = value?.trim() ?? '';
+                              if (correo.isEmpty &&
+                                  (perfilCliente.correoElectronico?.trim().isEmpty ?? true)) {
+                                return null;
+                              }
                               if (correo.isEmpty ||
                                   !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
                                       .hasMatch(correo)) {

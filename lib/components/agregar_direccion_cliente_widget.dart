@@ -1,9 +1,12 @@
 import '/backend/direcciones_cliente.dart';
+import '/backend/quick_add_cliente.dart';
+import 'package:uuid/uuid.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/ubicacion_helpers.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'selector_ubicacion_widget.dart';
+import 'searchable_dropdown_widget.dart';
 import 'package:flutter/material.dart';
 
 class AgregarDireccionClienteWidget extends StatefulWidget {
@@ -11,10 +14,18 @@ class AgregarDireccionClienteWidget extends StatefulWidget {
       {super.key,
       required this.usuarioId,
       required this.nombreCliente,
-      required this.repository});
+      required this.repository,
+      this.quickAdd,
+      this.nombreInicial = '',
+      this.telefonoInicial = '',
+      this.ciudadInicial});
   final String usuarioId;
   final String nombreCliente;
   final DireccionesClienteRepository repository;
+  final QuickAddClienteRepository? quickAdd;
+  final String nombreInicial;
+  final String telefonoInicial;
+  final String? ciudadInicial;
   @override
   State<AgregarDireccionClienteWidget> createState() =>
       _AgregarDireccionState();
@@ -22,21 +33,36 @@ class AgregarDireccionClienteWidget extends StatefulWidget {
 
 class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
   final _form = GlobalKey<FormState>();
+  late final _cliente = TextEditingController(text: widget.nombreInicial);
+  final _apellido = TextEditingController();
+  late final _telefono = TextEditingController(text: widget.telefonoInicial);
+  final _requestId = const Uuid().v4();
   final _nombre = TextEditingController();
   final _direccion = TextEditingController();
   final _complemento = TextEditingController();
   final _referencia = TextEditingController();
   late final Future<List<CiudadesRow>> _ciudades =
-      widget.repository.ciudades(soloActivas: true);
+      widget.repository.ciudades(soloActivas: true).then((rows) {
+    if (!rows.any((c) => c.id == _ciudad)) _ciudad = null;
+    return rows;
+  });
   int _revisionMapa = 0;
   String _tipo = 'casa';
-  String? _ciudad;
+  late String? _ciudad = widget.ciudadInicial;
   Coordenadas? _punto;
   bool _guardando = false;
   String? _error;
   @override
   void dispose() {
-    for (final controller in [_nombre, _direccion, _complemento, _referencia]) {
+    for (final controller in [
+      _cliente,
+      _apellido,
+      _telefono,
+      _nombre,
+      _direccion,
+      _complemento,
+      _referencia
+    ]) {
       controller.dispose();
     }
     super.dispose();
@@ -49,7 +75,7 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
       _error = null;
     });
     try {
-      final result = await widget.repository.guardar({
+      final datos = <String, dynamic>{
         'usuario_id': widget.usuarioId,
         'tipo': _tipo,
         'nombre': _tipo == 'otra' ? _nombre.text.trim() : null,
@@ -59,15 +85,55 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
         'ciudad_id': _ciudad,
         'latitud': _punto?.latitud,
         'longitud': _punto?.longitud,
-      });
+      };
+      if (widget.quickAdd != null) {
+        final result = await widget.quickAdd!.crear(
+            requestId: _requestId,
+            nombre: _cliente.text,
+            apellido: _apellido.text,
+            telefono: _telefono.text,
+            direccion: datos);
+        if (!mounted) return;
+        if (result.existente) {
+          final usar = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                    title: const Text('Cliente existente'),
+                    content: Text('Este celular pertenece a ${[
+                      result.cliente.nombres,
+                      result.cliente.apellidos
+                    ].whereType<String>().join(' ')}. ¿Quieres usar ese cliente?'),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Volver')),
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Usar cliente existente')),
+                    ],
+                  ));
+          if (!mounted) return;
+          if (usar != true) {
+            setState(() => _guardando = false);
+            return;
+          }
+        }
+        if (mounted) Navigator.of(context).pop(result);
+        return;
+      }
+      final result = await widget.repository.guardar(datos);
       if (mounted) Navigator.of(context).pop(result);
-    } catch (_) {
-      if (mounted)
+    } catch (error) {
+      if (mounted) {
         setState(() {
           _guardando = false;
-          _error =
-              'No se pudo guardar la dirección. Revisa los datos e intenta nuevamente.';
+          _error = error is QuickAddException
+              ? error.message
+              : widget.quickAdd != null
+                  ? 'No se pudo crear el cliente. Tus datos se conservan; vuelve a guardar.'
+                  : 'No se pudo guardar la dirección. Revisa los datos e intenta nuevamente.';
         });
+      }
     }
   }
 
@@ -127,6 +193,25 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
       key: const ValueKey('campos_direccion'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (widget.quickAdd != null) ...[
+          _campo('Nombre *', 'Nombre del cliente', _cliente,
+              validator: (v) => (v?.trim().isEmpty ?? true)
+                  ? 'Escribe el nombre'
+                  : v!.trim().length > 200
+                      ? 'Usa hasta 200 caracteres'
+                      : null),
+          _campo('Apellido *', 'Apellido del cliente', _apellido,
+              validator: (v) => (v?.trim().isEmpty ?? true)
+                  ? 'Escribe el apellido'
+                  : v!.trim().length > 200
+                      ? 'Usa hasta 200 caracteres'
+                      : null),
+          _campo('Celular *', '300 123 4567', _telefono,
+              validator: (v) => RegExp(r'^573\d{9}$')
+                      .hasMatch(normalizarCelularCliente(v ?? ''))
+                  ? null
+                  : 'Ingresa un celular colombiano de 10 dígitos'),
+        ],
         _etiqueta('Tipo *'),
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (final tipo in ['casa', 'oficina', 'otra'])
@@ -169,6 +254,17 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
             'Ej. Apto 712, Torre A', _complemento),
         _campo('Referencia de llegada (opcional)', 'Ej. Portería norte',
             _referencia),
+        if (widget.quickAdd == null) _campoCiudad(),
+      ],
+    );
+  }
+
+  Widget _campoCiudad() {
+    final tema = FlutterFlowTheme.of(context);
+    return Column(
+      key: const ValueKey('ciudad_direccion'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _etiqueta('Ciudad *'),
         FutureBuilder<List<CiudadesRow>>(
           future: _ciudades,
@@ -178,31 +274,60 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
                   'No se pudieron cargar las ciudades. Cierra y vuelve a intentar.',
                   style: tema.bodyMedium.copyWith(color: tema.error));
             }
-            return DropdownButtonFormField<String>(
+            final ciudades = snapshot.data ?? <CiudadesRow>[];
+            return FormField<String>(
+              key: ValueKey('ciudad_cargada_${snapshot.hasData}'),
               initialValue: _ciudad,
-              isExpanded: true,
-              style: tema.bodyMedium.copyWith(fontSize: 16),
-              decoration: _decoracion(snapshot.hasData
-                  ? 'Seleccionar ciudad...'
-                  : 'Cargando ciudades...'),
-              dropdownColor: tema.secondaryBackground,
-              items: [
-                for (final c in snapshot.data ?? <CiudadesRow>[])
-                  DropdownMenuItem(value: c.id, child: Text(c.nombre))
-              ],
-              onChanged: _guardando || !snapshot.hasData
-                  ? null
-                  : (v) => setState(() {
-                        _ciudad = v;
-                        _punto = null;
-                      }),
-              validator: (v) => v == null ? 'Selecciona una ciudad' : null,
+              validator: (v) => !snapshot.hasData || v == null
+                  ? 'Selecciona una ciudad'
+                  : null,
+              builder: (field) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AbsorbPointer(
+                    absorbing: _guardando || !snapshot.hasData,
+                    child: SearchableDropdown(
+                      values: ciudades.map((c) => c.id).toList(),
+                      labels: ciudades.map((c) => c.nombre).toList(),
+                      selectedValue: field.value,
+                      hint: snapshot.hasData
+                          ? 'Seleccionar ciudad...'
+                          : 'Cargando ciudades...',
+                      searchHint: 'Buscar ciudad...',
+                      onChanged: (v) {
+                        field.didChange(v);
+                        setState(() {
+                          _ciudad = v;
+                          _punto = null;
+                        });
+                      },
+                    ),
+                  ),
+                  if (field.hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, top: 8),
+                      child: Text(field.errorText!,
+                          style: tema.bodySmall.copyWith(color: tema.error)),
+                    ),
+                ],
+              ),
             );
           },
         ),
       ],
     );
   }
+
+  Widget _columnaMapa() => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.quickAdd != null) ...[
+            _campoCiudad(),
+            const SizedBox(height: 16),
+          ],
+          _mapa(),
+        ],
+      );
 
   Widget _mapa() => AbsorbPointer(
         key: const ValueKey('mapa_direccion'),
@@ -240,7 +365,10 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
               Row(children: [
                 const SizedBox(width: 48),
                 Expanded(
-                    child: Text('Agregar dirección',
+                    child: Text(
+                        widget.quickAdd == null
+                            ? 'Agregar dirección'
+                            : 'Crear cliente nuevo',
                         textAlign: TextAlign.center,
                         style: tema.bodyMedium.copyWith(
                             fontSize: 22, fontWeight: FontWeight.w500))),
@@ -252,10 +380,11 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
                   icon: Icon(Icons.close, color: tema.primaryText, size: 24),
                 ),
               ]),
-              Text('Cliente: ${widget.nombreCliente}',
-                  textAlign: TextAlign.center,
-                  style: tema.bodyMedium
-                      .copyWith(fontSize: 16, color: tema.secondaryText)),
+              if (widget.quickAdd == null)
+                Text('Cliente: ${widget.nombreCliente}',
+                    textAlign: TextAlign.center,
+                    style: tema.bodyMedium
+                        .copyWith(fontSize: 16, color: tema.secondaryText)),
               const SizedBox(height: 20),
               Flexible(
                   child: SingleChildScrollView(
@@ -271,7 +400,7 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
                                 children: [
                                   _campos(),
                                   const SizedBox(height: 24),
-                                  _mapa()
+                                  _columnaMapa()
                                 ]);
                           }
                           return Row(
@@ -279,7 +408,7 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
                               children: [
                                 Expanded(child: _campos()),
                                 const SizedBox(width: 24),
-                                Expanded(child: _mapa()),
+                                Expanded(child: _columnaMapa()),
                               ]);
                         }),
                         if (_error != null)
@@ -297,7 +426,11 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
               const SizedBox(height: 20),
               FFButtonWidget(
                 onPressed: _guardando ? null : _guardar,
-                text: _guardando ? 'Guardando…' : 'Guardar dirección',
+                text: _guardando
+                    ? 'Guardando…'
+                    : widget.quickAdd == null
+                        ? 'Guardar dirección'
+                        : 'Crear y seleccionar cliente',
                 options: FFButtonOptions(
                   height: 44,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
