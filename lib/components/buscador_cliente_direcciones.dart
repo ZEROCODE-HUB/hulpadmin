@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import '/backend/direcciones_cliente.dart';
 import '/backend/quick_add_cliente.dart';
 import '/backend/supabase/supabase.dart';
@@ -13,7 +14,7 @@ class SeleccionClienteDireccion {
   final DireccionCliente? direccion;
 }
 
-class BuscadorClienteDirecciones extends StatelessWidget {
+class BuscadorClienteDirecciones extends StatefulWidget {
   const BuscadorClienteDirecciones(
       {super.key,
       required this.clientes,
@@ -30,21 +31,32 @@ class BuscadorClienteDirecciones extends StatelessWidget {
   final String? ciudadInicial;
 
   @override
+  State<BuscadorClienteDirecciones> createState() =>
+      BuscadorClienteDireccionesState();
+}
+
+class BuscadorClienteDireccionesState
+    extends State<BuscadorClienteDirecciones> {
+  Future<void> abrir() async {
+    final seleccion = await showMapSafeDialog<SeleccionClienteDireccion>(
+      context: context,
+      builder: (_) => _ResultadosClienteDialog(config: widget),
+    );
+    if (mounted && seleccion != null) widget.onSeleccion(seleccion);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
-    final cliente = clientes.where((c) => c.id == usuarioId).firstOrNull;
+    final cliente =
+        widget.clientes.where((c) => c.id == widget.usuarioId).firstOrNull;
     final nombre = cliente == null
         ? null
         : '${cliente.nombres ?? ''} ${cliente.apellidos ?? ''}'.trim();
     return InkWell(
       key: const ValueKey('abrir_buscador_clientes'),
       borderRadius: BorderRadius.circular(8),
-      onTap: () async {
-        final seleccion = await showMapSafeDialog<SeleccionClienteDireccion>(
-            context: context,
-            builder: (_) => _ResultadosClienteDialog(config: this));
-        if (context.mounted && seleccion != null) onSeleccion(seleccion);
-      },
+      onTap: abrir,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
@@ -235,7 +247,7 @@ class _BuscadorState extends State<_ResultadosClienteDialog> {
                 autofocus: true,
                 onChanged: _buscar,
                 style: tema.bodyMedium.copyWith(fontSize: 16),
-                decoration: InputDecoration(
+                decoration: decorarInputHulp(context, InputDecoration(
                   hintText: 'Nombre, teléfono o correo',
                   prefixIcon: Icon(Icons.search, color: tema.secondaryText),
                   isDense: true,
@@ -246,7 +258,7 @@ class _BuscadorState extends State<_ResultadosClienteDialog> {
                       borderSide: BorderSide(color: tema.primary)),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                ),
+                )),
               )),
               IconButton(
                   tooltip: 'Cerrar buscador',

@@ -106,6 +106,15 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        primaryColor: hulpPrimaryGreen,
+        colorScheme: const ColorScheme.light(primary: hulpPrimaryGreen),
+        inputDecorationTheme: InputDecorationTheme(
+          prefixIconColor: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.focused)
+                ? hulpPrimaryGreen
+                : const Color(0xFF4A4A4A),
+          ),
+        ),
       ),
       themeMode: _themeMode,
       routerConfig: _router,

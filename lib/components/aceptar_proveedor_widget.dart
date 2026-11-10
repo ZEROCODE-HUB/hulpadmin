@@ -1,9 +1,9 @@
 import '/components/modal_con_encabezado_fijo.dart';
+import '/components/hulp_modal_actions.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
 import '/index.dart';
@@ -77,15 +77,18 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         font: GoogleFonts.inter(
                           fontWeight: FontWeight.w500,
-                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                          fontStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         ),
                         fontSize: 22.0,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w500,
-                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
                 ),
               ),
+              fijarPie: true,
               cuerpo: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -928,134 +931,94 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 42.0, 0.0, 0.0),
-                    child: ResponsiveToolbarRow(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      breakpoint: 520.0,
-                      wrapAlignment: WrapAlignment.center,
-                      spacing: 12.0,
-                      runSpacing: 12.0,
-                      children: [
-                        FFButtonWidget(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                          },
+                    key: modalFixedFooterKey,
+                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    child: hulpModalActionRow(
+                      context: context,
+                      actions: [
+                        hulpModalCloseButton(
                           text: 'Cerrar',
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        FFButtonWidget(
+                          onPressed: ((_model.checkboxValue1 == false) ||
+                                  (_model.checkboxValue2 == false) ||
+                                  (_model.checkboxValue3 == false) ||
+                                  (_model.checkboxValue4 == false) ||
+                                  (_model.uploadedFileUrl_uploadDataCedula ==
+                                          null ||
+                                      _model.uploadedFileUrl_uploadDataCedula ==
+                                          '') ||
+                                  (_model.uploadedFileUrl_uploadDataCuentaBancaria ==
+                                          null ||
+                                      _model.uploadedFileUrl_uploadDataCuentaBancaria ==
+                                          '') ||
+                                  (_model.uploadedFileUrl_uploadDataContrato ==
+                                          null ||
+                                      _model.uploadedFileUrl_uploadDataContrato ==
+                                          ''))
+                              ? null
+                              : () async {
+                                  await UsuariosTable().update(
+                                    data: {
+                                      'verificado': 'verificado',
+                                      'cedula': _model
+                                          .uploadedFileUrl_uploadDataCedula,
+                                      'contrato': _model
+                                          .uploadedFileUrl_uploadDataContrato,
+                                      'cuenta_bancaria': _model
+                                          .uploadedFileUrl_uploadDataCuentaBancaria,
+                                    },
+                                    matchingRows: (rows) => rows.eqOrNull(
+                                      'id',
+                                      widget!.idproveedor,
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+
+                                  context.pushNamed(
+                                    RegistroProveedoresWidget.routeName,
+                                    extra: <String, dynamic>{
+                                      '__transition_info__': TransitionInfo(
+                                        hasTransition: true,
+                                        transitionType: PageTransitionType.fade,
+                                        duration: Duration(milliseconds: 0),
+                                      ),
+                                    },
+                                  );
+                                },
+                          text: 'Aceptar inscripción',
                           options: FFButtonOptions(
+                            width: 190.0,
                             height: 48.0,
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                32.0, 0.0, 32.0, 0.0),
+                                16.0, 0.0, 16.0, 0.0),
                             iconPadding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
-                            color: Color(0xFFFBFAF9),
+                            color: FlutterFlowTheme.of(context).primary,
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
                                   font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Color(0xFF606060),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                            elevation: 0.0,
-                            borderSide: BorderSide(
-                              color: Color(0xFF8A8A8A),
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: FFButtonWidget(
-                            onPressed: ((_model.checkboxValue1 == false) ||
-                                    (_model.checkboxValue2 == false) ||
-                                    (_model.checkboxValue3 == false) ||
-                                    (_model.checkboxValue4 == false) ||
-                                    (_model.uploadedFileUrl_uploadDataCedula ==
-                                            null ||
-                                        _model.uploadedFileUrl_uploadDataCedula ==
-                                            '') ||
-                                    (_model.uploadedFileUrl_uploadDataCuentaBancaria ==
-                                            null ||
-                                        _model.uploadedFileUrl_uploadDataCuentaBancaria ==
-                                            '') ||
-                                    (_model.uploadedFileUrl_uploadDataContrato ==
-                                            null ||
-                                        _model.uploadedFileUrl_uploadDataContrato ==
-                                            ''))
-                                ? null
-                                : () async {
-                                    await UsuariosTable().update(
-                                      data: {
-                                        'verificado': 'verificado',
-                                        'cedula': _model
-                                            .uploadedFileUrl_uploadDataCedula,
-                                        'contrato': _model
-                                            .uploadedFileUrl_uploadDataContrato,
-                                        'cuenta_bancaria': _model
-                                            .uploadedFileUrl_uploadDataCuentaBancaria,
-                                      },
-                                      matchingRows: (rows) => rows.eqOrNull(
-                                        'id',
-                                        widget!.idproveedor,
-                                      ),
-                                    );
-                                    Navigator.pop(context);
-
-                                    context.pushNamed(
-                                      RegistroProveedoresWidget.routeName,
-                                      extra: <String, dynamic>{
-                                        '__transition_info__': TransitionInfo(
-                                          hasTransition: true,
-                                          transitionType:
-                                              PageTransitionType.fade,
-                                          duration: Duration(milliseconds: 0),
-                                        ),
-                                      },
-                                    );
-                                  },
-                            text: 'Aceptar inscripción',
-                            options: FFButtonOptions(
-                              height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleSmall
                                         .fontStyle,
                                   ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                              disabledColor:
-                                  FlutterFlowTheme.of(context).alternate,
-                            ),
+                                  color: Colors.white,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.w500,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                            elevation: 0.0,
+                            borderRadius: BorderRadius.circular(8.0),
+                            disabledColor:
+                                FlutterFlowTheme.of(context).alternate,
                           ),
                         ),
-                      ].divide(SizedBox(width: 32.0)),
+                      ],
                     ),
                   ),
                 ],

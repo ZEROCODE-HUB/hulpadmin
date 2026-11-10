@@ -23,6 +23,12 @@ Future<void> registrarPagoRecibidoQr(String solicitudId) async {
     throw StateError('El estado del pago cambió. Recarga la solicitud.');
   }
 
+  if (solicitud.finanzasVersion == 1) {
+    await SupaFlow.client.functions.invoke('solicitudes-finanzas',
+        body: {'accion': 'pago_qr', 'id': solicitudId});
+    return;
+  }
+
   // El ID estable permite reintentar sin duplicar el pago manual QR,
   // conservando numero_transaccion vacío y los datos del primer registro.
   await SupaFlow.client.from('transacciones').upsert(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/dialog_helpers.dart';
@@ -172,7 +173,7 @@ class _SearchDropdownDialogState extends State<_SearchDropdownDialog> {
                       controller: _ctrl,
                       onChanged: _filter,
                       autofocus: true,
-                      decoration: InputDecoration(
+                      decoration: decorarInputHulp(context, InputDecoration(
                         isDense: true,
                         hintText: widget.searchHint,
                         hintStyle: GoogleFonts.inter(
@@ -193,7 +194,7 @@ class _SearchDropdownDialogState extends State<_SearchDropdownDialog> {
                         fillColor: const Color(0xFFFBFAF9),
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12.0, vertical: 10.0),
-                      ),
+                      ), busqueda: true),
                     ),
                   ),
                   IconButton(

@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'soporte_model.dart';
@@ -60,6 +61,141 @@ class _SoporteWidgetState extends State<SoporteWidget> {
 
     super.dispose();
   }
+
+  Widget _buildBreadcrumb(BuildContext context) {
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
+    InkWell(
+      splashColor: Colors
+          .transparent,
+      focusColor: Colors
+          .transparent,
+      hoverColor: Colors
+          .transparent,
+      highlightColor:
+          Colors
+              .transparent,
+      onTap:
+          () async {
+        context
+            .pushNamed(
+          DashboardWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition:
+                  true,
+              transitionType:
+                  PageTransitionType.fade,
+              duration:
+                  Duration(milliseconds: 0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme.of(
+                context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight.w500,
+                fontStyle:
+                    FontStyle.italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize:
+                  16.0,
+              letterSpacing:
+                  0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle:
+                  FontStyle.italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(
+                  8.0,
+                  0.0,
+                  4.0,
+                  0.0),
+      child: Icon(
+        Icons
+            .chevron_right,
+        color: Color(
+            0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor: Colors
+          .transparent,
+      focusColor: Colors
+          .transparent,
+      hoverColor: Colors
+          .transparent,
+      highlightColor:
+          Colors
+              .transparent,
+      onTap:
+          () async {
+        context
+            .pushNamed(
+          SoporteWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition:
+                  true,
+              transitionType:
+                  PageTransitionType.fade,
+              duration:
+                  Duration(milliseconds: 0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Soporte',
+        style: FlutterFlowTheme.of(
+                context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight.w500,
+                fontStyle:
+                    FontStyle.italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize:
+                  16.0,
+              letterSpacing:
+                  0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle:
+                  FontStyle.italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +263,13 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
+                                  if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                                    Padding(
+                                      padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                      child: _buildBreadcrumb(context),
+                                    ),
+                                    const Spacer(flex: 2),
+                                  ],
                                   Flexible(child: Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         12.0, 0.0, 12.0, 0.0),
@@ -146,7 +289,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                         ),
                                         autofocus: false,
                                         obscureText: false,
-                                        decoration: InputDecoration(
+                                        decoration: decorarInputHulp(context, InputDecoration(
                                           isDense: true,
                                           labelStyle: FlutterFlowTheme.of(
                                                   context)
@@ -247,7 +390,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                           fillColor:
                                               FlutterFlowTheme.of(context)
                                                   .secondaryBackground,
-                                        ),
+                                        )),
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -402,137 +545,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                         MainAxisSize.max,
                                                     children: [
                                                       Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
-                                                          Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
-                                                              InkWell(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                focusColor: Colors
-                                                                    .transparent,
-                                                                hoverColor: Colors
-                                                                    .transparent,
-                                                                highlightColor:
-                                                                    Colors
-                                                                        .transparent,
-                                                                onTap:
-                                                                    () async {
-                                                                  context
-                                                                      .pushNamed(
-                                                                    DashboardWidget
-                                                                        .routeName,
-                                                                    extra: <String,
-                                                                        dynamic>{
-                                                                      '__transition_info__':
-                                                                          TransitionInfo(
-                                                                        hasTransition:
-                                                                            true,
-                                                                        transitionType:
-                                                                            PageTransitionType.fade,
-                                                                        duration:
-                                                                            Duration(milliseconds: 0),
-                                                                      ),
-                                                                    },
-                                                                  );
-                                                                },
-                                                                child: Text(
-                                                                  'Inicio',
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .inter(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle:
-                                                                              FontStyle.italic,
-                                                                        ),
-                                                                        color: Color(
-                                                                            0xFF5E252B),
-                                                                        fontSize:
-                                                                            16.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontStyle:
-                                                                            FontStyle.italic,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            8.0,
-                                                                            0.0,
-                                                                            4.0,
-                                                                            0.0),
-                                                                child: Icon(
-                                                                  Icons
-                                                                      .chevron_right,
-                                                                  color: Color(
-                                                                      0xFF5E252B),
-                                                                  size: 24.0,
-                                                                ),
-                                                              ),
-                                                              InkWell(
-                                                                splashColor: Colors
-                                                                    .transparent,
-                                                                focusColor: Colors
-                                                                    .transparent,
-                                                                hoverColor: Colors
-                                                                    .transparent,
-                                                                highlightColor:
-                                                                    Colors
-                                                                        .transparent,
-                                                                onTap:
-                                                                    () async {
-                                                                  context
-                                                                      .pushNamed(
-                                                                    SoporteWidget
-                                                                        .routeName,
-                                                                    extra: <String,
-                                                                        dynamic>{
-                                                                      '__transition_info__':
-                                                                          TransitionInfo(
-                                                                        hasTransition:
-                                                                            true,
-                                                                        transitionType:
-                                                                            PageTransitionType.fade,
-                                                                        duration:
-                                                                            Duration(milliseconds: 0),
-                                                                      ),
-                                                                    },
-                                                                  );
-                                                                },
-                                                                child: Text(
-                                                                  'Soporte',
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .inter(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle:
-                                                                              FontStyle.italic,
-                                                                        ),
-                                                                        color: Color(
-                                                                            0xFF5E252B),
-                                                                        fontSize:
-                                                                            16.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontStyle:
-                                                                            FontStyle.italic,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
+                                                          if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                                         ],
                                                       ),
                                                       Padding(

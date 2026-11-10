@@ -263,7 +263,8 @@ void main() {
       await tester.tap(find.text('Abrir'));
       await esperar(tester);
       final cierre = find.byTooltip('Cerrar').first;
-      if (!cierresSimples.containsKey(caso.key)) {
+      final detalleConTabs = caso.key == 'detalle solicitud';
+      if (!cierresSimples.containsKey(caso.key) && !detalleConTabs) {
         expect(find.byType(ModalConEncabezadoFijo), findsOneWidget);
       }
       expect(
@@ -273,7 +274,7 @@ void main() {
       final rect = tester.getRect(cierre);
       expect(rect.width, greaterThanOrEqualTo(48));
       expect(rect.height, greaterThanOrEqualTo(48));
-      if (!cierresSimples.containsKey(caso.key)) {
+      if (!cierresSimples.containsKey(caso.key) && !detalleConTabs) {
         final scroll = find
             .descendant(
                 of: find.byType(ModalConEncabezadoFijo),

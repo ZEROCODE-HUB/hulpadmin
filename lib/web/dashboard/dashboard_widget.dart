@@ -1,3 +1,4 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/dropdown_proveedor_estado_widget.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
@@ -1332,10 +1333,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Text(
                                                                         valueOrDefault<
                                                                             String>(
-                                                                          '${valueOrDefault<String>(
-                                                                            containerVwDashboardMetricasRow?.solicitudesHoyEntrantes?.toString(),
-                                                                            '0',
-                                                                          )} Solicitudes',
+                                                                        '${valueOrDefault<String>(
+                                                                          containerVwDashboardMetricasRow
+                                                                              ?.solicitudesHoyEntrantes
+                                                                              ?.toString(),
+                                                                          '0',
+                                                                        )} Solicitudes',
                                                                           '0 Solicitudes',
                                                                         ),
                                                                         style: FlutterFlowTheme.of(context)
@@ -1403,10 +1406,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Text(
                                                                         valueOrDefault<
                                                                             String>(
-                                                                          '${valueOrDefault<String>(
-                                                                            containerVwDashboardMetricasRow?.solicitudesHoyActivas?.toString(),
-                                                                            '0',
-                                                                          )} Servicios',
+                                                                        '${valueOrDefault<String>(
+                                                                          containerVwDashboardMetricasRow
+                                                                              ?.solicitudesHoyActivas
+                                                                              ?.toString(),
+                                                                          '0',
+                                                                        )} Servicios',
                                                                           '0 Servicios',
                                                                         ),
                                                                         style: FlutterFlowTheme.of(context)
@@ -1474,10 +1479,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Text(
                                                                         valueOrDefault<
                                                                             String>(
-                                                                          '${valueOrDefault<String>(
-                                                                            containerVwDashboardMetricasRow?.solicitudesHoyFinalizadas?.toString(),
-                                                                            '0',
-                                                                          )} Finalizados',
+                                                                        '${valueOrDefault<String>(
+                                                                          containerVwDashboardMetricasRow
+                                                                              ?.solicitudesHoyFinalizadas
+                                                                              ?.toString(),
+                                                                          '0',
+                                                                        )} Finalizados',
                                                                           '0 Finalizados',
                                                                         ),
                                                                         style: FlutterFlowTheme.of(context)
@@ -1615,10 +1622,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Text(
                                                                         valueOrDefault<
                                                                             String>(
-                                                                          '${valueOrDefault<String>(
-                                                                            containerVwDashboardMetricasRow?.solicitudesProximasEntrantes?.toString(),
-                                                                            '0',
-                                                                          )} Solicitudes',
+                                                                        '${valueOrDefault<String>(
+                                                                          containerVwDashboardMetricasRow
+                                                                              ?.solicitudesProximasEntrantes
+                                                                              ?.toString(),
+                                                                          '0',
+                                                                        )} Solicitudes',
                                                                           '0 Solicitudes',
                                                                         ),
                                                                         style: FlutterFlowTheme.of(context)
@@ -1686,10 +1695,12 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       Text(
                                                                         valueOrDefault<
                                                                             String>(
-                                                                          '${valueOrDefault<String>(
-                                                                            containerVwDashboardMetricasRow?.solicitudesProximasActivas?.toString(),
-                                                                            '0',
-                                                                          )} Servicios',
+                                                                        '${valueOrDefault<String>(
+                                                                          containerVwDashboardMetricasRow
+                                                                              ?.solicitudesProximasActivas
+                                                                              ?.toString(),
+                                                                          '0',
+                                                                        )} Servicios',
                                                                           '0 Solicitudes',
                                                                         ),
                                                                         style: FlutterFlowTheme.of(context)
@@ -1761,7 +1772,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 DashboardMetricHeader(
                                                                   icon: Icons.bar_chart,
                                                                   child: Text(
-                                                                  'Ingresos totales semanales',
+                                                                  SupaFlow.finanzasV1Habilitadas
+                                                                      ? 'Comisión neta + histórico · semana'
+                                                                      : 'Ingresos totales semanales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -1942,7 +1955,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 DashboardMetricHeader(
                                                                   icon: Icons.bar_chart,
                                                                   child: Text(
-                                                                  'Ingresos totales mensuales',
+                                                                  SupaFlow.finanzasV1Habilitadas
+                                                                      ? 'Comisión neta + histórico · mes'
+                                                                      : 'Ingresos totales mensuales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -2123,7 +2138,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                 DashboardMetricHeader(
                                                                   icon: Icons.bar_chart,
                                                                   child: Text(
-                                                                  'Ingresos totales anuales',
+                                                                  SupaFlow.finanzasV1Habilitadas
+                                                                      ? 'Comisión neta + histórico · año'
+                                                                      : 'Ingresos totales anuales',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -2666,10 +2683,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                 AlignmentDirectional(-1.0, 0.0),
                                                                             child:
                                                                                 Text(
-                                                                              '#${valueOrDefault<String>(
-                                                                                solicitudesItem.ticket?.toString(),
-                                                                                '-',
-                                                                              )}',
+                                                                                  '#${valueOrDefault<String>(
+                                                                                    solicitudesItem.ticket?.toString(),
+                                                                                    '-',
+                                                                                  )}',
                                                                               maxLines: null,
                                                                               style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                     font: GoogleFonts.inter(
@@ -2760,25 +2777,25 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                           child: Container(
                                                                                             constraints: const BoxConstraints(minHeight: 32),
                                                                                             decoration: BoxDecoration(
-                                                                                              color: solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFFE9EBEC) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFFD6EAFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFFDFF9D2) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6)))),
+                                                                                              color: usaEstadosSprint3 ? solicitudStatusBackgroundColor(solicitudesItem.estadoSolicitud) : (solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFFE9EBEC) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFFD6EAFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFFDFF9D2) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFF9DCDF) : Color(0xFFFFF5D6))))),
                                                                                               borderRadius: BorderRadius.circular(24.0),
                                                                                               shape: BoxShape.rectangle,
                                                                                               border: Border.all(
-                                                                                                color: solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFF6C757D) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFF007BFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFF388212) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFDC3545) : Color(0xFFD6A100)))),
+                                                                                                color: usaEstadosSprint3 ? solicitudStatusForegroundColor(solicitudesItem.estadoSolicitud) : (solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFF6C757D) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFF007BFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFF388212) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFDC3545) : Color(0xFFD6A100))))),
                                                                                               ),
                                                                                             ),
                                                                                             alignment: AlignmentDirectional(0.0, 0.0),
                                                                                             child: Padding(
                                                                                               padding: EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                                                                                               child: Text(
-                                                                                                solicitudesItem.estadoSolicitud == 'entrantes' ? 'Pendiente' : (solicitudesItem.estadoSolicitud == 'aceptadas' ? 'Activo' : (solicitudesItem.estadoSolicitud == 'canceladas' ? 'Cancelado' : (solicitudesItem.estadoSolicitud == 'finalizadas' ? 'Finalizado' : 'En curso'))),
+                                                                                                usaEstadosSprint3 ? solicitudStatusLabel(solicitudesItem.estadoSolicitud) : (solicitudesItem.estadoSolicitud == 'entrantes' ? 'Pendiente' : (solicitudesItem.estadoSolicitud == 'aceptadas' ? 'Activo' : (solicitudesItem.estadoSolicitud == 'canceladas' ? 'Cancelado' : (solicitudesItem.estadoSolicitud == 'finalizadas' ? 'Finalizado' : 'En curso')))),
                                                                                                 maxLines: null,
                                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                       font: GoogleFonts.inter(
                                                                                                         fontWeight: FontWeight.w500,
                                                                                                         fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                       ),
-                                                                                                      color: solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFF6C757D) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFF007BFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFF388212) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFDC3545) : Color(0xFFD6A100)))),
+                                                                                                      color: usaEstadosSprint3 ? solicitudStatusForegroundColor(solicitudesItem.estadoSolicitud) : (solicitudesItem.estadoSolicitud == 'entrantes' ? Color(0xFF6C757D) : (solicitudesItem.estadoSolicitud == 'aceptadas' ? Color(0xFF007BFF) : (solicitudesItem.estadoSolicitud == 'finalizadas' ? Color(0xFF388212) : (solicitudesItem.estadoSolicitud == 'canceladas' ? Color(0xFFDC3545) : Color(0xFFD6A100))))),
                                                                                                       fontSize: 16.0,
                                                                                                       letterSpacing: 0.0,
                                                                                                       fontWeight: FontWeight.w500,
@@ -3710,10 +3727,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                               BoxDecoration(),
                                                                           child:
                                                                               Text(
-                                                                            '#${valueOrDefault<String>(
-                                                                              soportelItem.nro.toString(),
-                                                                              '0',
-                                                                            )}',
+                                                                                '#${valueOrDefault<String>(
+                                                                                  soportelItem.nro.toString(),
+                                                                                  '0',
+                                                                                )}',
                                                                             maxLines: null,
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   font: GoogleFonts.inter(

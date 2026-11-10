@@ -155,7 +155,9 @@ class _GraficoSolicitudesPagadasSemanalState
 
       final response = await SupaFlow.client
           .from('solicitudes_servicio')
-          .select('id, estado_pago, creado_en, precio')
+          .select(SupaFlow.finanzasV1Habilitadas
+              ? 'id, estado_pago, creado_en, precio, finanzas_version'
+              : 'id, estado_pago, creado_en, precio')
           .eq('estado_pago', 'pagado')
           .gte('creado_en', startDate.toIso8601String())
           .lte('creado_en', endDate.toIso8601String());
@@ -168,7 +170,9 @@ class _GraficoSolicitudesPagadasSemanalState
         for (var solicitud in response) {
           double precio = 0;
           try {
-            precio = (solicitud['precio'] ?? 0).toDouble();
+            precio = solicitud['finanzas_version'] == null
+                ? (solicitud['precio'] ?? 0).toDouble()
+                : 0;
             totalIngresosDia += precio;
           } catch (e) {
             print(
@@ -181,6 +185,17 @@ class _GraficoSolicitudesPagadasSemanalState
             '  Total ingresos del día: ${totalIngresosDia.toStringAsFixed(2)}');
       } else {
         print('  No se encontraron solicitudes pagadas para este día');
+      }
+
+      if (SupaFlow.finanzasV1Habilitadas) {
+        final metricas = await SupaFlow.client.functions
+            .invoke('solicitudes-finanzas', body: {
+          'accion': 'metricas',
+          'inicio': startDate.toUtc().toIso8601String(),
+          'fin': endDate.toUtc().toIso8601String(),
+        });
+        totalIngresosDia +=
+            (metricas.data['cobros_confirmados'] as num).toDouble();
       }
 
       return {
@@ -261,7 +276,7 @@ class _GraficoSolicitudesPagadasSemanalState
             runSpacing: 8,
             children: [
               Text(
-                'Total semanal',
+                'Cobros confirmados · semana',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

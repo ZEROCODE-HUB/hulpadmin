@@ -19,6 +19,14 @@ class MenuWidget extends StatefulWidget {
   static bool esMovil(BuildContext context) =>
       MediaQuery.sizeOf(context).width < kBreakpointMedium;
 
+  /// Keeps the breadcrumb in the content on narrow screens to avoid crowding
+  /// the search field and notification icon in the top bar.
+  static bool breadcrumbEnBarraSuperior(BuildContext context) {
+    final anchoContenido = MediaQuery.sizeOf(context).width -
+        (esMovil(context) ? 0.0 : (FFAppState().MenuAbierto ? 280.0 : 112.0));
+    return anchoContenido >= 1000.0;
+  }
+
   static PreferredSizeWidget? barraMovil(BuildContext context) {
     if (!esMovil(context)) return null;
     return AppBar(

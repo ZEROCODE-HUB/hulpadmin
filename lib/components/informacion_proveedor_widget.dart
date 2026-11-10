@@ -8,6 +8,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/components/responsive_layout_rows.dart';
+import '/components/hulp_modal_actions.dart';
 import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -146,15 +147,20 @@ class _InformacionProveedorWidgetState
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.inter(
                                 fontWeight: FontWeight.w500,
-                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .fontStyle,
                               ),
                               fontSize: 22.0,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w500,
-                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
                             ),
                       ),
                     ),
+                    fijarPie: true,
                     cuerpo: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,8 +741,8 @@ class _InformacionProveedorWidgetState
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .alternate,
-                                                    width: 0.5,
+                                                        .primary,
+                                                    width: 1.5,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -1041,8 +1047,8 @@ class _InformacionProveedorWidgetState
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .alternate,
-                                                    width: 0.5,
+                                                        .primary,
+                                                    width: 1.5,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -1254,8 +1260,8 @@ class _InformacionProveedorWidgetState
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .alternate,
-                                                    width: 0.5,
+                                                        .primary,
+                                                    width: 1.5,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -1458,8 +1464,8 @@ class _InformacionProveedorWidgetState
                                                   borderSide: BorderSide(
                                                     color: FlutterFlowTheme.of(
                                                             context)
-                                                        .alternate,
-                                                    width: 0.5,
+                                                        .primary,
+                                                    width: 1.5,
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -1948,8 +1954,8 @@ class _InformacionProveedorWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .alternate,
-                                                        width: 0.5,
+                                                                .primary,
+                                                        width: 1.5,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -2165,8 +2171,8 @@ class _InformacionProveedorWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .alternate,
-                                                        width: 0.5,
+                                                                .primary,
+                                                        width: 1.5,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -3146,52 +3152,15 @@ class _InformacionProveedorWidgetState
                           },
                         ),
                         Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          key: modalFixedFooterKey,
+                          alignment: AlignmentDirectional(1.0, 0.0),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 20.0, 0.0, 0.0),
-                            child: FFButtonWidget(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                              },
+                                0.0, 0.0, 0.0, 0.0),
+                            child: hulpModalCloseButton(
                               text: 'Cerrar',
-                              options: FFButtonOptions(
-                                height: 40.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    32.0, 0.0, 32.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: Color(0xFFFBFAF9),
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: Color(0xFF606060),
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                elevation: 0.0,
-                                borderSide: BorderSide(
-                                  color: Color(0xFF8A8A8A),
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
                           ),
                         ),
                       ],

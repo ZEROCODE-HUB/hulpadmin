@@ -83,10 +83,10 @@ class SolicitudesDataTable extends StatelessWidget {
       _col('Usu. Solicitante', headerStyle, fixedWidth: 210.0),
       _col('Ciudad', headerStyle),
       _col('Direccion', headerStyle, fixedWidth: 280.0),
-      _col('Categoria', headerStyle),
+      _col('Servicio', headerStyle),
+      _col('Proveedor', headerStyle),
       _col('Precio', headerStyle),
       _col('Pago', headerStyle, fixedWidth: 160.0),
-      _col('ID Proveedor', headerStyle),
       _col('Acciones', headerStyle, fixedWidth: 140.0),
     ];
   }
@@ -113,6 +113,8 @@ class SolicitudesDataTable extends StatelessWidget {
         );
     final ciudad = item.solicitudCiudad?.trim() ?? '';
     final direccion = direccionSolicitudVisible(item.ubicacion, ciudad);
+    final servicioNombre = item.servicioNombre?.trim();
+    final proveedorNombre = item.proveedorNombreCompleto?.trim();
 
     // La columna mide 280 px y reserva 20 px para el espacio entre celdas.
     // La fila crece según el texto real, incluidos saltos y escala de fuente.
@@ -182,9 +184,18 @@ class SolicitudesDataTable extends StatelessWidget {
           },
           child: _textoCelda(direccion, style: bodyStyle),
         )),
-        // Categoria
+        // Servicio
         DataCell(_textoCelda(
-          valueOrDefault<String>(item.categoriaNombre, 'Sin datos'),
+          servicioNombre == null || servicioNombre.isEmpty
+              ? 'Sin datos'
+              : servicioNombre,
+          style: bodyStyle,
+        )),
+        // Proveedor
+        DataCell(_textoCelda(
+          proveedorNombre == null || proveedorNombre.isEmpty
+              ? 'Sin asignar'
+              : proveedorNombre,
           style: bodyStyle,
         )),
         // Precio
@@ -201,12 +212,6 @@ class SolicitudesDataTable extends StatelessWidget {
         )),
         // Estado del pago y acción directa para marcarlo recibido.
         DataCell(_buildPaymentCell(context, item, bodyStyle)),
-        // ID Proveedor
-        DataCell(_textoCelda(
-          valueOrDefault<String>(
-              item.proveedorIdUsuario?.toString(), 'Sin datos'),
-          style: bodyStyle,
-        )),
         // Acciones
         DataCell(Row(
           mainAxisSize: MainAxisSize.max,

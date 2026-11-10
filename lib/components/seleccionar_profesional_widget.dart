@@ -2,6 +2,8 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
+import '/components/hulp_modal_actions.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Lo que devuelve el selector.
@@ -163,7 +165,7 @@ class _SeleccionarProfesionalWidgetState
                   child: TextFormField(
                     controller: _buscarController,
                     onChanged: (valor) => setState(() => _busqueda = valor),
-                    decoration: InputDecoration(
+                    decoration: decorarInputHulp(context, InputDecoration(
                       hintText: 'Buscar por nombre o correo',
                       prefixIcon: Icon(Icons.search, color: tema.secondaryText),
                       border: OutlineInputBorder(
@@ -180,7 +182,7 @@ class _SeleccionarProfesionalWidgetState
                       ),
                       contentPadding: EdgeInsetsDirectional.fromSTEB(
                           12.0, 12.0, 12.0, 12.0),
-                    ),
+                    )),
                     style: tema.bodyMedium.override(
                       font: GoogleFonts.inter(),
                       letterSpacing: 0.0,
@@ -322,66 +324,23 @@ class _SeleccionarProfesionalWidgetState
                   spacing: 8.0,
                   runSpacing: 8.0,
                   children: [
-                    FFButtonWidget(
-                      onPressed: () => Navigator.pop(context),
+                    hulpModalCloseButton(
                       text: 'Cancelar',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.secondaryBackground,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.primaryText,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderSide: BorderSide(color: tema.alternate),
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    FFButtonWidget(
+                    hulpModalSecondaryButton(
+                      context: context,
+                      text: 'Finalizar sin profesional',
                       onPressed: () => Navigator.pop(
                           context, SeleccionProfesional.sinAsignar()),
-                      text: 'Finalizar sin profesional',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.secondaryBackground,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.primary,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderSide: BorderSide(color: tema.primary),
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
                     ),
-                    FFButtonWidget(
-                      // Deshabilitado mientras no haya nadie elegido: en
-                      // FFButtonWidget eso se hace con onPressed en nulo.
+                    hulpModalPrimaryButton(
+                      context: context,
                       onPressed: _elegido == null
                           ? null
                           : () => Navigator.pop(context,
                               SeleccionProfesional.asignar(_elegido!)),
                       text: 'Asignar y finalizar',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.primary,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.secondaryBackground,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(20.0),
-                        disabledColor: tema.alternate,
-                        disabledTextColor: tema.secondaryText,
-                      ),
                     ),
                   ],
                 ),

@@ -6,6 +6,7 @@ class DireccionCliente {
   final Map<String, dynamic> data;
   String get id => data['id'] as String;
   String get usuarioId => data['usuario_id'] as String;
+  bool get activa => data['activo'] != false;
   String get etiqueta => switch (data['tipo']) {
         'casa' => 'Casa',
         'oficina' => 'Oficina',
@@ -49,10 +50,59 @@ class DireccionesClienteRepository {
     return rows.map((row) => DireccionCliente(row)).toList();
   }
 
+  /// Solo para la administración del perfil; los selectores siguen usando cargar().
+  Future<List<DireccionCliente>> cargarTodas(String usuarioId) async {
+    final rows = await SupaFlow.client
+        .from('direcciones_usuario')
+        .select()
+        .eq('usuario_id', usuarioId)
+        .order('creado_en');
+    return rows.map((row) => DireccionCliente(row)).toList();
+  }
+
   Future<DireccionCliente> guardar(Map<String, dynamic> data) async =>
       DireccionCliente(await SupaFlow.client
           .from('direcciones_usuario')
           .insert(data)
           .select()
           .single());
+
+  Future<DireccionCliente> actualizar(
+      String usuarioId, String id, Map<String, dynamic> data,
+      {bool activa = true}) async {
+    final row = await SupaFlow.client
+        .from('direcciones_usuario')
+        .update(data)
+        .eq('id', id)
+        .eq('usuario_id', usuarioId)
+        .eq('activo', activa)
+        .select()
+        .maybeSingle();
+    if (row == null) throw StateError('La dirección ya no está disponible');
+    return DireccionCliente(row);
+  }
+
+  Future<void> archivar(String usuarioId, String id) async {
+    final row = await SupaFlow.client
+        .from('direcciones_usuario')
+        .update({'activo': false})
+        .eq('id', id)
+        .eq('usuario_id', usuarioId)
+        .eq('activo', true)
+        .select('id')
+        .maybeSingle();
+    if (row == null) throw StateError('La dirección ya no está disponible');
+  }
+
+  Future<void> desarchivar(String usuarioId, String id) async {
+    final row = await SupaFlow.client
+        .from('direcciones_usuario')
+        .update({'activo': true})
+        .eq('id', id)
+        .eq('usuario_id', usuarioId)
+        .eq('activo', false)
+        .select('id')
+        .maybeSingle();
+    if (row == null) throw StateError('La dirección ya no está disponible');
+  }
 }

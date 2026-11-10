@@ -1,0 +1,2592 @@
+{
+  "proyecto": "Hulp",
+  "rama": "test",
+  "project_ref": "ptafsiwlhxomgqmdmidf",
+  "fecha": "2026-11-05",
+  "solo_lectura": true,
+  "columnas": [
+    {
+      "table_name": "recibo_items",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "recibo_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "tipo_item",
+      "data_type": "character varying",
+      "udt_name": "varchar",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "cantidad",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "precio_unitario",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "total",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibo_items",
+      "column_name": "creado_en",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "mensaje_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "solicitud_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "proveedor_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "titulo",
+      "data_type": "character varying",
+      "udt_name": "varchar",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "total",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "estado",
+      "data_type": "character varying",
+      "udt_name": "varchar",
+      "is_nullable": "YES",
+      "column_default": "'pendiente'::character varying"
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "motivo_rechazo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "respondido_en",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recibos",
+      "column_name": "creado_en",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "subcategoria_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "nombre",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "precio",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "estado",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "destacado",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "informacion_relevante",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "fotos",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "items",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "tiempo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "creado_en",
+      "data_type": "timestamp without time zone",
+      "udt_name": "timestamp",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "servicios",
+      "column_name": "precios_adicionales",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "usuario_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "servicio_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "servicio_nombre",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "informacion_adicional",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "ubicacion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "fecha",
+      "data_type": "date",
+      "udt_name": "date",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "hora",
+      "data_type": "time without time zone",
+      "udt_name": "time",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "precio",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "estado",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "estado_pago",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "profesional_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "creado_en",
+      "data_type": "timestamp without time zone",
+      "udt_name": "timestamp",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "fecha_cancelacion",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "fecha_reagendamiento",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "fecha_pago",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "fecha_aceptacion",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "solicitud_original_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "ticket",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": "nextval('ticket_seq'::regclass)"
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "precio_base",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "tipo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": "'app'::text"
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "precio_adicionales",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "ciudad_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "latitud",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "longitud",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "solicitudes_servicio",
+      "column_name": "direccion_usuario_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "solicitud_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "usuario_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "monto",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "moneda",
+      "data_type": "character varying",
+      "udt_name": "varchar",
+      "is_nullable": "YES",
+      "column_default": "'COP'::character varying"
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "proveedor_pago",
+      "data_type": "character varying",
+      "udt_name": "varchar",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "datos_pago",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "referencia_externa",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "numero_transaccion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "fecha_pago",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "fecha_registro",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "ip_usuario",
+      "data_type": "inet",
+      "udt_name": "inet",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "transacciones",
+      "column_name": "metodo_pago",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "solicitud_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "ticket",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "usuario_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "solicitud_descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "informacion_adicional",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "ubicacion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "fecha",
+      "data_type": "date",
+      "udt_name": "date",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "hora",
+      "data_type": "time without time zone",
+      "udt_name": "time",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "precio_solicitud",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "precio_base",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "precio_adicionales",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "precio_total",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "precio_calculado",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "estado_solicitud",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "estado_pago",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "solicitud_creada_en",
+      "data_type": "timestamp without time zone",
+      "udt_name": "timestamp",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_id_usuario",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_nombres",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_apellidos",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_nombre_completo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_telefono",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_correo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_direccion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "cliente_foto_perfil",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_nombre",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_precio_base",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_estado",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_informacion_relevante",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_fotos",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "servicio_items",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "profesional_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_id_usuario",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_nombres",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_apellidos",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_nombre_completo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_telefono",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_correo",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_direccion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_foto_perfil",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_experiencia",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_registro_tributario",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_verificado",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_disponible",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "subcategoria_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "subcategoria_nombre",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "subcategoria_descripcion",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "categoria_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "categoria_nombre",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "categoria_imagen",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "puntuacion",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_calificacion_promedio",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_total_resenas",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "proveedor_servicios_completados",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "solicitud_ciudad",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "latitud",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "longitud",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "vw_solicitudes_servicios_completa",
+      "column_name": "direccion_usuario_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    }
+  ],
+  "restricciones": [
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_direccion_propietario_fkey",
+      "definicion": "FOREIGN KEY (direccion_usuario_id, usuario_id) REFERENCES direcciones_usuario(id, usuario_id) ON DELETE SET NULL (direccion_usuario_id)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_ciudad_id_fkey",
+      "definicion": "FOREIGN KEY (ciudad_id) REFERENCES ciudades(id) ON DELETE SET NULL"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_coordenadas_completas",
+      "definicion": "CHECK (((latitud IS NULL) = (longitud IS NULL)))"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_estado_pago_check",
+      "definicion": "CHECK ((estado_pago = ANY (ARRAY['pendiente'::text, 'pagado'::text, 'reembolsado'::text, 'fallido'::text])))"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_latitud_valida",
+      "definicion": "CHECK (((latitud IS NULL) OR ((latitud >= ('-90'::integer)::numeric) AND (latitud <= (90)::numeric))))"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_longitud_valida",
+      "definicion": "CHECK (((longitud IS NULL) OR ((longitud >= ('-180'::integer)::numeric) AND (longitud <= (180)::numeric))))"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_pkey",
+      "definicion": "PRIMARY KEY (id)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_profesional_id_fkey",
+      "definicion": "FOREIGN KEY (profesional_id) REFERENCES usuarios(id)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_servicio_id_fkey",
+      "definicion": "FOREIGN KEY (servicio_id) REFERENCES servicios(id)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_solicitud_original_id_fkey",
+      "definicion": "FOREIGN KEY (solicitud_original_id) REFERENCES solicitudes_servicio(id)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_ticket_key",
+      "definicion": "UNIQUE (ticket)"
+    },
+    {
+      "tabla": "solicitudes_servicio",
+      "conname": "solicitudes_servicio_usuario_id_fkey",
+      "definicion": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+    },
+    {
+      "tabla": "recibos",
+      "conname": "recibos_mensaje_id_fkey",
+      "definicion": "FOREIGN KEY (mensaje_id) REFERENCES mensajes_chat(id)"
+    },
+    {
+      "tabla": "recibos",
+      "conname": "recibos_pkey",
+      "definicion": "PRIMARY KEY (id)"
+    },
+    {
+      "tabla": "recibos",
+      "conname": "recibos_proveedor_id_fkey",
+      "definicion": "FOREIGN KEY (proveedor_id) REFERENCES usuarios(id)"
+    },
+    {
+      "tabla": "recibos",
+      "conname": "recibos_solicitud_id_fkey",
+      "definicion": "FOREIGN KEY (solicitud_id) REFERENCES solicitudes_servicio(id)"
+    },
+    {
+      "tabla": "recibo_items",
+      "conname": "recibo_items_cantidad_check",
+      "definicion": "CHECK ((cantidad > (0)::numeric))"
+    },
+    {
+      "tabla": "recibo_items",
+      "conname": "recibo_items_pkey",
+      "definicion": "PRIMARY KEY (id)"
+    },
+    {
+      "tabla": "recibo_items",
+      "conname": "recibo_items_precio_unitario_check",
+      "definicion": "CHECK ((precio_unitario >= (0)::numeric))"
+    },
+    {
+      "tabla": "recibo_items",
+      "conname": "recibo_items_recibo_id_fkey",
+      "definicion": "FOREIGN KEY (recibo_id) REFERENCES recibos(id)"
+    },
+    {
+      "tabla": "recibo_items",
+      "conname": "recibo_items_tipo_item_check",
+      "definicion": "CHECK (((tipo_item)::text = ANY (ARRAY['material'::text, 'mano_obra'::text])))"
+    },
+    {
+      "tabla": "transacciones",
+      "conname": "transacciones_numero_transaccion_key",
+      "definicion": "UNIQUE (numero_transaccion)"
+    },
+    {
+      "tabla": "transacciones",
+      "conname": "transacciones_pkey",
+      "definicion": "PRIMARY KEY (id)"
+    },
+    {
+      "tabla": "transacciones",
+      "conname": "transacciones_solicitud_id_fkey",
+      "definicion": "FOREIGN KEY (solicitud_id) REFERENCES solicitudes_servicio(id)"
+    },
+    {
+      "tabla": "transacciones",
+      "conname": "transacciones_usuario_id_fkey",
+      "definicion": "FOREIGN KEY (usuario_id) REFERENCES usuarios(id)"
+    }
+  ],
+  "indices": [
+    {
+      "tablename": "recibo_items",
+      "indexname": "recibo_items_pkey",
+      "indexdef": "CREATE UNIQUE INDEX recibo_items_pkey ON public.recibo_items USING btree (id)"
+    },
+    {
+      "tablename": "recibos",
+      "indexname": "recibos_pkey",
+      "indexdef": "CREATE UNIQUE INDEX recibos_pkey ON public.recibos USING btree (id)"
+    },
+    {
+      "tablename": "solicitudes_servicio",
+      "indexname": "solicitudes_servicio_pkey",
+      "indexdef": "CREATE UNIQUE INDEX solicitudes_servicio_pkey ON public.solicitudes_servicio USING btree (id)"
+    },
+    {
+      "tablename": "solicitudes_servicio",
+      "indexname": "solicitudes_servicio_ticket_key",
+      "indexdef": "CREATE UNIQUE INDEX solicitudes_servicio_ticket_key ON public.solicitudes_servicio USING btree (ticket)"
+    },
+    {
+      "tablename": "solicitudes_servicio",
+      "indexname": "idx_solicitudes_ciudad",
+      "indexdef": "CREATE INDEX idx_solicitudes_ciudad ON public.solicitudes_servicio USING btree (ciudad_id)"
+    },
+    {
+      "tablename": "solicitudes_servicio",
+      "indexname": "solicitudes_direccion_propietario_idx",
+      "indexdef": "CREATE INDEX solicitudes_direccion_propietario_idx ON public.solicitudes_servicio USING btree (direccion_usuario_id, usuario_id) WHERE (direccion_usuario_id IS NOT NULL)"
+    },
+    {
+      "tablename": "transacciones",
+      "indexname": "transacciones_pkey",
+      "indexdef": "CREATE UNIQUE INDEX transacciones_pkey ON public.transacciones USING btree (id)"
+    },
+    {
+      "tablename": "transacciones",
+      "indexname": "transacciones_numero_transaccion_key",
+      "indexdef": "CREATE UNIQUE INDEX transacciones_numero_transaccion_key ON public.transacciones USING btree (numero_transaccion)"
+    }
+  ],
+  "triggers": [
+    {
+      "relname": "recibo_items",
+      "tgname": "trigger_calcular_total_recibo",
+      "trigger_def": "CREATE TRIGGER trigger_calcular_total_recibo AFTER INSERT ON public.recibo_items FOR EACH ROW EXECUTE FUNCTION calcular_total_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.calcular_total_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE nuevo_total NUMERIC(10,2);\nBEGIN\n    SELECT COALESCE(SUM(total), 0) INTO nuevo_total FROM recibo_items WHERE recibo_id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    UPDATE recibos SET total = nuevo_total WHERE id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    RETURN COALESCE(NEW, OLD);\nEND; $function$\n"
+    },
+    {
+      "relname": "recibo_items",
+      "tgname": "trigger_calcular_total_recibo_delete",
+      "trigger_def": "CREATE TRIGGER trigger_calcular_total_recibo_delete AFTER DELETE ON public.recibo_items FOR EACH ROW EXECUTE FUNCTION calcular_total_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.calcular_total_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE nuevo_total NUMERIC(10,2);\nBEGIN\n    SELECT COALESCE(SUM(total), 0) INTO nuevo_total FROM recibo_items WHERE recibo_id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    UPDATE recibos SET total = nuevo_total WHERE id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    RETURN COALESCE(NEW, OLD);\nEND; $function$\n"
+    },
+    {
+      "relname": "recibo_items",
+      "tgname": "trigger_calcular_total_recibo_update",
+      "trigger_def": "CREATE TRIGGER trigger_calcular_total_recibo_update AFTER UPDATE ON public.recibo_items FOR EACH ROW EXECUTE FUNCTION calcular_total_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.calcular_total_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE nuevo_total NUMERIC(10,2);\nBEGIN\n    SELECT COALESCE(SUM(total), 0) INTO nuevo_total FROM recibo_items WHERE recibo_id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    UPDATE recibos SET total = nuevo_total WHERE id = COALESCE(NEW.recibo_id, OLD.recibo_id);\n    RETURN COALESCE(NEW, OLD);\nEND; $function$\n"
+    },
+    {
+      "relname": "recibos",
+      "tgname": "trigger_actualizar_mensaje_estado_recibo",
+      "trigger_def": "CREATE TRIGGER trigger_actualizar_mensaje_estado_recibo AFTER UPDATE ON public.recibos FOR EACH ROW EXECUTE FUNCTION actualizar_mensaje_estado_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.actualizar_mensaje_estado_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE nuevo_contenido TEXT;\nBEGIN\n    IF OLD.estado != NEW.estado THEN\n        CASE NEW.estado\n            WHEN 'aceptado' THEN nuevo_contenido := 'Recibo aceptado: ' || NEW.titulo;\n            WHEN 'rechazado' THEN nuevo_contenido := 'Recibo rechazado: ' || NEW.titulo;\n                IF NEW.motivo_rechazo IS NOT NULL THEN nuevo_contenido := nuevo_contenido || ' - Motivo: ' || NEW.motivo_rechazo; END IF;\n            ELSE nuevo_contenido := 'Recibo ' || NEW.estado || ': ' || NEW.titulo;\n        END CASE;\n        UPDATE mensajes_chat SET contenido = nuevo_contenido WHERE id = NEW.mensaje_id;\n    END IF;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "recibos",
+      "tgname": "trigger_actualizar_precio_solicitud_recibo",
+      "trigger_def": "CREATE TRIGGER trigger_actualizar_precio_solicitud_recibo AFTER UPDATE ON public.recibos FOR EACH ROW EXECUTE FUNCTION actualizar_precio_solicitud_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.actualizar_precio_solicitud_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE total_adicionales NUMERIC(10,2); precio_original NUMERIC(10,2);\nBEGIN\n    SELECT precio_base INTO precio_original FROM solicitudes_servicio WHERE id = NEW.solicitud_id;\n    IF precio_original IS NULL THEN\n        SELECT precio INTO precio_original FROM solicitudes_servicio WHERE id = NEW.solicitud_id;\n        UPDATE solicitudes_servicio SET precio_base = precio_original WHERE id = NEW.solicitud_id;\n    END IF;\n    SELECT COALESCE(SUM(total), 0) INTO total_adicionales FROM recibos WHERE solicitud_id = NEW.solicitud_id AND estado = 'aceptado';\n    UPDATE solicitudes_servicio SET precio_adicionales = total_adicionales, precio = precio_original + total_adicionales WHERE id = NEW.solicitud_id;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "recibos",
+      "tgname": "trigger_actualizar_precio_solicitud_recibo_insert",
+      "trigger_def": "CREATE TRIGGER trigger_actualizar_precio_solicitud_recibo_insert AFTER INSERT ON public.recibos FOR EACH ROW EXECUTE FUNCTION actualizar_precio_solicitud_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.actualizar_precio_solicitud_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE total_adicionales NUMERIC(10,2); precio_original NUMERIC(10,2);\nBEGIN\n    SELECT precio_base INTO precio_original FROM solicitudes_servicio WHERE id = NEW.solicitud_id;\n    IF precio_original IS NULL THEN\n        SELECT precio INTO precio_original FROM solicitudes_servicio WHERE id = NEW.solicitud_id;\n        UPDATE solicitudes_servicio SET precio_base = precio_original WHERE id = NEW.solicitud_id;\n    END IF;\n    SELECT COALESCE(SUM(total), 0) INTO total_adicionales FROM recibos WHERE solicitud_id = NEW.solicitud_id AND estado = 'aceptado';\n    UPDATE solicitudes_servicio SET precio_adicionales = total_adicionales, precio = precio_original + total_adicionales WHERE id = NEW.solicitud_id;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "recibos",
+      "tgname": "trigger_crear_mensaje_recibo",
+      "trigger_def": "CREATE TRIGGER trigger_crear_mensaje_recibo AFTER INSERT ON public.recibos FOR EACH ROW EXECUTE FUNCTION crear_mensaje_recibo()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.crear_mensaje_recibo()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE chat_uuid UUID; mensaje_uuid UUID;\nBEGIN\n    SELECT id INTO chat_uuid FROM chats_solicitud WHERE solicitud_id = NEW.solicitud_id;\n    IF chat_uuid IS NULL THEN INSERT INTO chats_solicitud (solicitud_id) VALUES (NEW.solicitud_id) RETURNING id INTO chat_uuid; END IF;\n    INSERT INTO mensajes_chat (chat_id, remitente_id, rol_remitente, tipo_mensaje, recibo_id, contenido)\n    VALUES (chat_uuid, NEW.proveedor_id, 'proveedor', 'recibo', NEW.id, 'Nuevo recibo: ' || NEW.titulo) RETURNING id INTO mensaje_uuid;\n    UPDATE recibos SET mensaje_id = mensaje_uuid WHERE id = NEW.id;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "solicitudes_servicio",
+      "tgname": "trg_sync_ticket_seq",
+      "trigger_def": "CREATE TRIGGER trg_sync_ticket_seq BEFORE INSERT ON public.solicitudes_servicio FOR EACH ROW EXECUTE FUNCTION sync_ticket_seq()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.sync_ticket_seq()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  IF NEW.ticket IS NOT NULL THEN\n    PERFORM setval('ticket_seq',\n                   GREATEST(NEW.ticket, (SELECT last_value FROM ticket_seq)));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "relname": "solicitudes_servicio",
+      "tgname": "trigger_crear_chat_al_asignar_proveedor",
+      "trigger_def": "CREATE TRIGGER trigger_crear_chat_al_asignar_proveedor AFTER UPDATE ON public.solicitudes_servicio FOR EACH ROW EXECUTE FUNCTION crear_chat_al_asignar_proveedor()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.crear_chat_al_asignar_proveedor()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF OLD.profesional_id IS DISTINCT FROM NEW.profesional_id AND NEW.profesional_id IS NOT NULL THEN\n        INSERT INTO chats_solicitud (solicitud_id) VALUES (NEW.id) ON CONFLICT (solicitud_id) DO NOTHING;\n        DELETE FROM mensajes_chat WHERE chat_id = (SELECT id FROM chats_solicitud WHERE solicitud_id = NEW.id);\n    END IF;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "solicitudes_servicio",
+      "tgname": "trigger_crear_chat_al_asignar_proveedor_insert",
+      "trigger_def": "CREATE TRIGGER trigger_crear_chat_al_asignar_proveedor_insert AFTER INSERT ON public.solicitudes_servicio FOR EACH ROW EXECUTE FUNCTION crear_chat_al_asignar_proveedor()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.crear_chat_al_asignar_proveedor()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF OLD.profesional_id IS DISTINCT FROM NEW.profesional_id AND NEW.profesional_id IS NOT NULL THEN\n        INSERT INTO chats_solicitud (solicitud_id) VALUES (NEW.id) ON CONFLICT (solicitud_id) DO NOTHING;\n        DELETE FROM mensajes_chat WHERE chat_id = (SELECT id FROM chats_solicitud WHERE solicitud_id = NEW.id);\n    END IF;\n    RETURN NEW;\nEND; $function$\n"
+    },
+    {
+      "relname": "solicitudes_servicio",
+      "tgname": "trigger_programar_cleanup",
+      "trigger_def": "CREATE TRIGGER trigger_programar_cleanup AFTER INSERT ON public.solicitudes_servicio FOR EACH ROW EXECUTE FUNCTION programar_cleanup_conversaciones()",
+      "funcion": "CREATE OR REPLACE FUNCTION public.programar_cleanup_conversaciones()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    INSERT INTO cleanup_programado (usuario_id, solicitud_id, ejecutar_en) VALUES (NEW.usuario_id, NEW.id, NOW() + INTERVAL '2 minutes');\n    RETURN NEW;\nEND; $function$\n"
+    }
+  ],
+  "vista_y_eliminar": [
+    {
+      "vista": " SELECT ss.id AS solicitud_id,\n    ss.ticket,\n    ss.usuario_id,\n    ss.descripcion AS solicitud_descripcion,\n    ss.informacion_adicional,\n    ss.ubicacion,\n    ss.fecha,\n    ss.hora,\n    ss.precio AS precio_solicitud,\n    ss.precio_base,\n    ss.precio_adicionales,\n    COALESCE(ss.precio_base, ss.precio, 0::numeric) + COALESCE(ss.precio_adicionales, 0::numeric) AS precio_total,\n    COALESCE(ss.precio_base, ss.precio, s.precio, 0::numeric) + COALESCE(ss.precio_adicionales, 0::numeric) AS precio_calculado,\n    ss.estado AS estado_solicitud,\n    ss.estado_pago,\n    ss.creado_en AS solicitud_creada_en,\n    u_cliente.id_usuario AS cliente_id_usuario,\n    u_cliente.nombres AS cliente_nombres,\n    u_cliente.apellidos AS cliente_apellidos,\n    concat(u_cliente.nombres, ' ', u_cliente.apellidos) AS cliente_nombre_completo,\n    u_cliente.telefono AS cliente_telefono,\n    u_cliente.correo_electronico AS cliente_correo,\n    u_cliente.direccion AS cliente_direccion,\n    u_cliente.foto_perfil_url AS cliente_foto_perfil,\n    ss.servicio_id,\n    COALESCE(s.nombre, ss.servicio_nombre) AS servicio_nombre,\n    s.descripcion AS servicio_descripcion,\n    s.precio AS servicio_precio_base,\n    s.estado AS servicio_estado,\n    s.informacion_relevante AS servicio_informacion_relevante,\n    s.fotos AS servicio_fotos,\n    s.items AS servicio_items,\n    ss.profesional_id,\n    u_proveedor.id_usuario AS proveedor_id_usuario,\n    u_proveedor.nombres AS proveedor_nombres,\n    u_proveedor.apellidos AS proveedor_apellidos,\n    concat(u_proveedor.nombres, ' ', u_proveedor.apellidos) AS proveedor_nombre_completo,\n    u_proveedor.telefono AS proveedor_telefono,\n    u_proveedor.correo_electronico AS proveedor_correo,\n    u_proveedor.direccion AS proveedor_direccion,\n    u_proveedor.foto_perfil_url AS proveedor_foto_perfil,\n    u_proveedor.anios_experiencia AS proveedor_experiencia,\n    u_proveedor.registro_tributario AS proveedor_registro_tributario,\n    u_proveedor.verificado AS proveedor_verificado,\n    u_proveedor.disponibilidad AS proveedor_disponible,\n    sub.id AS subcategoria_id,\n    sub.nombre AS subcategoria_nombre,\n    sub.descripcion AS subcategoria_descripcion,\n    cat.id AS categoria_id,\n    cat.nombre AS categoria_nombre,\n    cat.imagen_url AS categoria_imagen,\n    r_solicitud.calificacion AS puntuacion,\n    ( SELECT avg(r.calificacion) AS avg\n           FROM resenas r\n          WHERE r.proveedor_id = ss.profesional_id) AS proveedor_calificacion_promedio,\n    ( SELECT count(*) AS count\n           FROM resenas r\n          WHERE r.proveedor_id = ss.profesional_id) AS proveedor_total_resenas,\n    ( SELECT count(*) AS count\n           FROM solicitudes_servicio ss2\n          WHERE ss2.profesional_id = ss.profesional_id AND ss2.estado = 'completado'::text) AS proveedor_servicios_completados,\n    c.nombre AS solicitud_ciudad,\n    ss.latitud,\n    ss.longitud,\n    ss.direccion_usuario_id\n   FROM solicitudes_servicio ss\n     LEFT JOIN usuarios u_cliente ON ss.usuario_id = u_cliente.id\n     LEFT JOIN usuarios u_proveedor ON ss.profesional_id = u_proveedor.id\n     LEFT JOIN servicios s ON ss.servicio_id = s.id\n     LEFT JOIN subcategorias sub ON s.subcategoria_id = sub.id\n     LEFT JOIN categorias cat ON sub.categoria_id = cat.id\n     LEFT JOIN resenas r_solicitud ON r_solicitud.solicitud_servicio_id = ss.id\n     LEFT JOIN ciudades c ON c.id = ss.ciudad_id\n  WHERE ss.servicio_id IS NOT NULL\n  ORDER BY ss.creado_en DESC;",
+      "eliminar": "CREATE OR REPLACE FUNCTION public.eliminar_mi_cuenta()\n RETURNS json\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\ndeclare\r\n  c_lapida        constant uuid := '00000000-0000-0000-0000-000000000000';\r\n  v_uid           uuid := auth.uid();\r\n  v_email         text;\r\n  v_rol           text;\r\n  v_solicitudes   int := 0;\r\n  v_transacciones int := 0;\r\n  v_recibos       int := 0;\r\n  v_perfil        int := 0;\r\nbegin\r\n  -- Sin parametros a proposito: el usuario sale de auth.uid(), asi que es\r\n  -- imposible pedir el borrado de la cuenta de otra persona.\r\n  if v_uid is null then\r\n    raise exception 'No hay sesion activa' using errcode = '28000';\r\n  end if;\r\n\r\n  -- Sin esto, un token con ese uuid vaciaria el historial de todos.\r\n  if v_uid = c_lapida then\r\n    raise exception 'La cuenta lapida no se puede eliminar' using errcode = '42501';\r\n  end if;\r\n\r\n  select rol into v_rol from public.usuarios where id = v_uid;\r\n  select email into v_email from auth.users where id = v_uid;\r\n\r\n  -- =========================================================================\r\n  -- A. REASIGNAR A LA LAPIDA\r\n  --    Va primero: en cuanto se borre la fila de usuarios, estas cascadas se\r\n  --    disparan. Lo que aqui no se salve, se pierde.\r\n  -- =========================================================================\r\n\r\n  -- Lado CLIENTE: usuario_id es NOT NULL y CASCADE, asi que o va a la lapida\r\n  -- o la solicitud entera se destruye con sus recibos, pagos y resenas.\r\n  -- Cambiar solo esta columna no despierta al trigger de abajo, que se fija\r\n  -- unicamente en profesional_id.\r\n  update public.solicitudes_servicio\r\n     set usuario_id = c_lapida,\r\n         direccion_usuario_id = null\r\n   where usuario_id = v_uid;\r\n  get diagnostics v_solicitudes = row_count;\r\n\r\n  -- Lado PROVEEDOR: aqui va NULL, no la lapida, y es a proposito.\r\n  --\r\n  -- trigger_crear_chat_al_asignar_proveedor corre AFTER UPDATE y, cuando el\r\n  -- profesional cambia a un valor NO NULO, borra todos los mensajes del chat.\r\n  -- Si ese chat tiene un recibo asociado (recibos.mensaje_id), el DELETE choca\r\n  -- contra recibos_mensaje_id_fkey y aborta el borrado de cuenta entero.\r\n  -- Poniendo NULL la condicion del trigger no se cumple y no se dispara.\r\n  --\r\n  -- Ademas es lo semanticamente correcto: profesional_id nulo significa \"sin\r\n  -- asignar\", asi que los trabajos aun activos vuelven al pool. La identidad\r\n  -- de quien presto el servicio no se pierde: queda en recibos.proveedor_id,\r\n  -- que si apunta a la lapida.\r\n  update public.solicitudes_servicio\r\n     set profesional_id = null\r\n   where profesional_id = v_uid;\r\n\r\n  -- Pagos. transacciones.usuario_id es NO ACTION y NOT NULL: si queda una\r\n  -- sola fila apuntando al usuario, el DELETE final aborta la transaccion\r\n  -- entera.\r\n  update public.transacciones\r\n     set usuario_id = c_lapida\r\n   where usuario_id = v_uid;\r\n  get diagnostics v_transacciones = row_count;\r\n\r\n  -- Recibos emitidos como proveedor: son el comprobante del CLIENTE.\r\n  update public.recibos\r\n     set proveedor_id = c_lapida\r\n   where proveedor_id = v_uid;\r\n  get diagnostics v_recibos = row_count;\r\n\r\n  -- Reputacion: la resena escrita le sirve al proveedor, y la recibida le\r\n  -- sirve al cliente. Se conservan sin autor identificable.\r\n  update public.resenas       set usuario_id   = c_lapida where usuario_id   = v_uid;\r\n  update public.resenas       set proveedor_id = c_lapida where proveedor_id = v_uid;\r\n  update public.calificaciones set usuario_id   = c_lapida where usuario_id   = v_uid;\r\n  update public.calificaciones set proveedor_id = c_lapida where proveedor_id = v_uid;\r\n\r\n  -- Los mensajes se quedan para que la contraparte conserve el hilo legible.\r\n  update public.mensajes_chat\r\n     set remitente_id = c_lapida\r\n   where remitente_id = v_uid;\r\n\r\n  -- =========================================================================\r\n  -- B. ANONIMIZAR TICKETS DE SOPORTE\r\n  --    Guardan nombre, telefono y email en texto plano. id_proveedor es TEXT\r\n  --    y sin FK; del cliente no hay id, solo el email.\r\n  -- =========================================================================\r\n  update public.soporte\r\n     set nombre_proveedor   = 'Cuenta eliminada',\r\n         telefono_proveedor = null,\r\n         email_proveedor    = null\r\n   where id_proveedor = v_uid::text;\r\n\r\n  if v_email is not null then\r\n    update public.soporte\r\n       set nombre_usuario   = 'Cuenta eliminada',\r\n           telefono_usuario = null,\r\n           email_usuario    = null\r\n     where email_usuario = v_email;\r\n  end if;\r\n\r\n  -- =========================================================================\r\n  -- C. BORRAR LO EXCLUSIVAMENTE PERSONAL\r\n  --    Casi todas tienen ON DELETE CASCADE, pero se listan explicitamente\r\n  --    para que el borrado no dependa de que nadie afloje una FK mas adelante.\r\n  --    conversaciones NO tiene FK: aqui es imprescindible.\r\n  -- =========================================================================\r\n  delete from public.tarjetas_guardadas    where usuario_id = v_uid;\r\n  delete from public.metodos_pago          where usuario_id = v_uid;\r\n  delete from public.cuentas_bancarias     where usuario_id = v_uid;\r\n  delete from public.certificaciones       where usuario_id = v_uid;\r\n  delete from public.referencias_laborales where usuario_id = v_uid;\r\n  delete from public.profesional_servicios where usuario_id = v_uid;\r\n  delete from public.favoritos             where usuario_id = v_uid;\r\n  delete from public.conversaciones        where usuario_id = v_uid;\r\n  delete from public.cleanup_programado    where usuario_id = v_uid;\r\n  delete from public.user_notifications    where user_id    = v_uid;\r\n\r\n  delete from public.notificaciones\r\n   where usuario_id = v_uid or proveedor_id = v_uid;\r\n\r\n  -- usuarios_externos.id es el uuid de auth; id_usuario es un bigint de\r\n  -- secuencia, NO comparar contra un uuid.\r\n  delete from public.usuarios_externos where id = v_uid;\r\n\r\n  delete from public.usuarios where id = v_uid;\r\n  get diagnostics v_perfil = row_count;\r\n\r\n  -- =========================================================================\r\n  -- D. Cuenta de autenticacion, al final: una vez borrada, auth.uid() deja de\r\n  --    resolver dentro de esta misma transaccion.\r\n  -- =========================================================================\r\n  delete from auth.users where id = v_uid;\r\n\r\n  return json_build_object(\r\n    'ok', true,\r\n    'uid', v_uid,\r\n    'rol', v_rol,\r\n    'perfil_borrado', v_perfil > 0,\r\n    'solicitudes_preservadas', v_solicitudes,\r\n    'transacciones_preservadas', v_transacciones,\r\n    'recibos_preservados', v_recibos\r\n  );\r\nend;\r\n$function$\n"
+    }
+  ],
+  "objetos_historial": [
+    {
+      "tipo": "function",
+      "nombre": "public.limpiar_cleanup_historial",
+      "detalle": ""
+    }
+  ],
+  "politicas": [
+    {
+      "tipo": "policy",
+      "objeto": "recibo_items",
+      "detalle": {
+        "cmd": "ALL",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": "true",
+        "nombre": "all"
+      }
+    },
+    {
+      "tipo": "policy",
+      "objeto": "recibos",
+      "detalle": {
+        "cmd": "ALL",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": "true",
+        "nombre": "all"
+      }
+    },
+    {
+      "tipo": "policy",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "cmd": "ALL",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": "true",
+        "nombre": "all"
+      }
+    },
+    {
+      "tipo": "policy",
+      "objeto": "transacciones",
+      "detalle": {
+        "cmd": "ALL",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": "true",
+        "nombre": "all"
+      }
+    },
+    {
+      "tipo": "policy",
+      "objeto": "usuarios",
+      "detalle": {
+        "cmd": "ALL",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": "true",
+        "nombre": "All"
+      }
+    },
+    {
+      "tipo": "policy",
+      "objeto": "usuarios",
+      "detalle": {
+        "cmd": "INSERT",
+        "check": "true",
+        "roles": [
+          "public"
+        ],
+        "using": null,
+        "nombre": "Allow insert for trigger/function"
+      }
+    }
+  ],
+  "grants_tabla": [
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibos",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "recibo_items",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "transacciones",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "solicitudes_servicio",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "postgres",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "anon",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "authenticated",
+        "permiso": "TRIGGER"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "INSERT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "SELECT"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "UPDATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "DELETE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRUNCATE"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "REFERENCES"
+      }
+    },
+    {
+      "tipo": "grant",
+      "objeto": "vw_solicitudes_servicios_completa",
+      "detalle": {
+        "rol": "service_role",
+        "permiso": "TRIGGER"
+      }
+    }
+  ],
+  "vistas_dependientes": [
+    {
+      "nspname": "public",
+      "relname": "vw_dashboard_metricas",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT count(\n        CASE\n            WHEN ss.estado = 'entrantes'::text THEN 1\n            ELSE NULL::integer\n        END) AS servicios_pendientes,\n    count(\n        CASE\n            WHEN ss.estado = ANY (ARRAY['aceptadas'::text, 'iniciadas'::text, 'en camino'::text]) THEN 1\n            ELSE NULL::integer\n        END) AS servicios_activos,\n    count(\n        CASE\n            WHEN ss.estado = 'en proceso'::text THEN 1\n            ELSE NULL::integer\n        END) AS servicios_en_curso,\n    count(\n        CASE\n            WHEN ss.estado = 'finalizadas'::text THEN 1\n            ELSE NULL::integer\n        END) AS servicios_finalizados,\n    count(\n        CASE\n            WHEN ss.estado = ANY (ARRAY['aceptadas'::text, 'iniciadas'::text, 'en camino'::text, 'en proceso'::text, 'finalizadas'::text]) THEN 1\n            ELSE NULL::integer\n        END) AS total_solicitudes_servicio,\n    ( SELECT count(*) AS count\n           FROM usuarios u\n             JOIN auth.users au ON u.id = au.id\n          WHERE u.rol = 'proveedor'::text AND au.last_sign_in_at >= (CURRENT_DATE - '30 days'::interval)) AS total_proveedores_activos,\n    count(\n        CASE\n            WHEN ss.fecha = CURRENT_DATE AND ss.estado = 'entrantes'::text THEN 1\n            ELSE NULL::integer\n        END) AS solicitudes_hoy_entrantes,\n    count(\n        CASE\n            WHEN ss.fecha = CURRENT_DATE AND (ss.estado = ANY (ARRAY['aceptadas'::text, 'iniciadas'::text, 'en camino'::text])) THEN 1\n            ELSE NULL::integer\n        END) AS solicitudes_hoy_activas,\n    count(\n        CASE\n            WHEN ss.fecha = CURRENT_DATE AND ss.estado = 'finalizadas'::text THEN 1\n            ELSE NULL::integer\n        END) AS solicitudes_hoy_finalizadas,\n    count(\n        CASE\n            WHEN ss.fecha >= CURRENT_DATE AND ss.fecha <= (CURRENT_DATE + 1) AND ss.estado = 'entrantes'::text THEN 1\n            ELSE NULL::integer\n        END) AS solicitudes_proximas_entrantes,\n    count(\n        CASE\n            WHEN ss.fecha >= CURRENT_DATE AND ss.fecha <= (CURRENT_DATE + 1) AND (ss.estado = ANY (ARRAY['aceptadas'::text, 'iniciadas'::text, 'en camino'::text])) THEN 1\n            ELSE NULL::integer\n        END) AS solicitudes_proximas_activas,\n    COALESCE(sum(\n        CASE\n            WHEN ss.fecha >= (CURRENT_DATE - 6) AND ss.fecha <= CURRENT_DATE AND ss.estado <> 'entrantes'::text THEN ss.precio\n            ELSE 0::numeric\n        END), 0::numeric) AS ingresos_totales_semanales,\n    COALESCE(sum(\n        CASE\n            WHEN ss.fecha >= date_trunc('month'::text, CURRENT_DATE::timestamp with time zone) AND ss.fecha <= (date_trunc('month'::text, CURRENT_DATE::timestamp with time zone) + '1 mon'::interval - '1 day'::interval) AND ss.estado <> 'entrantes'::text THEN ss.precio\n            ELSE 0::numeric\n        END), 0::numeric) AS ingresos_totales_mensuales,\n    COALESCE(sum(\n        CASE\n            WHEN ss.fecha >= date_trunc('year'::text, CURRENT_DATE::timestamp with time zone) AND ss.fecha <= (date_trunc('year'::text, CURRENT_DATE::timestamp with time zone) + '1 year'::interval - '1 day'::interval) AND ss.estado <> 'entrantes'::text THEN ss.precio\n            ELSE 0::numeric\n        END), 0::numeric) AS ingresos_totales_anuales\n   FROM solicitudes_servicio ss;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_lista_usuarios_con_servicios",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT u.id,\n    u.nombres,\n    u.apellidos,\n    u.tipo_documento,\n    u.numero_documento,\n    u.pais,\n    u.codigo_pais,\n    u.telefono,\n    u.correo_electronico,\n    u.direccion,\n    u.foto_perfil_url,\n    u.rol,\n    u.fecha_registro,\n    u.anios_experiencia,\n    u.registro_tributario,\n    u.verificado,\n    u.disponibilidad,\n    u.id_usuario,\n    u.cedula,\n    u.cuenta_bancaria,\n    u.contrato,\n    u.ciudad,\n    u.suscripcion_id,\n    u.redes_sociales,\n    ( SELECT count(*) AS count\n           FROM solicitudes_servicio s\n          WHERE s.usuario_id = u.id) AS total_servicios,\n    ( SELECT count(*) AS count\n           FROM solicitudes_servicio s\n          WHERE s.usuario_id = u.id AND lower(s.estado) = 'finalizadas'::text) AS total_servicios_finalizados\n   FROM usuarios u;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_mensajes_chat_completo",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT m.id AS mensaje_id,\n    m.chat_id,\n    m.tipo_mensaje,\n    m.contenido,\n    m.archivo_url,\n    m.recibo_id,\n    m.enviado_en,\n    m.rol_remitente,\n    u.nombres AS remitente_nombres,\n    u.apellidos AS remitente_apellidos,\n    u.foto_perfil_url AS remitente_foto,\n    c.solicitud_id,\n    s.ticket,\n    s.servicio_nombre,\n    r.titulo AS recibo_titulo,\n    r.total AS recibo_total,\n    r.estado AS recibo_estado\n   FROM mensajes_chat m\n     JOIN usuarios u ON m.remitente_id = u.id\n     JOIN chats_solicitud c ON m.chat_id = c.id\n     JOIN solicitudes_servicio s ON c.solicitud_id = s.id\n     LEFT JOIN recibos r ON m.recibo_id = r.id\n  ORDER BY m.enviado_en;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_mensajes_no_leidos_por_participante",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " WITH participantes AS (\n         SELECT c_1.id AS chat_id,\n            s.usuario_id\n           FROM chats_solicitud c_1\n             JOIN solicitudes_servicio s ON s.id = c_1.solicitud_id\n          WHERE s.usuario_id IS NOT NULL\n        UNION\n         SELECT c_1.id AS chat_id,\n            s.profesional_id AS usuario_id\n           FROM chats_solicitud c_1\n             JOIN solicitudes_servicio s ON s.id = c_1.solicitud_id\n          WHERE s.profesional_id IS NOT NULL\n        )\n SELECT c.id AS chat_id,\n    c.solicitud_id,\n    c.ultimo_mensaje_en,\n    p.usuario_id,\n    count(mc.id) AS cantidad_no_leidos\n   FROM chats_solicitud c\n     JOIN participantes p ON p.chat_id = c.id\n     LEFT JOIN mensajes_chat mc ON mc.chat_id = c.id AND mc.leido = false AND mc.remitente_id <> p.usuario_id\n  GROUP BY c.id, c.solicitud_id, c.ultimo_mensaje_en, p.usuario_id\n  ORDER BY c.ultimo_mensaje_en DESC;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_metricas_proveedores",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " WITH ingresos_semanales AS (\n         SELECT solicitudes_servicio.profesional_id,\n            date_trunc('week'::text, solicitudes_servicio.creado_en) AS semana,\n            sum(solicitudes_servicio.precio) AS ingresos_semana,\n            count(*) AS servicios_semana\n           FROM solicitudes_servicio\n          WHERE solicitudes_servicio.estado = 'finalizadas'::text\n          GROUP BY solicitudes_servicio.profesional_id, (date_trunc('week'::text, solicitudes_servicio.creado_en))\n        ), ingresos_semana_actual AS (\n         SELECT ingresos_semanales.profesional_id,\n            COALESCE(sum(ingresos_semanales.ingresos_semana), 0::numeric) AS ingresos_actuales,\n            COALESCE(sum(ingresos_semanales.servicios_semana), 0::numeric) AS servicios_actuales\n           FROM ingresos_semanales\n          WHERE ingresos_semanales.semana = date_trunc('week'::text, CURRENT_DATE::timestamp with time zone)\n          GROUP BY ingresos_semanales.profesional_id\n        ), ingresos_semana_anterior AS (\n         SELECT ingresos_semanales.profesional_id,\n            COALESCE(sum(ingresos_semanales.ingresos_semana), 0::numeric) AS ingresos_anteriores,\n            COALESCE(sum(ingresos_semanales.servicios_semana), 0::numeric) AS servicios_anteriores\n           FROM ingresos_semanales\n          WHERE ingresos_semanales.semana = date_trunc('week'::text, CURRENT_DATE - '7 days'::interval)\n          GROUP BY ingresos_semanales.profesional_id\n        ), servicios_trimestrales AS (\n         SELECT solicitudes_servicio.profesional_id,\n            date_trunc('quarter'::text, solicitudes_servicio.creado_en) AS trimestre,\n            count(*) AS servicios_trimestre\n           FROM solicitudes_servicio\n          WHERE solicitudes_servicio.estado = 'finalizadas'::text\n          GROUP BY solicitudes_servicio.profesional_id, (date_trunc('quarter'::text, solicitudes_servicio.creado_en))\n        ), servicios_trimestre_actual AS (\n         SELECT servicios_trimestrales.profesional_id,\n            COALESCE(sum(servicios_trimestrales.servicios_trimestre), 0::numeric) AS servicios_trimestre_actual\n           FROM servicios_trimestrales\n          WHERE servicios_trimestrales.trimestre = date_trunc('quarter'::text, CURRENT_DATE::timestamp with time zone)\n          GROUP BY servicios_trimestrales.profesional_id\n        ), servicios_trimestre_anterior AS (\n         SELECT servicios_trimestrales.profesional_id,\n            COALESCE(sum(servicios_trimestrales.servicios_trimestre), 0::numeric) AS servicios_trimestre_anterior\n           FROM servicios_trimestrales\n          WHERE servicios_trimestrales.trimestre = date_trunc('quarter'::text, CURRENT_DATE - '3 mons'::interval)\n          GROUP BY servicios_trimestrales.profesional_id\n        ), total_servicios AS (\n         SELECT solicitudes_servicio.profesional_id,\n            count(*) AS total_servicios_realizados\n           FROM solicitudes_servicio\n          WHERE solicitudes_servicio.estado = 'finalizadas'::text\n          GROUP BY solicitudes_servicio.profesional_id\n        )\n SELECT u.id AS proveedor_id,\n    concat(u.nombres, ' ', u.apellidos) AS nombre_proveedor,\n    u.correo_electronico,\n    u.telefono,\n    COALESCE(isa.ingresos_actuales, 0::numeric) AS ingresos_semanales,\n        CASE\n            WHEN COALESCE(isant.ingresos_anteriores, 0::numeric) = 0::numeric THEN\n            CASE\n                WHEN COALESCE(isa.ingresos_actuales, 0::numeric) > 0::numeric THEN 100.0\n                ELSE 0.0\n            END\n            ELSE round((COALESCE(isa.ingresos_actuales, 0::numeric) - COALESCE(isant.ingresos_anteriores, 0::numeric)) * 100.0 / COALESCE(isant.ingresos_anteriores, 1::numeric), 2)\n        END AS porcentaje_vs_semana_anterior,\n    COALESCE(ts.total_servicios_realizados, 0::bigint) AS servicios_realizados,\n        CASE\n            WHEN COALESCE(sta.servicios_trimestre_anterior, 0::numeric) = 0::numeric THEN\n            CASE\n                WHEN COALESCE(stact.servicios_trimestre_actual, 0::numeric) > 0::numeric THEN 100.0\n                ELSE 0.0\n            END\n            ELSE round((COALESCE(stact.servicios_trimestre_actual, 0::numeric) - COALESCE(sta.servicios_trimestre_anterior, 0::numeric)) * 100.0 / COALESCE(sta.servicios_trimestre_anterior, 1::numeric), 2)\n        END AS porcentaje_servicios_vs_trimestre_anterior,\n    COALESCE(isant.ingresos_anteriores, 0::numeric) AS ingresos_semana_anterior,\n    COALESCE(stact.servicios_trimestre_actual, 0::numeric) AS servicios_trimestre_actual,\n    COALESCE(sta.servicios_trimestre_anterior, 0::numeric) AS servicios_trimestre_anterior,\n    COALESCE(isa.servicios_actuales, 0::numeric) AS servicios_semana_actual,\n    CURRENT_TIMESTAMP AS fecha_actualizacion\n   FROM usuarios u\n     LEFT JOIN ingresos_semana_actual isa ON u.id = isa.profesional_id\n     LEFT JOIN ingresos_semana_anterior isant ON u.id = isant.profesional_id\n     LEFT JOIN total_servicios ts ON u.id = ts.profesional_id\n     LEFT JOIN servicios_trimestre_actual stact ON u.id = stact.profesional_id\n     LEFT JOIN servicios_trimestre_anterior sta ON u.id = sta.profesional_id\n  WHERE u.rol = 'proveedor'::text\n  ORDER BY (COALESCE(isa.ingresos_actuales, 0::numeric)) DESC, (COALESCE(ts.total_servicios_realizados, 0::bigint)) DESC;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_profesionales_completo",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT u.id AS profesional_id,\n    u.nombres,\n    u.apellidos,\n    (u.nombres || ' '::text) || COALESCE(u.apellidos, ''::text) AS nombre_completo,\n    u.tipo_documento,\n    u.numero_documento,\n    u.pais,\n    u.codigo_pais,\n    u.telefono,\n    u.correo_electronico,\n    u.direccion,\n    u.foto_perfil_url,\n    u.fecha_registro,\n    u.anios_experiencia,\n    u.registro_tributario,\n    u.verificado,\n    ps.servicio_id,\n    s.nombre AS servicio_nombre,\n    sc.id AS subcategoria_id,\n    sc.nombre AS subcategoria_nombre,\n    c.id AS categoria_id,\n    c.nombre AS categoria_nombre,\n        CASE\n            WHEN au.last_sign_in_at >= (CURRENT_TIMESTAMP - '30 days'::interval) THEN 'activo'::text\n            ELSE 'inactivo'::text\n        END AS estado,\n    au.last_sign_in_at AS ultimo_acceso,\n    ( SELECT count(DISTINCT ss2.id) AS count\n           FROM solicitudes_servicio ss2\n          WHERE ss2.profesional_id = u.id AND ss2.estado = 'finalizadas'::text) AS servicios_realizados,\n    ( SELECT count(DISTINCT ps2.id) AS count\n           FROM profesional_servicios ps2\n          WHERE ps2.usuario_id = u.id) AS servicios_ofrecidos,\n    ( SELECT round(avg(r2.calificacion), 2) AS round\n           FROM resenas r2\n          WHERE r2.proveedor_id = u.id) AS promedio_resenas,\n    ( SELECT count(r3.id) AS count\n           FROM resenas r3\n          WHERE r3.proveedor_id = u.id) AS total_resenas,\n    ( SELECT count(ss3.id) AS count\n           FROM solicitudes_servicio ss3\n          WHERE ss3.profesional_id = u.id) AS total_solicitudes,\n        CASE\n            WHEN (( SELECT count(ss4.id) AS count\n               FROM solicitudes_servicio ss4\n              WHERE ss4.profesional_id = u.id)) > 0 THEN round((( SELECT count(DISTINCT ss5.id) AS count\n               FROM solicitudes_servicio ss5\n              WHERE ss5.profesional_id = u.id AND ss5.estado = 'finalizadas'::text))::numeric * 100.0 / (( SELECT count(ss6.id) AS count\n               FROM solicitudes_servicio ss6\n              WHERE ss6.profesional_id = u.id))::numeric, 2)\n            ELSE 0::numeric\n        END AS tasa_finalizacion,\n    u.ciudad\n   FROM usuarios u\n     LEFT JOIN auth.users au ON u.id = au.id\n     LEFT JOIN profesional_servicios ps ON u.id = ps.usuario_id\n     LEFT JOIN servicios s ON ps.servicio_id = s.id\n     LEFT JOIN subcategorias sc ON s.subcategoria_id = sc.id\n     LEFT JOIN categorias c ON sc.categoria_id = c.id\n  WHERE u.rol = 'proveedor'::text\n  ORDER BY u.nombres, u.apellidos, c.nombre, s.nombre;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_resumen_categorias",
+      "reloptions": [
+        "security_invoker=true"
+      ],
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT c.id,\n    c.nombre,\n    c.estado,\n    c.imagen_url,\n    c.creado_en,\n    count(DISTINCT s.id) AS total_subcategorias,\n    count(DISTINCT sol.id) AS total_solicitudes\n   FROM categorias c\n     LEFT JOIN subcategorias s ON s.categoria_id = c.id\n     LEFT JOIN servicios srv ON srv.subcategoria_id = s.id\n     LEFT JOIN solicitudes_servicio sol ON sol.servicio_id = srv.id\n  GROUP BY c.id, c.nombre, c.estado, c.imagen_url, c.creado_en;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_resumen_servicios",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT srv.id,\n    srv.nombre,\n    srv.descripcion,\n    srv.precio,\n    srv.estado,\n    srv.informacion_relevante,\n    srv.creado_en,\n    srv.subcategoria_id,\n    srv.fotos,\n    srv.items,\n    srv.destacado,\n    count(sol.id) AS total_solicitudes\n   FROM servicios srv\n     LEFT JOIN solicitudes_servicio sol ON sol.servicio_id = srv.id\n  GROUP BY srv.id, srv.nombre, srv.descripcion, srv.precio, srv.estado, srv.informacion_relevante, srv.creado_en, srv.subcategoria_id, srv.fotos, srv.items, srv.destacado;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_resumen_subcategorias",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT s.id,\n    s.nombre,\n    s.descripcion,\n    s.estado,\n    s.imagen_url,\n    s.creado_en,\n    s.categoria_id,\n    count(DISTINCT srv.id) AS total_servicios,\n    count(DISTINCT sol.id) AS total_solicitudes\n   FROM subcategorias s\n     LEFT JOIN servicios srv ON srv.subcategoria_id = s.id\n     LEFT JOIN solicitudes_servicio sol ON sol.servicio_id = srv.id\n  GROUP BY s.id, s.nombre, s.descripcion, s.estado, s.imagen_url, s.creado_en, s.categoria_id;"
+    },
+    {
+      "nspname": "public",
+      "relname": "vw_solicitudes_servicios_completa",
+      "reloptions": null,
+      "relacl": "{postgres=arwdDxt/postgres,anon=arwdDxt/postgres,authenticated=arwdDxt/postgres,service_role=arwdDxt/postgres}",
+      "definicion": " SELECT ss.id AS solicitud_id,\n    ss.ticket,\n    ss.usuario_id,\n    ss.descripcion AS solicitud_descripcion,\n    ss.informacion_adicional,\n    ss.ubicacion,\n    ss.fecha,\n    ss.hora,\n    ss.precio AS precio_solicitud,\n    ss.precio_base,\n    ss.precio_adicionales,\n    COALESCE(ss.precio_base, ss.precio, 0::numeric) + COALESCE(ss.precio_adicionales, 0::numeric) AS precio_total,\n    COALESCE(ss.precio_base, ss.precio, s.precio, 0::numeric) + COALESCE(ss.precio_adicionales, 0::numeric) AS precio_calculado,\n    ss.estado AS estado_solicitud,\n    ss.estado_pago,\n    ss.creado_en AS solicitud_creada_en,\n    u_cliente.id_usuario AS cliente_id_usuario,\n    u_cliente.nombres AS cliente_nombres,\n    u_cliente.apellidos AS cliente_apellidos,\n    concat(u_cliente.nombres, ' ', u_cliente.apellidos) AS cliente_nombre_completo,\n    u_cliente.telefono AS cliente_telefono,\n    u_cliente.correo_electronico AS cliente_correo,\n    u_cliente.direccion AS cliente_direccion,\n    u_cliente.foto_perfil_url AS cliente_foto_perfil,\n    ss.servicio_id,\n    COALESCE(s.nombre, ss.servicio_nombre) AS servicio_nombre,\n    s.descripcion AS servicio_descripcion,\n    s.precio AS servicio_precio_base,\n    s.estado AS servicio_estado,\n    s.informacion_relevante AS servicio_informacion_relevante,\n    s.fotos AS servicio_fotos,\n    s.items AS servicio_items,\n    ss.profesional_id,\n    u_proveedor.id_usuario AS proveedor_id_usuario,\n    u_proveedor.nombres AS proveedor_nombres,\n    u_proveedor.apellidos AS proveedor_apellidos,\n    concat(u_proveedor.nombres, ' ', u_proveedor.apellidos) AS proveedor_nombre_completo,\n    u_proveedor.telefono AS proveedor_telefono,\n    u_proveedor.correo_electronico AS proveedor_correo,\n    u_proveedor.direccion AS proveedor_direccion,\n    u_proveedor.foto_perfil_url AS proveedor_foto_perfil,\n    u_proveedor.anios_experiencia AS proveedor_experiencia,\n    u_proveedor.registro_tributario AS proveedor_registro_tributario,\n    u_proveedor.verificado AS proveedor_verificado,\n    u_proveedor.disponibilidad AS proveedor_disponible,\n    sub.id AS subcategoria_id,\n    sub.nombre AS subcategoria_nombre,\n    sub.descripcion AS subcategoria_descripcion,\n    cat.id AS categoria_id,\n    cat.nombre AS categoria_nombre,\n    cat.imagen_url AS categoria_imagen,\n    r_solicitud.calificacion AS puntuacion,\n    ( SELECT avg(r.calificacion) AS avg\n           FROM resenas r\n          WHERE r.proveedor_id = ss.profesional_id) AS proveedor_calificacion_promedio,\n    ( SELECT count(*) AS count\n           FROM resenas r\n          WHERE r.proveedor_id = ss.profesional_id) AS proveedor_total_resenas,\n    ( SELECT count(*) AS count\n           FROM solicitudes_servicio ss2\n          WHERE ss2.profesional_id = ss.profesional_id AND ss2.estado = 'completado'::text) AS proveedor_servicios_completados,\n    c.nombre AS solicitud_ciudad,\n    ss.latitud,\n    ss.longitud,\n    ss.direccion_usuario_id\n   FROM solicitudes_servicio ss\n     LEFT JOIN usuarios u_cliente ON ss.usuario_id = u_cliente.id\n     LEFT JOIN usuarios u_proveedor ON ss.profesional_id = u_proveedor.id\n     LEFT JOIN servicios s ON ss.servicio_id = s.id\n     LEFT JOIN subcategorias sub ON s.subcategoria_id = sub.id\n     LEFT JOIN categorias cat ON sub.categoria_id = cat.id\n     LEFT JOIN resenas r_solicitud ON r_solicitud.solicitud_servicio_id = ss.id\n     LEFT JOIN ciudades c ON c.id = ss.ciudad_id\n  WHERE ss.servicio_id IS NOT NULL\n  ORDER BY ss.creado_en DESC;"
+    }
+  ],
+  "huellas": [
+    {
+      "database": "postgres",
+      "version": "15.14",
+      "vista_hash": "87920163697c65a1fb379957337444c2",
+      "trigger_hash": "a54dd02662f2a1985b12396ef72d3f14",
+      "eliminar_hash": "a3fcd68fd465dfc42ddfe7f5edd27ea3"
+    }
+  ]
+}

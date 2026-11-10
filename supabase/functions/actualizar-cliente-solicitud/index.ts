@@ -8,6 +8,7 @@ interface ReqPayload {
   correoElectronico: string
   direccion: string
   ciudad: string
+  soloContacto?: boolean
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -35,12 +36,13 @@ export default {
     const correoElectronico = payload.correoElectronico?.trim().toLowerCase()
     const direccion = payload.direccion?.trim() ?? ''
     const ciudad = payload.ciudad?.trim()
+    const soloContacto = payload.soloContacto === true
 
     if (!usuarioId || (correoElectronico && !emailPattern.test(correoElectronico))) {
       return errorResponse('Los datos del cliente no son válidos', 400)
     }
 
-    if (!ciudad) {
+    if (!soloContacto && !ciudad) {
       return errorResponse('Debes seleccionar una ciudad', 400)
     }
 
@@ -77,26 +79,28 @@ export default {
       return errorResponse('No se puede quitar un correo ya registrado', 400)
     }
 
-    const { data: ciudadActiva, error: ciudadError } = await ctx.supabaseAdmin
-      .from('ciudades')
-      .select('id')
-      .eq('nombre', ciudad)
-      .eq('activo', true)
-      .maybeSingle()
+    if (!soloContacto) {
+      const { data: ciudadActiva, error: ciudadError } = await ctx.supabaseAdmin
+        .from('ciudades')
+        .select('id')
+        .eq('nombre', ciudad)
+        .eq('activo', true)
+        .maybeSingle()
 
-    if (ciudadError) {
-      console.error('No se pudo validar la ciudad', ciudadError)
-      return errorResponse('No se pudo validar la ciudad', 500)
-    }
-    if (!ciudadActiva) {
-      return errorResponse('La ciudad seleccionada no está activa', 400)
+      if (ciudadError) {
+        console.error('No se pudo validar la ciudad', ciudadError)
+        return errorResponse('No se pudo validar la ciudad', 500)
+      }
+      if (!ciudadActiva) {
+        return errorResponse('La ciudad seleccionada no está activa', 400)
+      }
     }
 
     const correoNuevo = correoElectronico || null
     const correoCambio = (cliente.correo_electronico || null) !== correoNuevo
     const telefonoCambio = (cliente.telefono ?? '') !== telefono
-    const direccionCambio = (cliente.direccion ?? '') !== direccion
-    const ciudadCambio = (cliente.ciudad ?? '') !== ciudad
+    const direccionCambio = !soloContacto && (cliente.direccion ?? '') !== direccion
+    const ciudadCambio = !soloContacto && (cliente.ciudad ?? '') !== ciudad
 
     if (!correoCambio && !telefonoCambio && !direccionCambio && !ciudadCambio) {
       return Response.json({ ok: true, changed: false })
@@ -139,8 +143,7 @@ export default {
         .update({
           telefono: celularQuickAdd ? celular.substring(2) : telefono,
           correo_electronico: correoNuevo,
-          direccion,
-          ciudad,
+          ...(!soloContacto ? { direccion, ciudad } : {}),
         })
         .eq('id', usuarioId)
         .select('id, telefono, correo_electronico, direccion, ciudad')

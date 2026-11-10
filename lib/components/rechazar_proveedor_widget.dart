@@ -1,12 +1,13 @@
 import '/components/modal_con_encabezado_fijo.dart';
+import '/components/hulp_modal_actions.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/components/responsive_layout_rows.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'rechazar_proveedor_model.dart';
@@ -75,15 +76,18 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight: FontWeight.w500,
-                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
                       fontSize: 22.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
-                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                     ),
               ),
             ),
+            fijarPie: true,
             cuerpo: Padding(
               padding: EdgeInsets.zero,
               child: Column(
@@ -122,10 +126,13 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                       focusNode: _model.descripcionFocusNode,
                       autofocus: false,
                       obscureText: false,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelStyle:
-                            FlutterFlowTheme.of(context).labelMedium.override(
+                      decoration: decorarInputHulp(
+                          context,
+                          InputDecoration(
+                            isDense: true,
+                            labelStyle: FlutterFlowTheme.of(context)
+                                .labelMedium
+                                .override(
                                   font: GoogleFonts.inter(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .labelMedium
@@ -142,9 +149,10 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                                       .labelMedium
                                       .fontStyle,
                                 ),
-                        hintText: 'Ingrese razon del rechazo',
-                        hintStyle:
-                            FlutterFlowTheme.of(context).labelMedium.override(
+                            hintText: 'Ingrese razon del rechazo',
+                            hintStyle: FlutterFlowTheme.of(context)
+                                .labelMedium
+                                .override(
                                   font: GoogleFonts.inter(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .labelMedium
@@ -163,37 +171,37 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                                       .labelMedium
                                       .fontStyle,
                                 ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).alternate,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).alternate,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).error,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.of(context).error,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        filled: true,
-                        fillColor: Color(0xFFFBFAF9),
-                      ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).alternate,
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).alternate,
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: FlutterFlowTheme.of(context).error,
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            filled: true,
+                            fillColor: Color(0xFFFBFAF9),
+                          )),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             font: GoogleFonts.inter(
                               fontWeight: FlutterFlowTheme.of(context)
@@ -219,100 +227,61 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                    child: ResponsiveToolbarRow(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      breakpoint: 480.0,
-                      wrapAlignment: WrapAlignment.center,
-                      spacing: 12.0,
-                      runSpacing: 12.0,
-                      children: [
+                    key: modalFixedFooterKey,
+                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    child: hulpModalActionRow(
+                      context: context,
+                      actions: [
+                        hulpModalCloseButton(
+                          text: 'Cerrar',
+                          onPressed: () => Navigator.pop(context),
+                        ),
                         FFButtonWidget(
                           onPressed: () async {
+                            await UsuariosTable().update(
+                              data: {
+                                'verificado': 'no verificado',
+                              },
+                              matchingRows: (rows) => rows.eqOrNull(
+                                'id',
+                                widget!.proveedorId,
+                              ),
+                            );
                             Navigator.pop(context);
+
+                            context
+                                .pushNamed(RegistroProveedoresWidget.routeName);
                           },
-                          text: 'Cerrar',
+                          text: 'Rechazar inscripción',
                           options: FFButtonOptions(
-                            height: 40.0,
+                            width: 190.0,
+                            height: 48.0,
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                32.0, 0.0, 32.0, 0.0),
+                                16.0, 0.0, 16.0, 0.0),
                             iconPadding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
-                            color: Color(0xFFFBFAF9),
+                            color: FlutterFlowTheme.of(context).primary,
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
                                   font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Color(0xFF606060),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                            elevation: 0.0,
-                            borderSide: BorderSide(
-                              color: Color(0xFF8A8A8A),
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: FFButtonWidget(
-                            onPressed: () async {
-                              await UsuariosTable().update(
-                                data: {
-                                  'verificado': 'no verificado',
-                                },
-                                matchingRows: (rows) => rows.eqOrNull(
-                                  'id',
-                                  widget!.proveedorId,
-                                ),
-                              );
-                              Navigator.pop(context);
-
-                              context.pushNamed(
-                                  RegistroProveedoresWidget.routeName);
-                            },
-                            text: 'Rechazar inscripción',
-                            options: FFButtonOptions(
-                              height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleSmall
                                         .fontStyle,
                                   ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                                  color: Colors.white,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.w500,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .titleSmall
+                                      .fontStyle,
+                                ),
+                            elevation: 0.0,
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                      ].divide(SizedBox(width: 24.0)),
+                      ],
                     ),
                   ),
                 ],

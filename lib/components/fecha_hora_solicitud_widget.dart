@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 
@@ -312,7 +313,7 @@ class FechaHoraSolicitudWidgetState extends State<FechaHoraSolicitudWidget> {
           textCapitalization: TextCapitalization.none,
           autocorrect: false,
           onChanged: _onTimeChanged,
-          decoration: InputDecoration(
+          decoration: decorarInputHulp(context, InputDecoration(
             hintText: '9:30am',
             errorText: _showValidationErrors || _timeError != null
                 ? _timeError ??
@@ -333,7 +334,7 @@ class FechaHoraSolicitudWidgetState extends State<FechaHoraSolicitudWidget> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: primary, width: 1.5),
             ),
-          ),
+          ), etiqueta: 'Hora'),
         ),
       ],
     );

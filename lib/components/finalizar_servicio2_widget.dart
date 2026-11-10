@@ -1,3 +1,5 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
+import '/backend/confirmar_importe_cobro.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -132,19 +134,38 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
         return;
       }
       if (!await _resolverProfesional(solicitud)) return;
-      await SolicitudesServicioTable().update(
-        data: {
-          'estado': 'finalizadas',
-          'profesional_id': _model.profesionalResuelto,
-        },
-        matchingRows: (rows) => rows.eqOrNull('id', solicitud.id),
-      );
+      if (usaEstadosSprint3) {
+        final respuesta = await SupaFlow.client.functions.invoke(
+          'solicitudes-finanzas',
+          body: {
+            'accion': 'finalizar_admin',
+            'id': solicitud.id,
+            'profesional_id': _model.profesionalResuelto,
+          },
+        );
+        if (respuesta.data == false) {
+          _avisar('El servicio ya estaba finalizado.');
+          if (mounted) Navigator.pop(context, false);
+          return;
+        }
+        if (respuesta.data != true) {
+          throw const FormatException('El cierre no se pudo confirmar.');
+        }
+      } else {
+        await SolicitudesServicioTable().update(
+          data: {
+            'estado': 'finalizadas',
+            'profesional_id': _model.profesionalResuelto,
+          },
+          matchingRows: (rows) => rows.eqOrNull('id', solicitud.id),
+        );
+      }
       final resultado = conCobro
           ? await _cobrarAlFinalizar(solicitud)
           : 'Se conservó el estado del pago; no se realizó ningún cobro.';
       if (!mounted) return;
       _avisar('Servicio finalizado. $resultado');
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
       _avisar('No se pudo finalizar el servicio: $e', esError: true);
     } finally {
@@ -161,7 +182,8 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
     var aprobado = false;
     try {
       final metodos = await MetodosPagoTable().queryRows(
-        queryFn: (q) => q.eqOrNull('usuario_id', solicitud.usuarioId)
+        queryFn: (q) => q
+            .eqOrNull('usuario_id', solicitud.usuarioId)
             .eqOrNull('es_predeterminado', true),
       );
       int fuente;
@@ -184,6 +206,10 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
         return 'No se realizó un cobro: el método de pago no es válido. '
             'Se conservó el estado del pago.';
       }
+      if (!mounted) return 'No se realizó el cobro.';
+      final cotizacion = await confirmarImporteCobro(context,
+          solicitudId: solicitud.id, fuente: fuente);
+      if (cotizacion == null) return 'No se realizó el cobro.';
       final tokens = await actions.getAcceptanceToken(
         FFDevEnvironmentValues().publicKey,
         FFDevEnvironmentValues().isProduction,
@@ -197,15 +223,24 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
         fuente,
         tokens['acceptanceToken']?.toString() ?? '',
         (((solicitud.precioBase ?? solicitud.precio) +
-            (solicitud.precioAdicionales ?? 0)) * 100).round(),
+                    (solicitud.precioAdicionales ?? 0)) *
+                100)
+            .round(),
         'COP',
         '', // El backend obtiene el correo del cliente.
         '${solicitud.id}-${DateTime.now().millisecondsSinceEpoch}',
         FFDevEnvironmentValues().integrityKey,
         FFDevEnvironmentValues().isProduction,
-        personalDataAuthToken: tokens['personalDataAuthToken']?.toString() ?? '',
+        revisionFinanciera: (cotizacion['revision'] as num?)?.toInt(),
+        montoCotizado: cotizacion['monto'] == null
+            ? null
+            : ((cotizacion['monto'] as num) * 100).round(),
+        personalDataAuthToken:
+            tokens['personalDataAuthToken']?.toString() ?? '',
       );
-      if (pago is! Map || pago['success'] != true || pago['status'] != 'APPROVED') {
+      if (pago is! Map ||
+          pago['success'] != true ||
+          pago['status'] != 'APPROVED') {
         return 'Pago sin confirmar. ${_mensajeErrorPago(pago, 'El cobro no fue aprobado.')}';
       }
       aprobado = true;
@@ -286,7 +321,8 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
                     ),
                     IconButton(
                       tooltip: 'Cerrar',
-                      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                      constraints:
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
                       padding: const EdgeInsets.all(12),
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(

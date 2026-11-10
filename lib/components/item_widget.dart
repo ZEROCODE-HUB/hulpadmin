@@ -11,6 +11,8 @@ import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
+import '/components/hulp_modal_actions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'item_model.dart';
@@ -133,8 +135,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                       onChanged: (val) => safeSetState(
                           () => _model.choiceChipsValue = val?.firstOrNull),
                       selectedChipStyle: ChipStyle(
-                        backgroundColor:
-                            FlutterFlowTheme.of(context).primary,
+                          backgroundColor: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).bodyMedium.override(
                                   font: GoogleFonts.inter(
@@ -155,16 +156,16 @@ class _ItemWidgetState extends State<ItemWidget> {
                                       .bodyMedium
                                       .fontStyle,
                                 ),
-                        iconColor:
-                            FlutterFlowTheme.of(context).primaryText,
+                          iconColor: FlutterFlowTheme.of(context).primaryText,
                         iconSize: 18.0,
                         elevation: 0.0,
                         borderRadius: BorderRadius.circular(20.0),
                       ),
                       unselectedChipStyle: ChipStyle(
                         backgroundColor: Color(0xFFF7F4F4),
-                        textStyle:
-                            FlutterFlowTheme.of(context).bodySmall.override(
+                          textStyle: FlutterFlowTheme.of(context)
+                              .bodySmall
+                              .override(
                                   font: GoogleFonts.inter(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .bodySmall
@@ -173,8 +174,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                         .bodySmall
                                         .fontStyle,
                                   ),
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
+                                color:
+                                    FlutterFlowTheme.of(context).secondaryText,
                                   fontSize: 16.0,
                                   letterSpacing: 0.0,
                                   fontWeight: FlutterFlowTheme.of(context)
@@ -184,8 +185,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                       .bodySmall
                                       .fontStyle,
                                 ),
-                        iconColor:
-                            FlutterFlowTheme.of(context).primaryText,
+                          iconColor: FlutterFlowTheme.of(context).primaryText,
                         iconSize: 18.0,
                         elevation: 0.0,
                         borderRadius: BorderRadius.circular(8.0),
@@ -244,14 +244,15 @@ class _ItemWidgetState extends State<ItemWidget> {
                             Container(
                               width: double.infinity,
                               child: TextFormField(
-                                controller:
-                                    _model.descripcionTextController,
+                                  controller: _model.descripcionTextController,
                                 focusNode: _model.descripcionFocusNode,
                                 autofocus: false,
                                 textInputAction: TextInputAction.next,
                                 obscureText: false,
-                                decoration: InputDecoration(
-                                  hintText: 'Qué estás cobrando?',
+                                  decoration: decorarInputHulp(
+                                      context,
+                                      InputDecoration(
+                                        hintText: '¿Qué estás cobrando?',
                                   hintStyle: FlutterFlowTheme.of(context)
                                       .bodyLarge
                                       .override(
@@ -265,7 +266,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                   .bodyLarge
                                                   .fontStyle,
                                         ),
-                                        color: FlutterFlowTheme.of(context)
+                                              color:
+                                                  FlutterFlowTheme.of(context)
                                             .secondaryText,
                                         letterSpacing: 0.0,
                                         fontWeight:
@@ -315,6 +317,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                                   fillColor: FlutterFlowTheme.of(context)
                                       .secondaryBackground,
                                 ),
+                                      etiqueta: 'Descripción del ítem'),
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -409,10 +412,12 @@ class _ItemWidgetState extends State<ItemWidget> {
                                           textInputAction:
                                               TextInputAction.next,
                                           obscureText: false,
-                                          decoration: InputDecoration(
+                                            decoration: decorarInputHulp(
+                                                context,
+                                                InputDecoration(
                                             hintText: 'Cantidad',
-                                            hintStyle:
-                                                FlutterFlowTheme.of(context)
+                                                  hintStyle: FlutterFlowTheme
+                                                          .of(context)
                                                     .bodyLarge
                                                     .override(
                                                       font: GoogleFonts.inter(
@@ -439,7 +444,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                               .bodyLarge
                                                               .fontStyle,
                                                     ),
-                                            enabledBorder: OutlineInputBorder(
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color:
                                                     FlutterFlowTheme.of(
@@ -448,9 +454,11 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
-                                            focusedBorder: OutlineInputBorder(
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color:
                                                     FlutterFlowTheme.of(
@@ -459,15 +467,18 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
-                                            errorBorder: OutlineInputBorder(
+                                                  errorBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
@@ -476,13 +487,15 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
                                             filled: true,
                                             fillColor:
-                                                FlutterFlowTheme.of(context)
+                                                      FlutterFlowTheme.of(
+                                                              context)
                                                     .secondaryBackground,
-                                          ),
+                                                )),
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -577,10 +590,12 @@ class _ItemWidgetState extends State<ItemWidget> {
                                           textInputAction:
                                               TextInputAction.done,
                                           obscureText: false,
-                                          decoration: InputDecoration(
+                                            decoration: decorarInputHulp(
+                                                context,
+                                                InputDecoration(
                                             hintText: 'Precio',
-                                            hintStyle:
-                                                FlutterFlowTheme.of(context)
+                                                  hintStyle: FlutterFlowTheme
+                                                          .of(context)
                                                     .bodyLarge
                                                     .override(
                                                       font: GoogleFonts.inter(
@@ -607,7 +622,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                               .bodyLarge
                                                               .fontStyle,
                                                     ),
-                                            enabledBorder: OutlineInputBorder(
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color:
                                                     FlutterFlowTheme.of(
@@ -616,9 +632,11 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
-                                            focusedBorder: OutlineInputBorder(
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color:
                                                     FlutterFlowTheme.of(
@@ -627,15 +645,18 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
-                                            errorBorder: OutlineInputBorder(
+                                                  errorBorder:
+                                                      OutlineInputBorder(
                                               borderSide: BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
@@ -644,13 +665,15 @@ class _ItemWidgetState extends State<ItemWidget> {
                                                 width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(20.0),
+                                                        BorderRadius.circular(
+                                                            20.0),
                                             ),
                                             filled: true,
                                             fillColor:
-                                                FlutterFlowTheme.of(context)
+                                                      FlutterFlowTheme.of(
+                                                              context)
                                                     .secondaryBackground,
-                                          ),
+                                                )),
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -741,61 +764,71 @@ class _ItemWidgetState extends State<ItemWidget> {
                               autofocus: false,
                               textInputAction: TextInputAction.done,
                               obscureText: false,
-                              decoration: InputDecoration(
+                                decoration: decorarInputHulp(
+                                    context,
+                                    InputDecoration(
                                 hintText: 'Precio',
                                 hintStyle: FlutterFlowTheme.of(context)
                                     .bodyLarge
                                     .override(
                                       font: GoogleFonts.inter(
-                                        fontWeight: FlutterFlowTheme.of(context)
+                                              fontWeight:
+                                                  FlutterFlowTheme.of(context)
                                             .bodyLarge
                                             .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
+                                              fontStyle:
+                                                  FlutterFlowTheme.of(context)
                                             .bodyLarge
                                             .fontStyle,
                                       ),
                                       letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
+                                            fontWeight:
+                                                FlutterFlowTheme.of(context)
                                           .bodyLarge
                                           .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
+                                            fontStyle:
+                                                FlutterFlowTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
                                     ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color:
-                                        FlutterFlowTheme.of(context).alternate,
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate,
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.circular(20.0),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color:
-                                        FlutterFlowTheme.of(context).alternate,
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate,
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.circular(20.0),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
                                 ),
                                 errorBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                     color: Color(0x00000000),
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.circular(20.0),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
                                 ),
                                 focusedErrorBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                     color: Color(0x00000000),
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.circular(20.0),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
                                 ),
                                 filled: true,
                                 fillColor: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                              ),
+                                    )),
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -857,8 +890,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                           valueOrDefault<String>(
                             () {
                               if (_model.choiceChipsValue == 'Material') {
-                                return functions.formatPrices(
-                                    valueOrDefault<double>(
+                                  return functions
+                                      .formatPrices(valueOrDefault<double>(
                                   valueOrDefault<double>(
                                         double.tryParse(
                                             _model.textController2.text),
@@ -911,7 +944,12 @@ class _ItemWidgetState extends State<ItemWidget> {
                     builder: (context) => Padding(
                       padding: EdgeInsetsDirectional.fromSTEB(
                           16.0, 0.0, 16.0, 0.0),
-                      child: FFButtonWidget(
+                        child: hulpModalActionRow(actions: [
+                          hulpModalCloseButton(
+                            text: 'Cerrar',
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          FFButtonWidget(
                         onPressed: () async {
                           if (_model.formKey.currentState == null ||
                               !_model.formKey.currentState!.validate()) {
@@ -939,8 +977,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                     (_model.choiceChipsValue == 'Material'
                                             ? int.tryParse(
                                                 _model.textController3.text)
-                                            : int.tryParse(
-                                                _model.textController4.text))
+                                                : int.tryParse(_model
+                                                    .textController4.text))
                                         ?.toDouble(),
                                     1.0,
                                   ),
@@ -949,12 +987,14 @@ class _ItemWidgetState extends State<ItemWidget> {
                                         ? valueOrDefault<double>(
                                             valueOrDefault<int>(
                                                   int.tryParse(_model
-                                                      .textController2.text),
+                                                          .textController2
+                                                          .text),
                                                   0,
                                                 ) *
                                                 valueOrDefault<double>(
                                                   double.tryParse(_model
-                                                      .textController3.text),
+                                                          .textController3
+                                                          .text),
                                                   0.0,
                                                 ),
                                             0.0,
@@ -973,7 +1013,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: const EdgeInsets.all(16.0),
+                                        insetPadding:
+                                            const EdgeInsets.all(16.0),
                                     backgroundColor: Colors.transparent,
                                     alignment:
                                         AlignmentDirectional(0.0, 0.0)
@@ -1023,7 +1064,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                                 builder: (dialogContext) {
                                   return Dialog(
                                     elevation: 0,
-                                    insetPadding: const EdgeInsets.all(16.0),
+                                        insetPadding:
+                                            const EdgeInsets.all(16.0),
                                     backgroundColor: Colors.transparent,
                                     alignment:
                                         AlignmentDirectional(0.0, 0.0)
@@ -1049,7 +1091,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                         },
                         text: 'Agregar',
                         options: FFButtonOptions(
-                          width: double.infinity,
+                          width: 190.0,
                           height: 48.0,
                           padding: EdgeInsets.all(8.0),
                           iconPadding: EdgeInsetsDirectional.fromSTEB(
@@ -1081,9 +1123,10 @@ class _ItemWidgetState extends State<ItemWidget> {
                             color: Colors.transparent,
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(20.0),
+                              borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
+                        ]),
                     ),
                   ),
                 ].divide(SizedBox(height: 16.0)),

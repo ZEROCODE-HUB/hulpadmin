@@ -1,3 +1,5 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
+import 'solicitud_finanzas_form.dart';
 import 'solicitud_responsive_fields.dart';
 import '/components/buscador_cliente_direcciones.dart';
 import '/backend/direcciones_cliente.dart';
@@ -8,6 +10,8 @@ import '/backend/supabase/supabase.dart';
 import '/backend/supabase/profesionales_query.dart';
 import '/components/item_widget.dart';
 import '/components/fecha_hora_solicitud_widget.dart';
+import '/components/historial_solicitudes_dialog.dart';
+import '/components/hulp_modal_actions.dart';
 import '/components/searchable_dropdown_widget.dart';
 import '/components/selector_ubicacion_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -22,6 +26,7 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'crear_solicitud_model.dart';
@@ -36,9 +41,13 @@ class CrearSolicitudWidget extends StatefulWidget {
 
 class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   late CrearSolicitudModel _model;
+  final _finanzasKey = GlobalKey<SolicitudFinanzasFormState>();
+  final _buscadorClienteKey = GlobalKey<BuscadorClienteDireccionesState>();
+  int _tabSeleccionado = 0;
   DireccionCliente? _direccionGuardada;
   int _revisionMapa = 0;
   int _revisionDirecciones = 0;
+  int _revisionHistorial = 0;
   String _clienteNombre = '';
   Future<List<UsuariosRow>>? _clientesRequest;
   final _clientesAgregados = <String, UsuariosRow>{};
@@ -67,16 +76,38 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         queryFn: (q) => q.order('nombre', ascending: true),
       );
 
-  Future<List<VwSolicitudesServiciosCompletaRow>>
-      _consultarHistorialCliente(String clienteId) {
-    if (_model.historialClienteId != clienteId) {
+  Future<List<VwSolicitudesServiciosCompletaRow>> _consultarHistorialCliente(
+    String clienteId, {
+    bool recargar = false,
+  }) {
+    if (_model.historialClienteId != clienteId ||
+        _model.historialSolicitudesRequest == null ||
+        recargar) {
       _model.historialClienteId = clienteId;
-      _model.historialSolicitudesRequest =
-          VwSolicitudesServiciosCompletaTable().queryRows(
-        queryFn: (q) => q.eqOrNull('usuario_id', clienteId),
-      );
+      _model.historialSolicitudesRequest = _cargarHistorialCliente(clienteId);
     }
     return _model.historialSolicitudesRequest!;
+  }
+
+  Future<List<VwSolicitudesServiciosCompletaRow>> _cargarHistorialCliente(
+    String clienteId,
+  ) async {
+    const tamanoBloque = 500;
+    final historial = <VwSolicitudesServiciosCompletaRow>[];
+    var desde = 0;
+
+    while (true) {
+      final bloque = await VwSolicitudesServiciosCompletaTable().queryRows(
+        queryFn: (q) => q
+            .eqOrNull('usuario_id', clienteId)
+            .order('ticket', ascending: false)
+            .order('solicitud_id', ascending: false)
+            .range(desde, desde + tamanoBloque - 1),
+      );
+      historial.addAll(bloque);
+      if (bloque.length < tamanoBloque) return historial;
+      desde += tamanoBloque;
+    }
   }
 
   void _seleccionarCliente(String? usuarioId, List<UsuariosRow> usuarios) {
@@ -85,14 +116,19 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     safeSetState(() {
       _model.usuarioSeleccionadoValue = usuarioId;
       _clienteNombre = [cliente?.nombres, cliente?.apellidos]
-          .whereType<String>().where((v) => v.trim().isNotEmpty).join(' ');
+          .whereType<String>()
+          .where((v) => v.trim().isNotEmpty)
+          .join(' ');
       _direccionGuardada = null;
       _model.direccionTextController?.clear();
       _model.coordenadas = null;
       _model.ciudadSeleccValue = null;
       _model.direccionEditadaManualmente = false;
       _model.direccionSugeridaPorCliente = false;
+      _model.ciudadSugeridaPorCliente = false;
+      _model.ciudadSugeridaPorHistorial = false;
       _model.ciudadEditadaManualmente = false;
+      _model.ciudadPerfilNoDisponible = null;
       _revisionMapa++;
       _model.clienteAutocompletadoId = usuarioId;
       _model.historialClienteId = null;
@@ -100,8 +136,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       _model.servicioHistorialNoDisponible = null;
       _model.ciudadHistorialNoDisponible = null;
 
-      // Una sugerencia pertenece al cliente anterior. Al cambiarlo se puede
-      // reemplazar; una elección manual no se toca.
+      // Una sugerencia de servicio pertenece al cliente anterior; se puede
+      // reemplazar mientras no haya sido editada manualmente.
       if (_model.servicioSugeridoPorHistorial &&
           !_model.servicioEditadoManualmente) {
         _model.servicioSeleccValue = null;
@@ -110,38 +146,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         _model.precio = '0';
         _model.preciobaseTextController?.text = '0';
       }
-      if (_model.ciudadSugeridaPorHistorial &&
-          !_model.ciudadEditadaManualmente) {
-        _model.ciudadSeleccValue = null;
-        _model.ciudadSugeridaPorHistorial = false;
-      }
     });
 
     if (cliente == null) return;
     _aplicarCiudadCliente(cliente);
-    unawaited(_aplicarSugerenciasHistorial(cliente.id));
-  }
-
-  VwSolicitudesServiciosCompletaRow? _seleccionarSolicitudDeReferencia(
-    List<VwSolicitudesServiciosCompletaRow> historial,
-  ) {
-    final candidatas = historial
-        .where((solicitud) => solicitud.estadoSolicitud != 'canceladas')
-        .toList();
-
-    if (candidatas.isEmpty) return null;
-    candidatas.sort((a, b) {
-      final creadaEnA = a.solicitudCreadaEn ??
-          a.fecha ??
-          DateTime.fromMillisecondsSinceEpoch(0);
-      final creadaEnB = b.solicitudCreadaEn ??
-          b.fecha ??
-          DateTime.fromMillisecondsSinceEpoch(0);
-      final porCreacion = creadaEnB.compareTo(creadaEnA);
-      if (porCreacion != 0) return porCreacion;
-      return (b.ticket ?? 0).compareTo(a.ticket ?? 0);
-    });
-    return candidatas.first;
   }
 
   bool get _puedeReemplazarServicioConHistorial =>
@@ -154,20 +162,138 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       ((_model.ciudadSugeridaPorCliente || _model.ciudadSugeridaPorHistorial) &&
           !_model.ciudadEditadaManualmente);
 
-  Future<void> _aplicarSugerenciasHistorial(String clienteId) async {
+  Future<void> _abrirHistorialSolicitudes(
+    String clienteId,
+    int revision, {
+    bool recargar = false,
+  }) async {
+    List<VwSolicitudesServiciosCompletaRow> historial;
     try {
-      final historial = await _consultarHistorialCliente(clienteId);
-      final referencia = _seleccionarSolicitudDeReferencia(historial);
+      historial = await _consultarHistorialCliente(
+        clienteId,
+        recargar: recargar,
+      );
+    } catch (_) {
+      if (!mounted ||
+          _revisionHistorial != revision ||
+          _model.usuarioSeleccionadoValue != clienteId) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'No se pudo consultar el historial. Puedes continuar manualmente.',
+          ),
+          action: SnackBarAction(
+            label: 'Reintentar',
+            onPressed: () => unawaited(
+              _abrirHistorialSolicitudes(
+                clienteId,
+                revision,
+                recargar: true,
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!mounted ||
+        _revisionHistorial != revision ||
+        _model.usuarioSeleccionadoValue != clienteId) {
+      return;
+    }
+
+    // Si no hay solicitudes, se deja seleccionado el usuario y el formulario
+    // sigue directamente con el ingreso manual y el respaldo de su perfil.
+    if (historial.isEmpty) return;
+
+    final resultadoHistorial = await showDialog<ResultadoHistorialSolicitudes>(
+      context: context,
+      builder: (_) => HistorialSolicitudesDialog(
+        nombreCliente: _clienteNombre,
+        solicitudes: historial,
+      ),
+    );
+
+    if (!mounted ||
+        _revisionHistorial != revision ||
+        _model.usuarioSeleccionadoValue != clienteId) {
+      return;
+    }
+    if (resultadoHistorial?.continuarSinHistorial ?? false) {
+      // Mantiene el cliente seleccionado y deja servicio y ciudad sin
+      // sugerencias de solicitudes anteriores.
+      return;
+    }
+
+    final solicitudSeleccionada = resultadoHistorial?.solicitud;
+    if (solicitudSeleccionada == null) {
+      _limpiarClienteSeleccionado();
+      final revisionBuscador = _revisionHistorial;
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted ||
+          _revisionHistorial != revisionBuscador ||
+          _model.usuarioSeleccionadoValue != null) {
+        return;
+      }
+      await _buscadorClienteKey.currentState?.abrir();
+      return;
+    }
+
+    await _aplicarSugerenciasSolicitud(clienteId, solicitudSeleccionada);
+  }
+
+  void _limpiarClienteSeleccionado() {
+    safeSetState(() {
+      _revisionHistorial++;
+      _model.usuarioSeleccionadoValue = null;
+      _clienteNombre = '';
+      _direccionGuardada = null;
+      _model.direccionTextController?.clear();
+      _model.coordenadas = null;
+      _model.direccionSugeridaPorCliente = false;
+      _model.direccionEditadaManualmente = false;
+      _model.ciudadSeleccValue = null;
+      _model.ciudadSugeridaPorCliente = false;
+      _model.ciudadSugeridaPorHistorial = false;
+      _model.ciudadEditadaManualmente = false;
+      _model.ciudadPerfilNoDisponible = null;
+      _model.clienteAutocompletadoId = null;
+      _model.historialClienteId = null;
+      _model.historialSolicitudesRequest = null;
+      _model.servicioHistorialNoDisponible = null;
+      _model.ciudadHistorialNoDisponible = null;
+      _revisionMapa++;
+      _revisionDirecciones++;
+
+      if (_model.servicioSugeridoPorHistorial &&
+          !_model.servicioEditadoManualmente) {
+        _model.servicioSeleccValue = null;
+        _model.servicioSugeridoPorHistorial = false;
+        _model.precioss = null;
+        _model.precio = '0';
+        _model.preciobaseTextController?.text = '0';
+      }
+    });
+  }
+
+  Future<void> _aplicarSugerenciasSolicitud(
+    String clienteId,
+    VwSolicitudesServiciosCompletaRow referencia,
+  ) async {
+    try {
       final servicios = await _consultarServiciosDisponibles();
       final ciudades = await _consultarCiudadesActivas();
 
       if (!mounted || _model.usuarioSeleccionadoValue != clienteId) return;
 
-      final servicioId = referencia?.servicioId;
+      final servicioId = referencia.servicioId;
       final servicio = servicioId == null
           ? null
           : servicios.where((item) => item.id == servicioId).firstOrNull;
-      final ciudadHistorica = referencia?.solicitudCiudad?.trim() ?? '';
+      final ciudadHistorica = referencia.solicitudCiudad?.trim() ?? '';
       final ciudad = ciudadHistorica.isEmpty
           ? null
           : ciudades
@@ -187,7 +313,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _model.servicioSugeridoPorHistorial = false;
             _model.servicioHistorialNoDisponible = servicioId == null
                 ? null
-                : 'El servicio del historial ya no está disponible. Selecciona otro.';
+                : 'El servicio de la solicitud seleccionada ya no está disponible. Selecciona otro.';
           } else {
             _model.servicioSeleccValue = servicio.id;
             _model.servicioSugeridoPorHistorial = true;
@@ -204,7 +330,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _model.ciudadSugeridaPorHistorial = false;
             _model.ciudadHistorialNoDisponible = ciudadHistorica.isEmpty
                 ? null
-                : 'La ciudad del historial no está disponible. Selecciona una ciudad.';
+                : 'La ciudad de la solicitud seleccionada no está disponible. Selecciona una ciudad.';
           } else {
             _model.ciudadSeleccValue = ciudad.id;
             _model.ciudadSugeridaPorCliente = false;
@@ -216,9 +342,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         }
       });
 
-      // Es el precio vigente del catálogo del servicio sugerido, no el precio
-      // de la solicitud histórica. Mantiene el mismo comportamiento que al
-      // seleccionar ese servicio manualmente.
+      // Se carga el precio vigente del catálogo, no el precio de la solicitud
+      // usada como referencia.
       if (servicio != null &&
           _model.servicioSeleccValue == servicio.id &&
           _model.servicioSugeridoPorHistorial) {
@@ -228,7 +353,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       if (!mounted || _model.usuarioSeleccionadoValue != clienteId) return;
       safeSetState(() {
         _model.servicioHistorialNoDisponible =
-            'No se pudieron consultar las sugerencias del historial.';
+            'No se pudieron aplicar las sugerencias de la solicitud seleccionada.';
       });
     }
   }
@@ -264,10 +389,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   Future<void> _aplicarCiudadCliente(UsuariosRow cliente) async {
     final ciudadPerfil = cliente.ciudad?.trim() ?? '';
-    final puedeReemplazar =
-        (_model.ciudadSeleccValue?.isEmpty ?? true) ||
-            (_model.ciudadSugeridaPorCliente &&
-                !_model.ciudadEditadaManualmente);
+    final puedeReemplazar = (_model.ciudadSeleccValue?.isEmpty ?? true) ||
+        (_model.ciudadSugeridaPorCliente && !_model.ciudadEditadaManualmente);
 
     if (!puedeReemplazar) return;
 
@@ -282,8 +405,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           )
           .firstOrNull;
 
-      // El historial tiene prioridad. Esta comprobación debe hacerse después
-      // de esperar las ciudades porque ambas sugerencias son asíncronas.
+      // La solicitud seleccionada tiene prioridad. Esta comprobación debe
+      // hacerse después de esperar las ciudades porque ambas sugerencias son
+      // asíncronas.
       if (_model.ciudadSugeridaPorHistorial ||
           _model.ciudadEditadaManualmente) {
         return;
@@ -356,7 +480,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   Future<void> _cargarPrecioServicio(String servicioId) async {
     final servicios = await _consultarServiciosDisponibles();
     if (!mounted || _model.servicioSeleccValue != servicioId) return;
-    final servicio = servicios.where((item) => item.id == servicioId).firstOrNull;
+    final servicio =
+        servicios.where((item) => item.id == servicioId).firstOrNull;
     if (servicio == null) return;
     safeSetState(() {
       _model.precioss = [servicio];
@@ -413,7 +538,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: FutureBuilder<List<UsuariosRow>>(
-            future: _clientesRequest ??= UsuariosTable().queryRows(queryFn: (q) => q),
+            future: _clientesRequest ??=
+                UsuariosTable().queryRows(queryFn: (q) => q),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
@@ -438,66 +564,62 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildHeader(context),
-                      const SizedBox(height: 24.0),
+                      const SizedBox(height: 8),
+                      _buildTabs(context),
+                      const SizedBox(height: 20),
                       Flexible(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildTwoColumnRow(
-                                _buildUsuarioField(context, snapshot.data!),
-                                _buildProfesionalField(context),
-                              ),
-                              const SizedBox(height: 16.0),
-                              _buildTwoColumnRow(
-                                _buildServicioField(context),
-                                _buildCiudadField(context),
-                              ),
-                              const SizedBox(height: 16.0),
-                              _buildTwoColumnRow(
-                                _buildPrecioField(context),
-                                _buildPreciosAdicionalesSection(context),
-                              ),
-                              const SizedBox(height: 16.0),
-                              _buildTwoColumnRow(
-                                _buildFechaHoraField(context),
-                                _buildDireccionYUbicacionField(context),
+                        child: IndexedStack(
+                          index: _tabSeleccionado,
+                          children: [
+                            SingleChildScrollView(
+                              key:
+                                  const PageStorageKey('crear-solicitud-datos'),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                              ),
-                              const SizedBox(height: 16.0),
-                              _buildTwoColumnRow(
-                                _buildDescripcionField(context),
-                                _buildNotasField(context),
-                              ),
-                              const SizedBox(height: 24.0),
-                              Align(
-                                alignment: AlignmentDirectional.center,
-                                child: FFButtonWidget(
-                                  onPressed: () => _guardarSolicitud(context),
-                                  text: 'Continuar',
-                                  options: FFButtonOptions(
-                                    height: 48.0,
-                                    width: 320.0,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 32.0),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w500),
-                                          color: Colors.white,
-                                          letterSpacing: 0.0,
-                                        ),
-                                    elevation: 0.0,
-                                    borderRadius: BorderRadius.circular(8.0),
+                                children: [
+                                  _buildTwoColumnRow(
+                                    _buildUsuarioField(context, snapshot.data!),
+                                    _buildProfesionalField(context),
                                   ),
-                                ),
+                                  const SizedBox(height: 16),
+                                  _buildTwoColumnRow(
+                                    _buildServicioField(context),
+                                    _buildCiudadField(context),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTwoColumnRow(
+                                    _buildFechaHoraField(context),
+                                    _buildDireccionYUbicacionField(context),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTwoColumnRow(
+                                    _buildDescripcionField(context),
+                                    _buildNotasField(context),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            SingleChildScrollView(
+                              key: const PageStorageKey(
+                                  'crear-solicitud-finanzas'),
+                              child: SupaFlow.finanzasV1Habilitadas
+                                  ? SolicitudFinanzasForm(
+                                      key: _finanzasKey,
+                                      disposicionCrear: true,
+                                      precioLista: _model
+                                              .precioss?.firstOrNull?.precio ??
+                                          0,
+                                    )
+                                  : _buildTwoColumnRow(
+                                      _buildPrecioField(context),
+                                      _buildPreciosAdicionalesSection(context),
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      _buildFooter(context),
                     ],
                   ),
                 ),
@@ -505,6 +627,85 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTabs(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: theme.alternate, width: 0.5)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final (index, label) in [
+              (0, 'Datos'),
+              (1, 'Desglose financiero'),
+              (2, 'Historial'),
+            ])
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      width: 3,
+                      color: _tabSeleccionado == index
+                          ? theme.primary
+                          : Colors.transparent,
+                    ),
+                  ),
+                ),
+                child: TextButton(
+                  onPressed: index == 2
+                      ? null
+                      : () => safeSetState(() => _tabSeleccionado = index),
+                  style: TextButton.styleFrom(
+                    foregroundColor: _tabSeleccionado == index
+                        ? theme.primary
+                        : theme.secondaryText,
+                    disabledForegroundColor:
+                        theme.secondaryText.withValues(alpha: 0.45),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    shape: const RoundedRectangleBorder(),
+                    textStyle: theme.bodyMedium.copyWith(
+                      fontWeight: _tabSeleccionado == index
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  child: Text(label),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: theme.alternate, width: 0.5)),
+      ),
+      child: hulpModalActionRow(
+        actions: [
+          hulpModalCloseButton(
+            text: 'Cancelar',
+            onPressed: () => Navigator.pop(context),
+          ),
+          hulpModalPrimaryButton(
+            context: context,
+            onPressed: () => _guardarSolicitud(context),
+            text: 'Crear solicitud',
+          ),
+        ],
       ),
     );
   }
@@ -593,8 +794,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     );
   }
 
-  Widget _buildUsuarioField(
-      BuildContext context, List<UsuariosRow> usuarios) {
+  Widget _buildUsuarioField(BuildContext context, List<UsuariosRow> usuarios) {
     final clientes = {for (final c in usuarios) c.id: c, ..._clientesAgregados};
     final users = clientes.values
         .sortedList(keyOf: (e) => e.nombres ?? '', desc: false)
@@ -607,6 +807,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         _buildFieldLabel(context, 'Usuario *'),
         const SizedBox(height: 8.0),
         BuscadorClienteDirecciones(
+          key: _buscadorClienteKey,
           clientes: users,
           usuarioId: _model.usuarioSeleccionadoValue,
           ciudadInicial: _model.ciudadSeleccValue,
@@ -620,6 +821,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
               _aplicarDireccionGuardada(seleccion.direccion!);
             }
             safeSetState(() => _revisionDirecciones++);
+            final revision = ++_revisionHistorial;
+            unawaited(
+              _abrirHistorialSolicitudes(seleccion.cliente.id, revision),
+            );
           },
         ),
         if (currentUserUid == '-1') ...[
@@ -628,8 +833,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             values: secondaryUsers.map((u) => u.id!).toList(),
             labels: secondaryUsers.map((u) => u.nombres ?? '').toList(),
             selectedValue: _model.usuarioSeleccionado2Value,
-            onChanged: (val) => safeSetState(
-                () => _model.usuarioSeleccionado2Value = val),
+            onChanged: (val) =>
+                safeSetState(() => _model.usuarioSeleccionado2Value = val),
             hint: 'Seleccionar usuario...',
           ),
         ],
@@ -645,7 +850,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         const SizedBox(height: 8.0),
         FutureBuilder<List<VwProfesionalesCompletoRow>>(
           future: _model.profesionalesDisponiblesRequest ??=
-              consultarProfesionales(estado: 'activo', verificado: 'verificado'),
+              consultarProfesionales(
+                  estado: 'activo', verificado: 'verificado'),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Text(
@@ -663,8 +869,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
               );
             }
             final proveedores = porProveedor(snapshot.data!).toList()
-              ..sort((a, b) =>
-                  (a.nombres ?? '').compareTo(b.nombres ?? ''));
+              ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
             return SearchableDropdown(
               values: proveedores
                   .map((p) => p.profesionalId ?? '')
@@ -672,12 +877,13 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                   .toList(),
               labels: proveedores
                   .where((p) => (p.profesionalId ?? '').isNotEmpty)
-                  .map((p) => p.nombreCompleto ??
+                  .map((p) =>
+                      p.nombreCompleto ??
                       '${p.nombres ?? ''} ${p.apellidos ?? ''}'.trim())
                   .toList(),
               selectedValue: _model.proveedorSeleccionadoValue,
-              onChanged: (val) => safeSetState(
-                  () => _model.proveedorSeleccionadoValue = val),
+              onChanged: (val) =>
+                  safeSetState(() => _model.proveedorSeleccionadoValue = val),
               hint: 'Sin asignar',
             );
           },
@@ -712,7 +918,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                 if (_model.servicioSugeridoPorHistorial) ...[
                   const SizedBox(height: 6.0),
                   Text(
-                    'Sugerido según la última solicitud no cancelada',
+                    'Sugerido según la solicitud seleccionada',
                     style: FlutterFlowTheme.of(context).bodySmall,
                   ),
                 ],
@@ -759,7 +965,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                 if (_model.ciudadSugeridaPorHistorial) ...[
                   const SizedBox(height: 6.0),
                   Text(
-                    'Sugerida según la última solicitud no cancelada',
+                    'Sugerida según la solicitud seleccionada',
                     style: FlutterFlowTheme.of(context).bodySmall,
                   ),
                 ] else if (_model.ciudadSugeridaPorCliente) ...[
@@ -815,10 +1021,13 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         TextFormField(
           controller: _model.preciobaseTextController,
           focusNode: _model.preciobaseFocusNode,
-          decoration: _inputDecoration(
+          decoration: decorarInputHulp(
+              context,
+              _inputDecoration(
             context,
             valueOrDefault<String>(_model.precio, '0'),
           ),
+              etiqueta: 'Precio'),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
           validator:
               _model.preciobaseTextControllerValidator.asValidator(context),
@@ -874,16 +1083,20 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       children: [
         if (_model.usuarioSeleccionadoValue != null)
           DireccionesClienteSelector(
-            key: ValueKey((_model.usuarioSeleccionadoValue, _revisionDirecciones)),
+            key: ValueKey(
+                (_model.usuarioSeleccionadoValue, _revisionDirecciones)),
             usuarioId: _model.usuarioSeleccionadoValue!,
             nombreCliente: _clienteNombre,
             seleccionada: _direccionGuardada?.id,
             onSinDirecciones: () {
               final clienteId = _model.usuarioSeleccionadoValue;
-              UsuariosTable().queryRows(queryFn: (q) => q.eqOrNull('id', clienteId))
+              UsuariosTable()
+                  .queryRows(queryFn: (q) => q.eqOrNull('id', clienteId))
                   .then((rows) {
-                if (mounted && clienteId == _model.usuarioSeleccionadoValue &&
-                    !_model.direccionEditadaManualmente && rows.isNotEmpty) {
+                if (mounted &&
+                    clienteId == _model.usuarioSeleccionadoValue &&
+                    !_model.direccionEditadaManualmente &&
+                    rows.isNotEmpty) {
                   _aplicarDireccionCliente(rows.first);
                 }
               }).catchError((Object _) {});
@@ -909,7 +1122,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         TextFormField(
           controller: _model.direccionTextController,
           focusNode: _model.direccionFocusNode,
-          decoration: _inputDecoration(context, 'Digite la dirección'),
+          decoration: decorarInputHulp(
+              context, _inputDecoration(context, 'Digite la dirección'),
+              etiqueta: 'Dirección'),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
           onChanged: (_) => _marcarDireccionComoManual(),
           validator:
@@ -953,7 +1168,11 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           maxLines: 5,
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
-          decoration: _inputDecoration(context, 'Describe la solicitud...'),
+          decoration: decorarInputHulp(
+            context,
+            _inputDecoration(context, 'Describe la solicitud...'),
+            etiqueta: 'Descripción',
+          ),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
           validator:
               _model.descripcionTextControllerValidator.asValidator(context),
@@ -966,15 +1185,18 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildFieldLabel(context, 'Notas'),
+        _buildFieldLabel(context, 'Notas internas'),
         const SizedBox(height: 8.0),
         TextFormField(
           controller: _model.notasTextController,
           focusNode: _model.notasFocusNode,
           minLines: 5,
           maxLines: 5,
-          decoration:
+          decoration: decorarInputHulp(
+            context,
               _inputDecoration(context, 'Agrega notas adicionales...'),
+            etiqueta: 'Notas adicionales',
+          ),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
           validator: _model.notasTextControllerValidator.asValidator(context),
         ),
@@ -1001,15 +1223,23 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         DateUtils.dateOnly(_selectedServiceDate!)
             .isBefore(DateUtils.dateOnly(getCurrentTimestamp))) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona una fecha de hoy en adelante.')),
+        const SnackBar(
+            content: Text('Selecciona una fecha de hoy en adelante.')),
       );
       return;
     }
+
+    if (SupaFlow.finanzasV1Habilitadas &&
+        !(_finanzasKey.currentState?.validar() ?? false)) return;
 
     try {
       final tieneProfesional = _model.proveedorSeleccionadoValue != null &&
           _model.proveedorSeleccionadoValue != '';
       await SolicitudesServicioTable().insert({
+        if (SupaFlow.finanzasV1Habilitadas)
+          '_finanzas': _finanzasKey.currentState!.entradas,
+        if (SupaFlow.finanzasV1Habilitadas)
+          '_items': _finanzasKey.currentState!.itemsGuardado,
         'usuario_id': _model.usuarioSeleccionadoValue,
         'descripcion': _model.descripcionTextController.text,
         'ubicacion': _model.direccionTextController.text,
@@ -1020,13 +1250,13 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             PostgresTime(functions.formatTimestamp(_model.datePicked!, false))),
         'precio':
             valueOrDefault<double>(_model.precioss?.firstOrNull?.precio, 0.0),
-        'estado': tieneProfesional ? 'aceptadas' : 'entrantes',
+        'estado': tieneProfesional && !usaEstadosSprint3 ? 'aceptadas' : 'entrantes',
         'servicio_id': _model.servicioSeleccValue,
         'estado_pago': 'pendiente',
         'precio_base':
             valueOrDefault<double>(_model.precioss?.firstOrNull?.precio, 0.0),
-        'precio_adicionales': _model.preciosAdicionalesSolicitud
-            .fold(0.0, (s, e) => s + e.total),
+        'precio_adicionales':
+            _model.preciosAdicionalesSolicitud.fold(0.0, (s, e) => s + e.total),
         'servicio_nombre': _model.precioss?.firstOrNull?.nombre,
         'tipo': 'externo',
         'informacion_adicional': _model.notasTextController.text,
@@ -1274,8 +1504,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                             if (snapshot.hasError) {
                                               return Text(
                                                 'No se pudieron cargar los profesionales',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
+                                                style:
+                                                    FlutterFlowTheme.of(context)
                                                     .bodySmall,
                                               );
                                             }
@@ -1389,10 +1619,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   TextInputType.multiline,
                                               textInputAction:
                                                   TextInputAction.newline,
-                                              decoration: InputDecoration(
+                                              decoration: decorarInputHulp(
+                                                  context,
+                                                  InputDecoration(
                                                 isDense: true,
-                                                labelStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    labelStyle: FlutterFlowTheme
+                                                            .of(context)
                                                         .labelMedium
                                                         .override(
                                                           font:
@@ -1422,11 +1654,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                         ),
                                                 hintText:
                                                     'Digite la descripción',
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
+                                                    hintStyle: FlutterFlowTheme
+                                                            .of(context)
                                                     .labelMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                          font:
+                                                              GoogleFonts.inter(
                                                         fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -1438,7 +1671,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                 .labelMedium
                                                                 .fontStyle,
                                                       ),
-                                                      color: Color(0xFF8A8A8A),
+                                                          color:
+                                                              Color(0xFF8A8A8A),
                                                       fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
@@ -1455,7 +1689,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1467,7 +1702,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1476,9 +1712,11 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                       BorderRadius.circular(
                                                           8.0),
                                                 ),
-                                                errorBorder: OutlineInputBorder(
+                                                    errorBorder:
+                                                        OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1490,7 +1728,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1500,8 +1739,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                           8.0),
                                                 ),
                                                 filled: true,
-                                                fillColor: Color(0xFFFBFAF9),
-                                              ),
+                                                    fillColor:
+                                                        Color(0xFFFBFAF9),
+                                                  )),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -1584,10 +1824,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   _model.direccionFocusNode,
                                               autofocus: false,
                                               obscureText: false,
-                                              decoration: InputDecoration(
+                                              decoration: decorarInputHulp(
+                                                  context,
+                                                  InputDecoration(
                                                 isDense: true,
-                                                labelStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    labelStyle: FlutterFlowTheme
+                                                            .of(context)
                                                         .labelMedium
                                                         .override(
                                                           font:
@@ -1615,12 +1857,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                   .labelMedium
                                                                   .fontStyle,
                                                         ),
-                                                hintText: 'Digite la dirección',
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
+                                                    hintText:
+                                                        'Digite la dirección',
+                                                    hintStyle: FlutterFlowTheme
+                                                            .of(context)
                                                     .labelMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                          font:
+                                                              GoogleFonts.inter(
                                                         fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -1632,7 +1876,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                 .labelMedium
                                                                 .fontStyle,
                                                       ),
-                                                      color: Color(0xFF8A8A8A),
+                                                          color:
+                                                              Color(0xFF8A8A8A),
                                                       fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
@@ -1649,7 +1894,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1661,7 +1907,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1670,9 +1917,11 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                       BorderRadius.circular(
                                                           8.0),
                                                 ),
-                                                errorBorder: OutlineInputBorder(
+                                                    errorBorder:
+                                                        OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1684,7 +1933,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1694,8 +1944,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                           8.0),
                                                 ),
                                                 filled: true,
-                                                fillColor: Color(0xFFFBFAF9),
+                                                    fillColor:
+                                                        Color(0xFFFBFAF9),
                                               ),
+                                                  etiqueta: 'Dirección'),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -1801,10 +2053,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   _model.preciobaseFocusNode,
                                               autofocus: false,
                                               obscureText: false,
-                                              decoration: InputDecoration(
+                                              decoration: decorarInputHulp(
+                                                  context,
+                                                  InputDecoration(
                                                 isDense: true,
-                                                labelStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                    labelStyle: FlutterFlowTheme
+                                                            .of(context)
                                                         .labelMedium
                                                         .override(
                                                           font:
@@ -1837,11 +2091,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   _model.precio,
                                                   '0',
                                                 ),
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
+                                                    hintStyle: FlutterFlowTheme
+                                                            .of(context)
                                                     .labelMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                          font:
+                                                              GoogleFonts.inter(
                                                         fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -1853,7 +2108,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                 .labelMedium
                                                                 .fontStyle,
                                                       ),
-                                                      color: Color(0xFF8A8A8A),
+                                                          color:
+                                                              Color(0xFF8A8A8A),
                                                       fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
@@ -1870,7 +2126,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1882,7 +2139,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .alternate,
                                                     width: 0.5,
@@ -1891,9 +2149,11 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                       BorderRadius.circular(
                                                           8.0),
                                                 ),
-                                                errorBorder: OutlineInputBorder(
+                                                    errorBorder:
+                                                        OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1905,7 +2165,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 focusedErrorBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
+                                                        color:
+                                                            FlutterFlowTheme.of(
                                                             context)
                                                         .error,
                                                     width: 0.5,
@@ -1915,8 +2176,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                           8.0),
                                                 ),
                                                 filled: true,
-                                                fillColor: Color(0xFFFBFAF9),
+                                                    fillColor:
+                                                        Color(0xFFFBFAF9),
                                               ),
+                                                  etiqueta: 'Precio'),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -2077,11 +2340,13 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                             },
                                           ),
                                           Padding(
-                                            padding: EdgeInsetsDirectional
-                                                .fromSTEB(0.0, 8.0, 0.0, 0.0),
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 8.0, 0.0, 0.0),
                                             child: Text(
                                               'Ciudad*',
-                                              style: FlutterFlowTheme.of(context)
+                                              style:
+                                                  FlutterFlowTheme.of(context)
                                                   .bodyMedium
                                                   .override(
                                                     font: GoogleFonts.inter(
@@ -2134,10 +2399,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   snapshot.data!;
 
                                               return SearchableDropdown(
-                                                values: ciudadSeleccCiudadesRowList
+                                                values:
+                                                    ciudadSeleccCiudadesRowList
                                                     .map((c) => c.id)
                                                     .toList(),
-                                                labels: ciudadSeleccCiudadesRowList
+                                                labels:
+                                                    ciudadSeleccCiudadesRowList
                                                     .map((c) => c.nombre)
                                                     .toList(),
                                                 selectedValue:
@@ -2185,8 +2452,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                             ),
                                           ),
                                           ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                                maxWidth: 480.0),
+                                            constraints:
+                                                BoxConstraints(maxWidth: 480.0),
                                             child: FechaHoraSolicitudWidget(
                                               key: _fechaHoraKey,
                                               firstDate: getCurrentTimestamp,
@@ -2205,14 +2472,16 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                             splashColor: Colors.transparent,
                                             focusColor: Colors.transparent,
                                             hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
                                             onTap: () async {
                                               final _datePickedDate =
                                                   await showDatePicker(
                                                 context: context,
                                                 initialDate:
                                                     getCurrentTimestamp,
-                                                firstDate: getCurrentTimestamp,
+                                                  firstDate:
+                                                      getCurrentTimestamp,
                                                 lastDate: DateTime(2050),
                                                 builder: (context, child) {
                                                   return wrapInMaterialDatePickerTheme(
@@ -2247,8 +2516,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w600,
-                                                              fontStyle: FlutterFlowTheme
-                                                                      .of(context)
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
                                                                   .headlineLarge
                                                                   .fontStyle,
                                                             ),
@@ -2312,7 +2581,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                       .headlineLarge
                                                                       .fontStyle,
                                                                 ),
-                                                                fontSize: 32.0,
+                                                                  fontSize:
+                                                                      32.0,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight:
@@ -2352,7 +2622,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               if (_datePickedDate != null &&
                                                   _datePickedTime != null) {
                                                 safeSetState(() {
-                                                  _model.datePicked = DateTime(
+                                                    _model.datePicked =
+                                                        DateTime(
                                                     _datePickedDate.year,
                                                     _datePickedDate.month,
                                                     _datePickedDate.day,
@@ -2376,7 +2647,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               decoration: BoxDecoration(
                                                 color: Color(0xFFFBFAF9),
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                      BorderRadius.circular(
+                                                          8.0),
                                                 border: Border.all(
                                                   color: FlutterFlowTheme.of(
                                                           context)
@@ -2388,10 +2660,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 children: [
                                                   Expanded(
                                                     child: Text(
-                                                      _model.datePicked != null
+                                                        _model.datePicked !=
+                                                                null
                                                           ? dateTimeFormat(
                                                               "d/M/yyyy  HH:mm",
-                                                              _model.datePicked)
+                                                                _model
+                                                                    .datePicked)
                                                           : 'Seleccione fecha y hora',
                                                       style: FlutterFlowTheme
                                                               .of(context)
@@ -2408,14 +2682,16 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                 : Color(
                                                                     0xFF8A8A8A),
                                                             fontSize: 16.0,
-                                                            letterSpacing: 0.0,
+                                                              letterSpacing:
+                                                                  0.0,
                                                           ),
                                                     ),
                                                   ),
                                                   Icon(
                                                     Icons
                                                         .calendar_month_outlined,
-                                                    color: FlutterFlowTheme.of(
+                                                      color:
+                                                          FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryText,
                                                     size: 20.0,
@@ -2474,10 +2750,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                         focusNode: _model.notasFocusNode,
                                         autofocus: false,
                                         obscureText: false,
-                                        decoration: InputDecoration(
+                                        decoration: decorarInputHulp(
+                                            context,
+                                            InputDecoration(
                                           isDense: true,
-                                          labelStyle: FlutterFlowTheme.of(
-                                                  context)
+                                              labelStyle:
+                                                  FlutterFlowTheme.of(context)
                                               .labelMedium
                                               .override(
                                                 font: GoogleFonts.inter(
@@ -2494,17 +2772,19 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 ),
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                            FlutterFlowTheme.of(
+                                                                    context)
                                                         .labelMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                            FlutterFlowTheme.of(
+                                                                    context)
                                                         .labelMedium
                                                         .fontStyle,
                                               ),
                                           hintText: 'Ingresa notas',
-                                          hintStyle: FlutterFlowTheme.of(
-                                                  context)
+                                              hintStyle:
+                                                  FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
                                                 font: GoogleFonts.inter(
@@ -2522,18 +2802,20 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                 fontSize: 16.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight:
-                                                    FlutterFlowTheme.of(context)
+                                                            FlutterFlowTheme.of(
+                                                                    context)
                                                         .bodyMedium
                                                         .fontWeight,
                                                 fontStyle:
-                                                    FlutterFlowTheme.of(context)
+                                                            FlutterFlowTheme.of(
+                                                                    context)
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .alternate,
                                               width: 0.5,
                                             ),
@@ -2542,8 +2824,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .alternate,
                                               width: 0.5,
                                             ),
@@ -2552,8 +2834,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                           ),
                                           errorBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .error,
                                               width: 0.5,
                                             ),
@@ -2563,8 +2845,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                           focusedErrorBorder:
                                               OutlineInputBorder(
                                             borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
                                                       .error,
                                               width: 0.5,
                                             ),
@@ -2573,7 +2855,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                           ),
                                           filled: true,
                                           fillColor: Color(0xFFFBFAF9),
-                                        ),
+                                            )),
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
@@ -2709,7 +2991,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                         _model.precioss?.firstOrNull?.precio,
                                         0.0,
                                       ),
-                                      'estado': 'aceptadas',
+                                      'estado': usaEstadosSprint3 ? 'entrantes' : 'aceptadas',
                                       'servicio_id': _model.servicioSeleccValue,
                                       'estado_pago': 'pendiente',
                                       'precio_base': valueOrDefault<double>(

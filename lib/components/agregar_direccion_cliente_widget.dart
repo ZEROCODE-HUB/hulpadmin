@@ -8,6 +8,8 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'selector_ubicacion_widget.dart';
 import 'searchable_dropdown_widget.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
+import '/components/hulp_modal_actions.dart';
 
 class AgregarDireccionClienteWidget extends StatefulWidget {
   const AgregarDireccionClienteWidget(
@@ -180,7 +182,11 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
             enabled: !_guardando,
             style:
                 FlutterFlowTheme.of(context).bodyMedium.copyWith(fontSize: 16),
-            decoration: _decoracion(hint),
+            decoration: decorarInputHulp(
+              context,
+              _decoracion(hint),
+              etiqueta: etiqueta,
+            ),
             validator: validator,
             onChanged: onChanged,
           ),
@@ -424,21 +430,23 @@ class _AgregarDireccionState extends State<AgregarDireccionClienteWidget> {
                     )),
               )),
               const SizedBox(height: 20),
-              FFButtonWidget(
-                onPressed: _guardando ? null : _guardar,
-                text: _guardando
-                    ? 'Guardando…'
-                    : widget.quickAdd == null
-                        ? 'Guardar dirección'
-                        : 'Crear y seleccionar cliente',
-                options: FFButtonOptions(
-                  height: 44,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  color: tema.primary,
-                  textStyle: tema.titleSmall
-                      .copyWith(color: Colors.white, fontSize: 16),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+              hulpModalActionRow(
+                actions: [
+                  hulpModalCloseButton(
+                    text: 'Cancelar',
+                    onPressed:
+                        _guardando ? null : () => Navigator.pop(context),
+                  ),
+                  hulpModalPrimaryButton(
+                    context: context,
+                    onPressed: _guardando ? null : _guardar,
+                    text: _guardando
+                        ? 'Guardando…'
+                        : widget.quickAdd == null
+                            ? 'Guardar dirección'
+                            : 'Crear y seleccionar cliente',
+                  ),
+                ],
               ),
             ]),
           ),

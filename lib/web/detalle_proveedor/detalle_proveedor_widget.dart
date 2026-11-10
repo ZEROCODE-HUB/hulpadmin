@@ -1,3 +1,4 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
 import '/components/modal_con_encabezado_fijo.dart';
 import '/components/documentos_proveedor.dart';
 import '/backend/supabase/supabase.dart';
@@ -12,6 +13,7 @@ import '/app_state.dart';
 import 'dart:math' show min;
 import '/index.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -298,7 +300,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
               ? (v) =>
                   (v == null || v.trim().isEmpty) ? 'Campo obligatorio' : null
               : null,
-          decoration: InputDecoration(
+          decoration: decorarInputHulp(context, InputDecoration(
             isDense: true,
             filled: true,
             fillColor: const Color(0xFFFBFAF9),
@@ -324,7 +326,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   BorderSide(color: FlutterFlowTheme.of(ctx).error, width: 1),
               borderRadius: BorderRadius.circular(8),
             ),
-          ),
+          ), etiqueta: label),
           style: GoogleFonts.inter(fontSize: 15),
         ),
       ],
@@ -427,13 +429,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             children: [
                               OutlinedButton(
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: _valueGray,
+                                  foregroundColor: const Color(0xFF3C3C3C),
                                   side: const BorderSide(
-                                      color: Color(0xFF8A8A8A)),
+                                      color: Color(0xFFB8B2A8)),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
+                                  minimumSize: const Size(110, 48),
+                                  textStyle: const TextStyle(fontSize: 16),
                                 ),
                                 onPressed: saving
                                     ? null
@@ -445,12 +447,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                   backgroundColor:
                                       FlutterFlowTheme.of(ctx).primary,
                                   foregroundColor: Colors.white,
+                                  minimumSize: const Size(190, 48),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 12),
                                   textStyle: GoogleFonts.inter(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600),
                                 ),
                                 onPressed: saving
@@ -843,13 +844,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: _valueGray,
+                                foregroundColor: const Color(0xFF3C3C3C),
                                 side:
-                                    const BorderSide(color: Color(0xFF8A8A8A)),
+                                    const BorderSide(color: Color(0xFFB8B2A8)),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
+                                minimumSize: const Size(110, 48),
+                                textStyle: const TextStyle(fontSize: 16),
                               ),
                               onPressed:
                                   saving ? null : () => Navigator.of(ctx).pop(),
@@ -860,12 +861,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                 backgroundColor:
                                     FlutterFlowTheme.of(ctx).primary,
                                 foregroundColor: Colors.white,
+                                minimumSize: const Size(190, 48),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
                                 textStyle: GoogleFonts.inter(
-                                    fontSize: 14, fontWeight: FontWeight.w600),
+                                    fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                               onPressed: (saving || subiendoFoto)
                                   ? null
@@ -1122,12 +1122,12 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                       children: [
                         OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: _valueGray,
-                            side: const BorderSide(color: Color(0xFF8A8A8A)),
+                            foregroundColor: const Color(0xFF3C3C3C),
+                            side: const BorderSide(color: Color(0xFFB8B2A8)),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
+                            minimumSize: const Size(110, 48),
+                            textStyle: const TextStyle(fontSize: 16),
                           ),
                           onPressed:
                               saving ? null : () => Navigator.of(ctx).pop(),
@@ -1137,12 +1137,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: FlutterFlowTheme.of(ctx).primary,
                             foregroundColor: Colors.white,
+                            minimumSize: const Size(190, 48),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
                             textStyle: GoogleFonts.inter(
-                                fontSize: 14, fontWeight: FontWeight.w600),
+                                fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                           onPressed: saving
                               ? null
@@ -2645,7 +2644,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                     validator: (v) => (v == null || v.trim().isEmpty)
                         ? 'Campo obligatorio'
                         : null,
-                    decoration: InputDecoration(
+                    decoration: decorarInputHulp(ctx, InputDecoration(
                       isDense: true,
                       filled: true,
                       fillColor: const Color(0xFFFBFAF9),
@@ -2672,7 +2671,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             color: FlutterFlowTheme.of(ctx).error, width: 1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                    ),
+                    ), etiqueta: label),
                     style: GoogleFonts.inter(fontSize: 15),
                   ),
                 ],
@@ -2735,13 +2734,13 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: _valueGray,
+                                foregroundColor: const Color(0xFF3C3C3C),
                                 side:
-                                    const BorderSide(color: Color(0xFF8A8A8A)),
+                                    const BorderSide(color: Color(0xFFB8B2A8)),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
+                                minimumSize: const Size(110, 48),
+                                textStyle: const TextStyle(fontSize: 16),
                               ),
                               onPressed:
                                   saving ? null : () => Navigator.of(ctx).pop(),
@@ -2752,12 +2751,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                                 backgroundColor:
                                     FlutterFlowTheme.of(ctx).primary,
                                 foregroundColor: Colors.white,
+                                minimumSize: const Size(190, 48),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
                                 textStyle: GoogleFonts.inter(
-                                    fontSize: 14, fontWeight: FontWeight.w600),
+                                    fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                               onPressed: saving
                                   ? null
@@ -3541,6 +3539,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
   }
 
   String _estadoLabel(String? estado) {
+    if (usaEstadosSprint3) return etiquetaEstadoSprint3(estado);
     switch (estado) {
       case 'finalizadas':
         return 'Servicio completado';

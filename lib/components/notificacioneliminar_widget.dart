@@ -1,8 +1,7 @@
 import '/components/modal_con_encabezado_fijo.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/components/responsive_layout_rows.dart';
+import '/components/hulp_modal_actions.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -82,162 +81,104 @@ class _NotificacioneliminarWidgetState
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
-                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
                       fontSize: 22.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w600,
-                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                     ),
               ),
             ),
+            fijarPie: true,
             cuerpo: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Align(
-                alignment: AlignmentDirectional(0.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                  child: Builder(
-                    builder: (context) {
-                      if (widget!.succes ?? false) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
-                            'assets/images/Iconos_de_estado.png',
-                            width: 80.0,
-                            height: 80.0,
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      } else {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
-                            'assets/images/Iconos_de_estado.png',
-                            width: 80.0,
-                            height: 80.0,
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      }
-                    },
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional(0.0, 0.0),
+                  child: Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                    child: Builder(
+                      builder: (context) {
+                        if (widget!.succes ?? false) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.asset(
+                              'assets/images/Iconos_de_estado.png',
+                              width: 80.0,
+                              height: 80.0,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        } else {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.asset(
+                              'assets/images/Iconos_de_estado.png',
+                              width: 80.0,
+                              height: 80.0,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ),
-              ),
-              Align(
-                alignment: AlignmentDirectional(0.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
-                  child: Text(
-                    valueOrDefault<String>(
-                      widget!.texto,
-                      'texto',
-                    ),
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.inter(
+                Align(
+                  alignment: AlignmentDirectional(0.0, 0.0),
+                  child: Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
+                    child: Text(
+                      valueOrDefault<String>(
+                        widget!.texto,
+                        'texto',
+                      ),
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            font: GoogleFonts.inter(
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .fontStyle,
+                            ),
+                            fontSize: 18.0,
+                            letterSpacing: 0.0,
                             fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
-                          fontSize: 18.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w500,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                        ),
-                  ),
-                ),
-              ),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 20.0,
-                runSpacing: 8.0,
-                children: [
-                  Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
-                    child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                      child: FFButtonWidget(
-                        onPressed: () async {
-                          Navigator.pop(context);
-                        },
-                        text: 'Cancelar',
-                        options: FFButtonOptions(
-                          height: 48.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: Color(0x000B6244),
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context).secondary,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w500,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                          elevation: 0.0,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
                     ),
                   ),
-                  Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
-                    child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                      child: FFButtonWidget(
+                ),
+                Padding(
+                  key: modalFixedFooterKey,
+                  padding: EdgeInsets.zero,
+                  child: hulpModalActionRow(
+                    context: context,
+                    actions: [
+                      hulpModalCloseButton(
+                        text: 'Cancelar',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      hulpModalPrimaryButton(
+                        context: context,
+                        text: 'Eliminar',
                         onPressed: () async {
                           await widget.action?.call();
                           Navigator.pop(context);
                         },
-                        text: 'Eliminar',
-                        options: FFButtonOptions(
-                          height: 48.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: FlutterFlowTheme.of(context).primary,
-                          textStyle:
-                              FlutterFlowTheme.of(context).titleSmall.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                          elevation: 0.0,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

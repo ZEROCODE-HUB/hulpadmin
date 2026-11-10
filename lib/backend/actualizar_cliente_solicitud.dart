@@ -21,6 +21,7 @@ Future<void> actualizarClienteSolicitud({
   required String correoElectronico,
   required String direccion,
   required String ciudad,
+  bool soloContacto = false,
 }) async {
   try {
     final response = await SupaFlow.client.functions.invoke(
@@ -31,6 +32,7 @@ Future<void> actualizarClienteSolicitud({
         'correoElectronico': correoElectronico,
         'direccion': direccion,
         'ciudad': ciudad,
+        if (soloContacto) 'soloContacto': true,
       },
     );
 

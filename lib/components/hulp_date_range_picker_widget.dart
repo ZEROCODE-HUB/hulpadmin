@@ -1,4 +1,5 @@
 import '/components/modal_con_encabezado_fijo.dart';
+import '/components/hulp_modal_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -15,6 +16,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
     this.firstDate,
     this.lastDate,
     this.expandido = false,
+    this.showDropdownIcon = false,
   });
 
   final DateTime? dateStart;
@@ -25,6 +27,7 @@ class HulpDateRangePickerWidget extends StatelessWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool expandido;
+  final bool showDropdownIcon;
 
   bool get _hasSelection => dateStart != null && dateEnd != null;
 
@@ -72,7 +75,12 @@ class HulpDateRangePickerWidget extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 12.0),
+          padding: EdgeInsetsDirectional.fromSTEB(
+            expandido ? 8.0 : 12.0,
+            12.0,
+            expandido ? 8.0 : 12.0,
+            12.0,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -87,6 +95,8 @@ class HulpDateRangePickerWidget extends StatelessWidget {
                     const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
                 child: Text(
                   _displayText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         font: GoogleFonts.inter(fontWeight: FontWeight.w500),
                         color: _hasSelection
@@ -98,6 +108,14 @@ class HulpDateRangePickerWidget extends StatelessWidget {
                       ),
                 ),
               )),
+              if (showDropdownIcon) ...[
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  size: 23,
+                ),
+              ],
             ],
           ),
         ),
@@ -109,14 +127,23 @@ class HulpDateRangePickerWidget extends StatelessWidget {
         if (expandido) Expanded(child: boton) else boton,
         if (_hasSelection)
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 0.0, 0.0),
+            padding: EdgeInsetsDirectional.fromSTEB(
+              expandido ? 2.0 : 4.0,
+              0.0,
+              0.0,
+              0.0,
+            ),
             child: IconButton(
               tooltip: 'Limpiar fechas',
               onPressed: onReset,
-              icon: const Icon(
+              constraints: expandido
+                  ? const BoxConstraints(minWidth: 32, minHeight: 32)
+                  : null,
+              padding: expandido ? EdgeInsets.zero : const EdgeInsets.all(8),
+              icon: Icon(
                 Icons.close,
                 color: Color(0xFFE20E0E),
-                size: 24.0,
+                size: expandido ? 20.0 : 24.0,
               ),
             ),
           ),
@@ -345,23 +372,17 @@ class _HulpRangePickerDialogState extends State<_HulpRangePickerDialog> {
                         style: TextStyle(
                             color: FlutterFlowTheme.of(context).error)),
                   ),
-                  TextButton(
+                  hulpModalCloseButton(
+                    text: 'Cancelar',
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
+                  hulpModalPrimaryButton(
+                    context: context,
+                    text: 'Aplicar',
                     onPressed: (_start != null && _end != null)
                         ? () => Navigator.of(context)
                             .pop(DateTimeRange(start: _start!, end: _end!))
                         : null,
-                    child: const Text('Aplicar'),
                   ),
                 ],
               ),

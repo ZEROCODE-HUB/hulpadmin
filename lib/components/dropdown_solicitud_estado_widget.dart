@@ -1,3 +1,4 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/finalizar_servicio2_widget.dart';
@@ -91,31 +92,11 @@ class _DropdownSolicitudEstadoWidgetState
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: widget!.estadoActual == 'entrantes'
-                          ? Color(0xFFE9EBEC)
-                          : (widget!.estadoActual == 'aceptadas'
-                              ? Color(0xFFD6EAFF)
-                              : (widget!.estadoActual == 'finalizadas'
-                                  ? Color(0xFFDFF9D2)
-                                  : ((widget!.estadoActual == 'canceladas') ||
-                                          (widget!.estadoActual ==
-                                              'reagendadas')
-                                      ? Color(0xFFF9DCDF)
-                                      : Color(0xFFFFF5D6)))),
+                      color: solicitudStatusBackgroundColor(widget.estadoActual),
                       borderRadius: BorderRadius.circular(24.0),
                       shape: BoxShape.rectangle,
                       border: Border.all(
-                        color: widget!.estadoActual == 'entrantes'
-                            ? Color(0xFF6C757D)
-                            : (widget!.estadoActual == 'aceptadas'
-                                ? Color(0xFF007BFF)
-                                : (widget!.estadoActual == 'finalizadas'
-                                    ? Color(0xFF388212)
-                                    : ((widget!.estadoActual == 'canceladas') ||
-                                            (widget!.estadoActual ==
-                                                'reagendadas')
-                                        ? Color(0xFFDC3545)
-                                        : Color(0xFFD6A100)))),
+                        color: solicitudStatusForegroundColor(widget.estadoActual),
                       ),
                     ),
                     alignment: AlignmentDirectional(0.0, 0.0),
@@ -123,17 +104,7 @@ class _DropdownSolicitudEstadoWidgetState
                       padding:
                           EdgeInsetsDirectional.fromSTEB(8.0, 2.0, 8.0, 2.0),
                       child: Text(
-                        widget!.estadoActual == 'entrantes'
-                            ? 'Pendiente'
-                            : (widget!.estadoActual == 'aceptadas'
-                                ? 'Activo'
-                                : (widget!.estadoActual == 'canceladas'
-                                    ? 'Cancelado'
-                                    : (widget!.estadoActual == 'finalizadas'
-                                        ? 'Finalizado'
-                                        : (widget!.estadoActual == 'reagendadas'
-                                            ? 'Reagendada'
-                                            : 'En curso')))),
+                        solicitudStatusLabel(widget.estadoActual),
                         maxLines: 2,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.inter(
@@ -142,18 +113,7 @@ class _DropdownSolicitudEstadoWidgetState
                                     .bodyMedium
                                     .fontStyle,
                               ),
-                              color: widget!.estadoActual == 'entrantes'
-                                  ? Color(0xFF6C757D)
-                                  : (widget!.estadoActual == 'aceptadas'
-                                      ? Color(0xFF007BFF)
-                                      : (widget!.estadoActual == 'finalizadas'
-                                          ? Color(0xFF388212)
-                                          : ((widget!.estadoActual ==
-                                                      'canceladas') ||
-                                                  (widget!.estadoActual ==
-                                                      'reagendadas')
-                                              ? Color(0xFFDC3545)
-                                              : Color(0xFFD6A100)))),
+                              color: solicitudStatusForegroundColor(widget.estadoActual),
                               fontSize: 16.0,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w500,
@@ -170,7 +130,9 @@ class _DropdownSolicitudEstadoWidgetState
           ),
           Builder(
             builder: (context) {
-              final listaOpciones = _model.opciones.toList();
+              final listaOpciones = usaEstadosSprint3
+                    ? const ['finalizadas', 'canceladas', 'reagendadas']
+                    : _model.opciones.toList();
 
               return Column(
                 mainAxisSize: MainAxisSize.max,
@@ -178,7 +140,7 @@ class _DropdownSolicitudEstadoWidgetState
                     List.generate(listaOpciones.length, (listaOpcionesIndex) {
                   final listaOpcionesItem = listaOpciones[listaOpcionesIndex];
                   return Visibility(
-                    visible: (widget!.estadoActual != listaOpcionesItem) &&
+                    visible: (estadoSolicitudParaFiltro(widget.estadoActual) != listaOpcionesItem) &&
                         ((listaOpcionesItem != 'iniciadas') &&
                             (listaOpcionesItem != 'en camino')),
                     child: Builder(
@@ -192,7 +154,7 @@ class _DropdownSolicitudEstadoWidgetState
                           highlightColor: Colors.transparent,
                           onTap: () async {
                             if (listaOpcionesItem == 'finalizadas') {
-                              await showDialog(
+                              final finalizada = await showDialog<bool>(
                                 context: context,
                                 builder: (dialogContext) {
                                   return Dialog(
@@ -207,6 +169,7 @@ class _DropdownSolicitudEstadoWidgetState
                                   );
                                 },
                               );
+                              if (finalizada != true) return;
                             } else {
                               await SolicitudesServicioTable().update(
                                 data: {
@@ -235,33 +198,10 @@ class _DropdownSolicitudEstadoWidgetState
                                 width: 10.0,
                                 height: 10.0,
                                 decoration: BoxDecoration(
-                                  color: listaOpcionesItem == 'entrantes'
-                                      ? Color(0xFFE9EBEC)
-                                      : (listaOpcionesItem == 'aceptadas'
-                                          ? Color(0xFFD6EAFF)
-                                          : (listaOpcionesItem == 'finalizadas'
-                                              ? Color(0xFFDFF9D2)
-                                              : ((listaOpcionesItem ==
-                                                          'canceladas') ||
-                                                      (listaOpcionesItem ==
-                                                          'reagendadas')
-                                                  ? Color(0xFFF9DCDF)
-                                                  : Color(0xFFFFF5D6)))),
+                                  color: solicitudStatusBackgroundColor(listaOpcionesItem),
                                   borderRadius: BorderRadius.circular(24.0),
                                   border: Border.all(
-                                    color: listaOpcionesItem == 'entrantes'
-                                        ? Color(0xFF6C757D)
-                                        : (listaOpcionesItem == 'aceptadas'
-                                            ? Color(0xFF007BFF)
-                                            : (listaOpcionesItem ==
-                                                    'finalizadas'
-                                                ? Color(0xFF388212)
-                                                : ((listaOpcionesItem ==
-                                                            'canceladas') ||
-                                                        (listaOpcionesItem ==
-                                                            'reagendadas')
-                                                    ? Color(0xFFDC3545)
-                                                    : Color(0xFFD6A100)))),
+                                    color: solicitudStatusForegroundColor(listaOpcionesItem),
                                   ),
                                 ),
                               ),
@@ -269,19 +209,7 @@ class _DropdownSolicitudEstadoWidgetState
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     0.0, 4.0, 0.0, 4.0),
                                 child: Text(
-                                  listaOpcionesItem == 'entrantes'
-                                      ? 'Pendiente'
-                                      : (listaOpcionesItem == 'aceptadas'
-                                          ? 'Activo'
-                                          : (listaOpcionesItem == 'canceladas'
-                                              ? 'Cancelado'
-                                              : (listaOpcionesItem ==
-                                                      'finalizadas'
-                                                  ? 'Finalizado'
-                                                  : (listaOpcionesItem ==
-                                                          'reagendadas'
-                                                      ? 'Reagendada'
-                                                      : 'En curso')))),
+                                  solicitudStatusLabel(listaOpcionesItem),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(

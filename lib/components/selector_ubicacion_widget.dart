@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/places_service.dart';
 import '/flutter_flow/ubicacion_helpers.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -308,6 +309,8 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
+        // Evita leer la posición numérica del scroll como estado booleano.
+        key: const PageStorageKey('selector-ubicacion-pegar'),
         initiallyExpanded: _pegarAbierto,
         onExpansionChanged: (v) => _pegarAbierto = v,
         tilePadding: EdgeInsets.zero,
@@ -329,9 +332,10 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
 
   Widget _campoPegar(FlutterFlowTheme tema) {
     return TextFormField(
+      key: const PageStorageKey('selector-ubicacion-coordenadas'),
       controller: _controlador,
       onChanged: _analizar,
-      decoration: InputDecoration(
+      decoration: decorarInputHulp(context, InputDecoration(
         isDense: true,
         hintText: 'Pega el enlace de Google Maps o «4.710989, -74.072092»',
         hintStyle: tema.labelMedium.override(
@@ -379,7 +383,7 @@ class _SelectorUbicacionWidgetState extends State<SelectorUbicacionWidget> {
         ),
         filled: true,
         fillColor: const Color(0xFFFBFAF9),
-      ),
+      ), etiqueta: 'Ubicación'),
       style: tema.bodyMedium.override(
         font: GoogleFonts.inter(),
         fontSize: 15.0,
