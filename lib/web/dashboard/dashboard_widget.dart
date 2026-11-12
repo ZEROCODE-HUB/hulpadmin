@@ -6,6 +6,7 @@ import '/components/dropdown_soporte_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/dialog_helpers.dart';
 import '/web/menu/menu_widget.dart';
 import 'dart:ui';
 import '/index.dart';
@@ -15,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'dashboard_model.dart';
 import 'dashboard_responsive.dart';
+import '/web/shared/admin_page_spacing.dart';
 export 'dashboard_model.dart';
 
 class DashboardWidget extends StatefulWidget {
@@ -47,8 +49,44 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     super.dispose();
   }
 
+  Widget _buildHeaderBreadcrumb(BuildContext context) {
+    final crumbStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          font: GoogleFonts.inter(
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.italic,
+          ),
+          color: const Color(0xFF5E252B),
+          fontSize: 16.0,
+          letterSpacing: 0.0,
+          fontWeight: FontWeight.w500,
+          fontStyle: FontStyle.italic,
+        );
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        InkWell(
+          splashColor: Colors.transparent,
+          onTap: () => navigateWithFade(context, DashboardWidget.routeName),
+          child: Text('Inicio', style: crumbStyle),
+        ),
+        const Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 4.0, 0.0),
+          child: Icon(
+            Icons.chevron_right,
+            color: Color(0xFF5E252B),
+            size: 24.0,
+          ),
+        ),
+        Text('Panel de control', style: crumbStyle),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -91,11 +129,22 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsetsDirectional.only(
+                                      start: headerHorizontal,
+                                    ),
+                                    child: Align(
+                                      alignment: AlignmentDirectional.centerStart,
+                                      child: _buildHeaderBreadcrumb(context),
+                                    ),
+                                  ),
+                                ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 12.0, 40.0, 12.0),
+                                      16.0, 12.0, headerHorizontal, 12.0),
                                   child: Icon(
                                     Icons.notifications_none,
                                     color: Color(0xFF606060),
@@ -108,7 +157,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                           Flexible(
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  MenuWidget.esMovil(context) ? 12.0 : 24.0, 16.0, MenuWidget.esMovil(context) ? 12.0 : 24.0, 0.0),
+                                  pageHorizontal, 16.0, pageHorizontal, 0.0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -121,20 +170,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                       builder: (context, snapshot) {
                                         // Customize what your widget looks like when it's loading.
                                         if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: CircularProgressIndicator(
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                                ),
-                                              ),
-                                            ),
-                                          );
+                                          return const DashboardOverviewLoadingSkeleton();
                                         }
                                         List<VwDashboardMetricasRow>
                                             containerVwDashboardMetricasRowList =
@@ -288,6 +324,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'estado': 'entrantes',
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -386,7 +425,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                   vertical: true,
                                                                   icon: Icons.work_outline,
                                                                   child: Text(
-                                                                  'Servicios activos',
+                                                                  'Servicios aceptados',
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -463,6 +502,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'estado': 'aceptadas',
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -813,6 +855,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'estado': 'finalizadas',
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -1161,7 +1206,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                       () async {
                                                                     context
                                                                         .pushNamed(
-                                                                      RegistroProveedoresWidget
+                                                                      ProveedoresWidget
                                                                           .routeName,
                                                                       extra: <String,
                                                                           dynamic>{
@@ -1307,10 +1352,18 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                           .transparent,
                                                                   onTap:
                                                                       () async {
+                                                                    final fechaHoy = dateTimeFormat(
+                                                                      'yyyy-MM-dd',
+                                                                      DateTime.now(),
+                                                                    );
                                                                     context
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'fechaInicio': fechaHoy,
+                                                                        'fechaFin': fechaHoy,
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -1380,10 +1433,18 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                           .transparent,
                                                                   onTap:
                                                                       () async {
+                                                                    final fechaHoy = dateTimeFormat(
+                                                                      'yyyy-MM-dd',
+                                                                      DateTime.now(),
+                                                                    );
                                                                     context
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'fechaInicio': fechaHoy,
+                                                                        'fechaFin': fechaHoy,
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -1453,10 +1514,18 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                           .transparent,
                                                                   onTap:
                                                                       () async {
+                                                                    final fechaHoy = dateTimeFormat(
+                                                                      'yyyy-MM-dd',
+                                                                      DateTime.now(),
+                                                                    );
                                                                     context
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'fechaInicio': fechaHoy,
+                                                                        'fechaFin': fechaHoy,
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -1596,10 +1665,20 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                           .transparent,
                                                                   onTap:
                                                                       () async {
+                                                                    final fechaManana = dateTimeFormat(
+                                                                      'yyyy-MM-dd',
+                                                                      DateTime.now().add(
+                                                                        const Duration(days: 1),
+                                                                      ),
+                                                                    );
                                                                     context
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'fechaInicio': fechaManana,
+                                                                        'fechaFin': fechaManana,
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -1669,10 +1748,20 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                           .transparent,
                                                                   onTap:
                                                                       () async {
+                                                                    final fechaManana = dateTimeFormat(
+                                                                      'yyyy-MM-dd',
+                                                                      DateTime.now().add(
+                                                                        const Duration(days: 1),
+                                                                      ),
+                                                                    );
                                                                     context
                                                                         .pushNamed(
                                                                       SolicitudesWidget
                                                                           .routeName,
+                                                                      queryParameters: {
+                                                                        'fechaInicio': fechaManana,
+                                                                        'fechaFin': fechaManana,
+                                                                      },
                                                                       extra: <String,
                                                                           dynamic>{
                                                                         '__transition_info__':
@@ -2318,21 +2407,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                               builder: (context, snapshot) {
                                                 // Customize what your widget looks like when it's loading.
                                                 if (!snapshot.hasData) {
-                                                  return Center(
-                                                    child: SizedBox(
-                                                      width: 50.0,
-                                                      height: 50.0,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                  return const DashboardSummaryLoadingSkeleton(
+                                                    rowCount: 5,
                                                   );
                                                 }
                                                 List<VwSolicitudesServiciosCompletaRow>
@@ -2911,21 +2987,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                               builder: (context, snapshot) {
                                                 // Customize what your widget looks like when it's loading.
                                                 if (!snapshot.hasData) {
-                                                  return Center(
-                                                    child: SizedBox(
-                                                      width: 50.0,
-                                                      height: 50.0,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                  return const DashboardSummaryLoadingSkeleton(
+                                                    rowCount: 4,
                                                   );
                                                 }
                                                 List<VwProfesionalesCompletoRow>
@@ -3360,21 +3423,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                               builder: (context, snapshot) {
                                                 // Customize what your widget looks like when it's loading.
                                                 if (!snapshot.hasData) {
-                                                  return Center(
-                                                    child: SizedBox(
-                                                      width: 50.0,
-                                                      height: 50.0,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                  return const DashboardSummaryLoadingSkeleton(
+                                                    rowCount: 4,
                                                   );
                                                 }
                                                 List<SoporteRow>

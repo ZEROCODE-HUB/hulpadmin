@@ -103,6 +103,35 @@ List<VwProfesionalesCompletoRow> porProveedor(
       .toList(growable: false);
 }
 
+/// Consulta qué perfiles siguen disponibles para recibir solicitudes.
+/// La vista de profesionales no expone `usuarios.disponibilidad`.
+Future<Set<String>> consultarIdsProfesionalesDisponibles(
+  Iterable<String?> profesionalIds,
+) async {
+  final ids = profesionalIds
+      .whereType<String>()
+      .where((id) => id.isNotEmpty)
+      .toSet()
+      .toList(growable: false);
+  if (ids.isEmpty) return <String>{};
+
+  final filas = await SupaFlow.client
+      .from('usuarios')
+      .select('id')
+      .inFilter('id', ids)
+      .eq('disponibilidad', true);
+
+  return filas.map((fila) => fila['id'] as String).toSet();
+}
+
+/// Revalida el estado justo antes de guardar una nueva asignación.
+Future<bool> profesionalPuedeRecibirSolicitudes(String? profesionalId) async {
+  if (profesionalId == null || profesionalId.isEmpty) return false;
+  final idsDisponibles =
+      await consultarIdsProfesionalesDisponibles([profesionalId]);
+  return idsDisponibles.contains(profesionalId);
+}
+
 /// Nombres de categoría presentes en el resultado, ordenados alfabéticamente.
 List<String> categoriasDe(List<VwProfesionalesCompletoRow> filas) {
   final nombres = filas

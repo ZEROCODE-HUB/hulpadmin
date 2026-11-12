@@ -2,7 +2,9 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/dialog_helpers.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
@@ -43,8 +45,44 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
     super.dispose();
   }
 
+  Widget _buildHeaderBreadcrumb(BuildContext context) {
+    final crumbStyle = FlutterFlowTheme.of(context).bodyMedium.override(
+          font: GoogleFonts.inter(
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.italic,
+          ),
+          color: const Color(0xFF5E252B),
+          fontSize: 16.0,
+          letterSpacing: 0.0,
+          fontWeight: FontWeight.w500,
+          fontStyle: FontStyle.italic,
+        );
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        InkWell(
+          splashColor: Colors.transparent,
+          onTap: () => navigateWithFade(context, DashboardWidget.routeName),
+          child: Text('Inicio', style: crumbStyle),
+        ),
+        const Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 4.0, 0.0),
+          child: Icon(
+            Icons.chevron_right,
+            color: Color(0xFF5E252B),
+            size: 24.0,
+          ),
+        ),
+        Text('Rendimiento', style: crumbStyle),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -85,11 +123,23 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.only(
+                                    start: headerHorizontal,
+                                  ),
+                                  child: Align(
+                                    alignment:
+                                        AlignmentDirectional.centerStart,
+                                    child: _buildHeaderBreadcrumb(context),
+                                  ),
+                                ),
+                              ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 12.0, 40.0, 12.0),
+                                    16.0, 12.0, headerHorizontal, 12.0),
                                 child: Icon(
                                   Icons.notifications_none,
                                   color: FlutterFlowTheme.of(context).accent3,
@@ -103,114 +153,12 @@ class _RendimientoWidgetState extends State<RendimientoWidget> {
                           child: Align(
                             alignment: AlignmentDirectional(-1.0, 0.0),
                             child: Padding(
-                              padding: EdgeInsets.all(16.0),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  pageHorizontal, 16.0, pageHorizontal, 16.0),
                               child: SingleChildScrollView(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
-                                        Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  DashboardWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Inicio',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 4.0, 0.0),
-                                              child: Icon(
-                                                Icons.chevron_right,
-                                                color: Color(0xFF5E252B),
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  RendimientoWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Rendimiento',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 14.0, 0.0, 14.0),

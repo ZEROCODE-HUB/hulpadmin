@@ -13,6 +13,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
@@ -259,6 +261,8 @@ class _SolicitudesRechazadasWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -348,25 +352,20 @@ class _SolicitudesRechazadasWidgetState
                                             padding: const EdgeInsetsDirectional.only(start: 24.0),
                                             child: _buildBreadcrumb(context),
                                           ),
-                                          const Spacer(flex: 2),
                                         ],
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                              MediaQuery.sizeOf(context).width <
-                                                      1024
-                                                  ? 16.0
-                                                  : 40.0,
+                                              headerHorizontal,
                                               0.0,
-                                              16.0,
+                                              12.0,
                                               0.0,
                                             ),
                                             child: Align(
                                               alignment: AlignmentDirectional
-                                                  .centerStart,
-                                              child: Container(
-                                                width: 394.0,
+                                                  .centerEnd,
+                                              child: AdminHeaderSearchWidth(
                                                 child: TextFormField(
                                                   controller:
                                                       _model.textController,
@@ -550,7 +549,7 @@ class _SolicitudesRechazadasWidgetState
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                            0.0,
+                                            16.0,
                                             12.0,
                                             MediaQuery.sizeOf(context).width <
                                                     1024
@@ -571,13 +570,9 @@ class _SolicitudesRechazadasWidgetState
                                   Flexible(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
-                                        24.0,
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
+                                        pageHorizontal,
+                                        16.0,
+                                        pageHorizontal,
                                         0.0,
                                       ),
                                       child: Column(

@@ -29,6 +29,193 @@ class DashboardMetricGrid extends StatelessWidget {
       });
 }
 
+class DashboardOverviewLoadingSkeleton extends StatelessWidget {
+  const DashboardOverviewLoadingSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEEE4D3)),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+        child: Column(
+          children: [
+            DashboardMetricGrid(
+              minWidth: 170,
+              children: List.generate(
+                6,
+                (_) => const _DashboardMetricSkeletonCard(height: 215),
+              ),
+            ),
+            const SizedBox(height: 24),
+            DashboardMetricGrid(
+              minWidth: 180,
+              children: List.generate(
+                5,
+                (_) => const _DashboardMetricSkeletonCard(height: 220),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class DashboardSummaryLoadingSkeleton extends StatelessWidget {
+  const DashboardSummaryLoadingSkeleton({
+    super.key,
+    this.rowCount = 4,
+  });
+
+  final int rowCount;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        constraints: const BoxConstraints(minHeight: 360),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE4D4B9)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const _DashboardSkeletonBlock(width: 190, height: 22),
+                  const Spacer(),
+                  _DashboardSkeletonBlock(
+                    width: 30,
+                    height: 30,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  for (var index = 0; index < 3; index++) ...[
+                    if (index > 0) const SizedBox(width: 10),
+                    const Expanded(
+                      child: _DashboardSkeletonBlock(height: 58),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              const _DashboardSkeletonBlock(width: 150, height: 16),
+              const SizedBox(height: 8),
+              for (var index = 0; index < rowCount; index++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      _DashboardSkeletonBlock(
+                        width: 30,
+                        height: 30,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _DashboardSkeletonBlock(
+                              width: index.isEven ? 150 : 110,
+                              height: 14,
+                            ),
+                            const SizedBox(height: 6),
+                            _DashboardSkeletonBlock(
+                              width: index.isEven ? 95 : 130,
+                              height: 11,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const _DashboardSkeletonBlock(width: 44, height: 14),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _DashboardMetricSkeletonCard extends StatelessWidget {
+  const _DashboardMetricSkeletonCard({required this.height});
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        constraints: BoxConstraints(minHeight: height),
+        clipBehavior: Clip.antiAlias,
+        foregroundDecoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFF075D3F), width: 3)),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0EAE2)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DashboardSkeletonBlock(
+              width: 40,
+              height: 40,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            const SizedBox(height: 8),
+            const _DashboardSkeletonBlock(width: 125, height: 16),
+            const SizedBox(height: 12),
+            const _DashboardSkeletonBlock(width: 70, height: 28),
+            const SizedBox(height: 12),
+            const Divider(height: 16, thickness: 1, color: Color(0xFFECEDEB)),
+            const _DashboardSkeletonBlock(width: 110, height: 13),
+            const SizedBox(height: 8),
+            const _DashboardSkeletonBlock(width: 80, height: 13),
+          ],
+        ),
+      );
+}
+
+class _DashboardSkeletonBlock extends StatelessWidget {
+  const _DashboardSkeletonBlock({
+    this.width,
+    required this.height,
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
+  });
+
+  final double? width;
+  final double height;
+  final BorderRadiusGeometry borderRadius;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8ECE9),
+          borderRadius: borderRadius,
+        ),
+      );
+}
+
 class DashboardSummaryLayout extends StatelessWidget {
   const DashboardSummaryLayout(
       {super.key,
@@ -102,14 +289,14 @@ class DashboardMetricHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icono = Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE9F4EC),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 22, color: const Color(0xFF075D3F)),
-          );
+      width: 40,
+      height: 40,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE9F4EC),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, size: 22, color: const Color(0xFF075D3F)),
+    );
     if (vertical) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

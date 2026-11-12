@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import 'solicitud_historial_widget.dart';
 
 /// Distribución visual de Detalles. Mantiene montados los campos y acciones.
 class DetalleSolicitudTabs extends StatefulWidget {
@@ -8,8 +9,10 @@ class DetalleSolicitudTabs extends StatefulWidget {
       required this.encabezado,
       required this.datos,
       required this.finanzas,
+      this.solicitudId,
       required this.acciones});
   final Widget encabezado, datos, finanzas, acciones;
+  final String? solicitudId;
   @override
   State<DetalleSolicitudTabs> createState() => _DetalleSolicitudTabsState();
 }
@@ -27,12 +30,13 @@ class _DetalleSolicitudTabsState extends State<DetalleSolicitudTabs> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final escritorio = MediaQuery.sizeOf(context).width >= 700;
     return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           widget.encabezado,
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Container(
               decoration: BoxDecoration(
                   border: Border(
@@ -59,8 +63,12 @@ class _DetalleSolicitudTabsState extends State<DetalleSolicitudTabs> {
                                   foregroundColor: tab == index
                                       ? theme.primary
                                       : theme.secondaryText,
+                                  tapTargetSize: escritorio
+                                      ? MaterialTapTargetSize.shrinkWrap
+                                      : MaterialTapTargetSize.padded,
+                                  minimumSize: const Size(0, 36),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 16),
+                                      horizontal: 20, vertical: 8),
                                   shape: const RoundedRectangleBorder(),
                                   textStyle: theme.bodyMedium.copyWith(
                                       fontWeight: tab == index
@@ -68,19 +76,14 @@ class _DetalleSolicitudTabsState extends State<DetalleSolicitudTabs> {
                                           : FontWeight.normal)),
                               child: Text(label))),
                   ]))),
-          const SizedBox(height: 20),
+          SizedBox(height: tab == 2 ? 14 : 20),
           Flexible(
               child: IndexedStack(index: tab, children: [
             SingleChildScrollView(controller: datosScroll, child: widget.datos),
             SingleChildScrollView(
                 controller: finanzasScroll, child: widget.finanzas),
-            const SingleChildScrollView(
-                child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(
-                        child: Text(
-                            'Sin información de historial para mostrar.',
-                            textAlign: TextAlign.center)))),
+            SolicitudHistorialWidget(
+                solicitudId: widget.solicitudId, visible: tab == 2),
           ])),
           Container(
               padding: const EdgeInsets.only(top: 16),

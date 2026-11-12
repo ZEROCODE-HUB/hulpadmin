@@ -15,6 +15,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
@@ -347,11 +349,8 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final anchoContenido = MediaQuery.sizeOf(context).width -
-        (MenuWidget.esMovil(context)
-            ? 0.0
-            : (FFAppState().MenuAbierto ? 280.0 : 112.0));
-    final paddingHorizontal = anchoContenido < 900.0 ? 16.0 : 40.0;
+    final paddingHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     final isShortViewport = MediaQuery.sizeOf(context).height < 500.0;
 
     return GestureDetector(
@@ -399,17 +398,19 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                 padding: const EdgeInsetsDirectional.only(start: 24.0),
                                 child: _buildBreadcrumb(context),
                               ),
-                              const Spacer(flex: 2),
                             ],
                             Expanded(
                               child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  paddingHorizontal, 0.0, 12.0, 0.0),
+                                  headerHorizontal, 0.0, 12.0, 0.0),
                               child: Align(
-                                alignment: AlignmentDirectional.centerStart,
+                                alignment: AlignmentDirectional.centerEnd,
                                 child: ConstrainedBox(
                                   constraints:
-                                      BoxConstraints(maxWidth: 394.0),
+                                      BoxConstraints(
+                                        maxWidth:
+                                            AdminHeaderSearchWidth.standardWidth,
+                                      ),
                                   child: TextFormField(
                                   controller: _model.textController,
                                   focusNode: _model.textFieldFocusNode,
@@ -543,7 +544,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, paddingHorizontal, 12.0),
+                                  16.0, 12.0, headerHorizontal, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -574,16 +575,10 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
-                                ),
+                              return const AdminPageLoadingSkeleton(
+                                filterCount: 2,
+                                columnCount: 7,
+                                rowCount: 6,
                               );
                             }
                             List<VwListaUsuariosConServiciosRow>
@@ -604,18 +599,10 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
+                                    return const AdminPageLoadingSkeleton(
+                                      filterCount: 2,
+                                      columnCount: 7,
+                                      rowCount: 6,
                                     );
                                   }
                                   List<VwListaUsuariosConServiciosRow>
@@ -627,7 +614,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           paddingHorizontal,
-                                          isShortViewport ? 8.0 : 24.0,
+                                          16.0,
                                           paddingHorizontal,
                                           0.0),
                                       child: Column(
@@ -1440,22 +1427,9 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                 // Customize what your widget looks like when it's loading.
                                                                 if (!snapshot
                                                                     .hasData) {
-                                                                  return Center(
-                                                                    child:
-                                                                        SizedBox(
-                                                                      width:
-                                                                          50.0,
-                                                                      height:
-                                                                          50.0,
-                                                                      child:
-                                                                          CircularProgressIndicator(
-                                                                        valueColor:
-                                                                            AlwaysStoppedAnimation<Color>(
-                                                                          FlutterFlowTheme.of(context)
-                                                                              .primary,
-                                                                        ),
-                                                                      ),
-                                                                    ),
+                                                                  return const AdminSkeletonBlock(
+                                                                    width: 72,
+                                                                    height: 16,
                                                                   );
                                                                 }
                                                                 List<UsuariosRow>

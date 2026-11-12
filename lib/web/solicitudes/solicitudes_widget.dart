@@ -7,7 +7,6 @@ import '/components/crear_solicitud_widget.dart';
 import '/components/detalle_solicitud_widget.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
 import '/components/edicion_solicitud_widget.dart';
-import '/components/hulp_loading_indicator.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -17,9 +16,12 @@ import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/dialog_helpers.dart';
 import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import '/web/solicitudes/solicitudes_filter_bar.dart';
 import '/web/solicitudes/solicitudes_data_table.dart';
 import '/web/solicitudes/menu_estado_solicitud.dart';
+import '/web/solicitudes/solicitudes_loading_skeleton.dart';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -30,7 +32,16 @@ import 'solicitudes_model.dart';
 export 'solicitudes_model.dart';
 
 class SolicitudesWidget extends StatefulWidget {
-  const SolicitudesWidget({super.key});
+  const SolicitudesWidget({
+    super.key,
+    this.estadoInicial,
+    this.fechaInicioInicial,
+    this.fechaFinInicial,
+  });
+
+  final String? estadoInicial;
+  final String? fechaInicioInicial;
+  final String? fechaFinInicial;
 
   static String routeName = 'Solicitudes';
   static String routePath = '/solicitudes';
@@ -73,10 +84,18 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
+  static DateTime? _parseDateParameter(String? value) {
+    final parsed = DateTime.tryParse(value ?? '');
+    return parsed == null ? null : _dateOnly(parsed);
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SolicitudesModel());
+    _model.dropDownValue1 = widget.estadoInicial;
+    _model.dateStart = _parseDateParameter(widget.fechaInicioInicial);
+    _model.dateEnd = _parseDateParameter(widget.fechaFinInicial);
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
     _model.textFieldFocusNode!.addListener(() async {
@@ -158,7 +177,18 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
       }).toList();
     }
 
-    final desc = _model.dropDownOrdenValue != 'Antiguos primero';
+    final orden = _model.dropDownOrdenValue ?? 'Recientes primero';
+    if (orden == 'Ticket ascendente' || orden == 'Ticket descendente') {
+      final ticketsDescendente = orden == 'Ticket descendente';
+      final withTicket = list.where((e) => e.ticket != null).toList();
+      final sinTicket = list.where((e) => e.ticket == null).toList();
+      final sorted = withTicket
+          .sortedList(keyOf: (e) => e.ticket!, desc: ticketsDescendente)
+          .toList();
+      return [...sorted, ...sinTicket];
+    }
+
+    final desc = orden != 'Antiguos primero';
     final withFecha = list.where((e) => e.fecha != null).toList();
     final sinFecha = list.where((e) => e.fecha == null).toList();
     final sorted =
@@ -348,7 +378,12 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         if (_errorActualizacion != null || searchSnap.hasError) {
           return _buildLoadError();
         }
-        if (!searchSnap.hasData) return const HulpLoadingIndicator();
+        if (!searchSnap.hasData) {
+          return SolicitudesLoadingSkeleton(
+            showFinancials: SupaFlow.finanzasV1Habilitadas,
+            topBar: _buildHeaderBar(context),
+          );
+        }
         final searchRows = searchSnap.data!;
 
         return StreamBuilder<List<VwSolicitudesServiciosCompletaRow>>(
@@ -366,7 +401,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
           builder: (context, streamSnap) {
             if (streamSnap.hasError) return _buildLoadError();
             if (!streamSnap.hasData) {
-              return const HulpLoadingIndicator();
+              return SolicitudesLoadingSkeleton(
+                showFinancials: SupaFlow.finanzasV1Habilitadas,
+                topBar: _buildHeaderBar(context),
+              );
             }
             final allData = streamSnap.data!;
 
@@ -433,7 +471,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
 
     return LayoutBuilder(builder: (context, viewport) {
-      final horizontal = viewport.maxWidth < 700 ? 12.0 : 24.0;
+      final horizontal =
+          AdminPageSpacing.horizontalForWidth(viewport.maxWidth);
       return CustomScrollView(slivers: [
         SliverToBoxAdapter(child: _buildHeaderBar(context)),
         SliverPadding(
@@ -566,7 +605,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   // -- Sub-widgets ------------------------------------------------------------
 
   Widget _buildHeaderBar(BuildContext context) {
-    final horizontal = MenuWidget.esMovil(context) ? 12.0 : 24.0;
+    final horizontal = AdminPageSpacing.headerHorizontal(context);
     return Container(
       width: MediaQuery.sizeOf(context).width * 1.0,
       height: 72.0,
@@ -583,13 +622,14 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               padding: EdgeInsetsDirectional.only(start: 24.0),
               child: _buildBreadcrumb(context),
             ),
-            const Spacer(flex: 2),
           ],
-          Flexible(
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
               child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(horizontal, 0.0, 12.0, 0.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 394.0),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    horizontal, 0.0, 12.0, 0.0),
+                child: AdminHeaderSearchWidth(
               child: TextFormField(
                 controller: _model.textController,
                 focusNode: _model.textFieldFocusNode,
@@ -643,10 +683,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 validator: _model.textControllerValidator.asValidator(context),
               ),
             ),
-          )),
+                ))),
           Padding(
             padding:
-                EdgeInsetsDirectional.fromSTEB(0.0, 12.0, horizontal, 12.0),
+                EdgeInsetsDirectional.fromSTEB(16.0, 12.0, horizontal, 12.0),
             child: Icon(
               Icons.notifications_none,
               color: FlutterFlowTheme.of(context).accent3,
@@ -722,7 +762,12 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                     FormFieldController<String>(
                   _model.dropDownOrdenValue ??= 'Recientes primero',
                 ),
-                options: ['Recientes primero', 'Antiguos primero'],
+                options: [
+                  'Recientes primero',
+                  'Antiguos primero',
+                  'Ticket ascendente',
+                  'Ticket descendente',
+                ],
                 onChanged: (val) =>
                     safeSetState(() => _model.dropDownOrdenValue = val),
                 width: 200.0,

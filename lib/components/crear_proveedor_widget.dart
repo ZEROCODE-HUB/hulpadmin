@@ -2869,7 +2869,7 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 20.0, 10.0, 0.0),
                             child: Text(
-                              'Servicios a ofrecer',
+                              'Servicios a ofrecer *',
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -2902,12 +2902,30 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                               serviciosid: _model.serviciosid,
                               action: (serviciosidsss) async {
                                 _model.serviciosid =
-                                    serviciosidsss!.toList().cast<String>();
+                                    (serviciosidsss ?? <String>[])
+                                        .toList()
+                                        .cast<String>();
+                                if (_model.serviciosid.isNotEmpty) {
+                                  _model.mostrarErrorServicios = false;
+                                }
                                 safeSetState(() {});
                               },
                             ),
                           ),
                         ),
+                        if (_model.mostrarErrorServicios)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Selecciona al menos un servicio para continuar.',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .override(
+                                    font: GoogleFonts.inter(),
+                                    color: FlutterFlowTheme.of(context).error,
+                                  ),
+                            ),
+                          ),
                       ],
                     ),
                     Align(
@@ -2972,9 +2990,11 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                     );
 
                                 if (_model.serviciosid.isEmpty) {
+                                  safeSetState(() {
+                                    _model.mostrarErrorServicios = true;
+                                  });
                                   await _mostrarError(
                                       'Debes seleccionar mínimo un servicio');
-                                  safeSetState(() {});
                                   return;
                                 }
 

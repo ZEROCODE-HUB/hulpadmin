@@ -11,6 +11,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
@@ -305,12 +307,10 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final contentWidth = viewportWidth -
         (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
-    final pagePadding = contentWidth < 600.0
-        ? 16.0
-        : (contentWidth < 1000.0 ? 24.0 : 40.0);
-    final searchSidePadding = contentWidth < 600.0 ? 16.0 : 40.0;
-    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 56.0)
-        .clamp(120.0, 394.0)
+    final pagePadding = AdminPageSpacing.contentHorizontal(context);
+    final searchSidePadding = AdminPageSpacing.headerHorizontal(context);
+    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 68.0)
+        .clamp(160.0, AdminHeaderSearchWidth.standardWidth)
         .toDouble();
 
     return GestureDetector(
@@ -358,11 +358,11 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                 padding: const EdgeInsetsDirectional.only(start: 24.0),
                                 child: _buildBreadcrumb(context),
                               ),
-                              const Spacer(flex: 2),
                             ],
+                            const Spacer(),
                             Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                  searchSidePadding, 0.0, 0.0, 0.0),
+                                  searchSidePadding, 0.0, 12.0, 0.0),
                               child: Container(
                                 width: searchFieldWidth,
                                 child: TextFormField(
@@ -498,7 +498,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, searchSidePadding, 12.0),
+                                  16.0, 12.0, searchSidePadding, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -542,7 +542,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                               decoration: BoxDecoration(),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    pagePadding, 24.0, pagePadding, 0.0),
+                                    pagePadding, 16.0, pagePadding, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [

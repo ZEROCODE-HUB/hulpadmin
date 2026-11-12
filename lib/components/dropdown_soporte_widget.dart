@@ -120,7 +120,7 @@ class _DropdownSoporteWidgetState extends State<DropdownSoporteWidget> {
                             : (widget!.estadoActual == 'en proceso'
                                 ? 'En proceso'
                                 : (widget!.estadoActual == 'rechazado'
-                                    ? 'Rechazado'
+                                    ? 'Cancelado'
                                     : (widget!.estadoActual == 'completado'
                                         ? 'Completado'
                                         : 'Escalado'))),

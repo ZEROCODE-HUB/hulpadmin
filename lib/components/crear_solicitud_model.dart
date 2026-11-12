@@ -65,7 +65,8 @@ class CrearSolicitudModel extends FlutterFlowModel<CrearSolicitudWidget> {
   // State field(s) for proveedorSeleccionado widget.
   String? proveedorSeleccionadoValue;
   FormFieldController<String>? proveedorSeleccionadoValueController;
-  Future<List<VwProfesionalesCompletoRow>>? profesionalesDisponiblesRequest;
+  final Map<String, Future<List<VwProfesionalesCompletoRow>>>
+      profesionalesPorServicio = {};
   // State field(s) for descripcion widget.
   FocusNode? descripcionFocusNode;
   TextEditingController? descripcionTextController;

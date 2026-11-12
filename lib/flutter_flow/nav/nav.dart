@@ -193,7 +193,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SolicitudesWidget.routeName,
           path: SolicitudesWidget.routePath,
-          builder: (context, params) => SolicitudesWidget(),
+          builder: (context, params) => SolicitudesWidget(
+            estadoInicial: params.getParam('estado', ParamType.String),
+            fechaInicioInicial:
+                params.getParam('fechaInicio', ParamType.String),
+            fechaFinInicial: params.getParam('fechaFin', ParamType.String),
+          ),
         ),
         FFRoute(
           name: SoporteWidget.routeName,

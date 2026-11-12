@@ -9,6 +9,63 @@ Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'credencial-ficticia-de-prueba');
 const actor = '11111111-1111-4111-8111-111111111111';
 const response = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status, headers: { 'Content-Type': 'application/json' } });
 
+Deno.test('historial combinado consulta ambas fuentes para un administrador', async () => {
+  const original = globalThis.fetch;
+  const solicitud = '22222222-2222-4222-8222-222222222222';
+  const proveedora = '33333333-3333-4333-8333-333333333333';
+  const consultar = (id: string) => manejarSolicitud(new Request('http://local', { method: 'POST',
+    headers: { Authorization: 'Bearer sesion' },
+    body: JSON.stringify({ accion: 'historial_admin', id }),
+  }));
+  let rol = 'proveedor';
+  const consultas = new Set<string>();
+  globalThis.fetch = (input, init) => {
+    const url = new URL(String(input));
+    const recurso = url.pathname.split('/').at(-1)!;
+    consultas.add(recurso);
+    if (recurso === 'user') return Promise.resolve(response({ id: actor }));
+    if (recurso === 'usuarios' && url.searchParams.get('select') === 'rol') {
+      return Promise.resolve(response({ rol }));
+    }
+    if (recurso === 'solicitudes_servicio') {
+      assertEquals(url.searchParams.get('id'), `eq.${solicitud}`);
+      return Promise.resolve(response([{ creado_en: '2026-11-08T20:05:00', tipo: 'externo' }]));
+    }
+    if (recurso === 'solicitud_estado_historial_v1') {
+      assertEquals(JSON.parse(String(init?.body)), { p_actor: actor, p_id: solicitud });
+      return Promise.resolve(response([{ id: 'evento', accion: 'aceptar', actor_id: proveedora,
+        ocurrido_en: '2026-11-08T20:40:00+00:00' }]));
+    }
+    if (recurso === 'solicitud_finanzas_historial') {
+      assertEquals(url.searchParams.get('solicitud_id'), `eq.${solicitud}`);
+      return Promise.resolve(response([{ revision: 1, entradas: { datos: {}, items: [] },
+        resultados: {}, autor_id: actor, motivo: 'Creación', creado_en: '2026-11-08T20:05:00+00:00' }]));
+    }
+    assertEquals(recurso, 'usuarios');
+    return Promise.resolve(response([
+      { id: proveedora, nombres: 'Laura', apellidos: 'Méndez', rol: 'proveedor' },
+      { id: actor, nombres: 'Equipo', apellidos: 'Hulp', rol: 'administrador' },
+    ]));
+  };
+  try {
+    assertEquals((await consultar(solicitud)).status, 403);
+    assertEquals([...consultas], ['user', 'usuarios']);
+    rol = 'administrador';
+    assertEquals((await consultar('inválido')).status, 400);
+    assertEquals([...consultas], ['user', 'usuarios']);
+    const result = await consultar(solicitud);
+    assertEquals(result.status, 200);
+    const { creacion, eventos, revisiones } = await result.json();
+    assertEquals(creacion, { fecha: '2026-11-08T20:05:00Z', tipo: 'externo' });
+    assertEquals(eventos[0].autor, { nombre: 'Laura Méndez', rol: 'proveedor' });
+    assertEquals(eventos[0].actor_id, undefined);
+    assertEquals(revisiones[0].autor, { nombre: 'Equipo Hulp', rol: 'administrador' });
+    assertEquals(revisiones[0].autor_id, undefined);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 Deno.test('preflight permite las cabeceras de Flutter/PostgREST sin consultar datos', async () => {
   const original = globalThis.fetch;
   globalThis.fetch = () => { throw new Error('OPTIONS no debe consultar el backend'); };

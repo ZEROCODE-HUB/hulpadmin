@@ -35,8 +35,10 @@ class HistorialSolicitudesDialog extends StatefulWidget {
 class _HistorialSolicitudesDialogState
     extends State<HistorialSolicitudesDialog> {
   static const int _pageSize = 5;
+  static const double _anchoMinimoTabla = 960;
 
   late final List<VwSolicitudesServiciosCompletaRow> _solicitudes;
+  final _scrollTabla = ScrollController();
   VwSolicitudesServiciosCompletaRow? _seleccionada;
   int _pagina = 0;
 
@@ -44,6 +46,12 @@ class _HistorialSolicitudesDialogState
   void initState() {
     super.initState();
     _solicitudes = _ordenar(widget.solicitudes);
+  }
+
+  @override
+  void dispose() {
+    _scrollTabla.dispose();
+    super.dispose();
   }
 
   List<VwSolicitudesServiciosCompletaRow> _ordenar(
@@ -75,6 +83,25 @@ class _HistorialSolicitudesDialogState
     final dia = local.day.toString().padLeft(2, '0');
     final mes = local.month.toString().padLeft(2, '0');
     return '$dia/$mes/${local.year}';
+  }
+
+  String _formatearHora(DateTime? hora) {
+    if (hora == null) return '—';
+    final horas = hora.hour.toString().padLeft(2, '0');
+    final minutos = hora.minute.toString().padLeft(2, '0');
+    return '$horas:$minutos';
+  }
+
+  String _nombreProveedor(VwSolicitudesServiciosCompletaRow solicitud) {
+    final nombreCompleto = solicitud.proveedorNombreCompleto?.trim();
+    if (nombreCompleto != null && nombreCompleto.isNotEmpty) {
+      return nombreCompleto;
+    }
+    return [solicitud.proveedorNombres, solicitud.proveedorApellidos]
+        .whereType<String>()
+        .map((parte) => parte.trim())
+        .where((parte) => parte.isNotEmpty)
+        .join(' ');
   }
 
   bool _esCancelada(VwSolicitudesServiciosCompletaRow solicitud) {
@@ -140,7 +167,7 @@ class _HistorialSolicitudesDialogState
               ),
               const SizedBox(height: 4),
               Text(
-                '${widget.nombreCliente} · Elige una solicitud para sugerir servicio y ciudad',
+                '${widget.nombreCliente} · Elige una solicitud para completar el formulario',
                 style: theme.bodySmall.copyWith(color: theme.secondaryText),
               ),
             ],
@@ -175,6 +202,30 @@ class _HistorialSolicitudesDialogState
           ),
         ),
       );
+
+  Widget _celda(
+    FlutterFlowTheme theme,
+    String? valor, {
+    required int flex,
+    bool mostrarCompleto = false,
+  }) {
+    final texto = valor?.trim() ?? '';
+    final contenido = Text(
+      texto.isEmpty ? '—' : texto,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: theme.bodyMedium,
+    );
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: mostrarCompleto && texto.isNotEmpty
+            ? Tooltip(message: texto, child: contenido)
+            : contenido,
+      ),
+    );
+  }
 
   Widget _fila(
     BuildContext context,
@@ -219,41 +270,20 @@ class _HistorialSolicitudesDialogState
                       visualDensity: VisualDensity.compact,
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        _formatearFecha(_fechaReferencia(solicitud)),
-                        style: theme.bodyMedium,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        solicitud.servicioNombre ?? 'Servicio no disponible',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.bodyMedium,
-                      ),
-                    ),
-                  ),
-                  Expanded(
+                  _celda(theme, _formatearFecha(_fechaReferencia(solicitud)),
+                      flex: 2),
+                  _celda(theme, _formatearHora(solicitud.hora?.time), flex: 2),
+                  _celda(theme,
+                      solicitud.servicioNombre ?? 'Servicio no disponible',
+                      flex: 3),
+                  _celda(theme, solicitud.solicitudCiudad, flex: 2),
+                  _celda(theme, solicitud.ubicacion,
+                      flex: 5, mostrarCompleto: true),
+                  _celda(
+                    theme,
+                    _nombreProveedor(solicitud),
                     flex: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        solicitud.solicitudCiudad?.trim().isNotEmpty == true
-                            ? solicitud.solicitudCiudad!.trim()
-                            : '—',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.bodyMedium,
-                      ),
-                    ),
+                    mostrarCompleto: true,
                   ),
                   Expanded(
                     flex: 2,
@@ -314,23 +344,36 @@ class _HistorialSolicitudesDialogState
             ),
           ),
         ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: 880,
-            child: Column(
-              children: [
-                Row(
+        LayoutBuilder(
+          builder: (context, constraints) => Scrollbar(
+            controller: _scrollTabla,
+            thumbVisibility: constraints.maxWidth < _anchoMinimoTabla,
+            child: SingleChildScrollView(
+              controller: _scrollTabla,
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: constraints.maxWidth < _anchoMinimoTabla
+                    ? _anchoMinimoTabla
+                    : constraints.maxWidth,
+                child: Column(
                   children: [
-                    const SizedBox(width: 48),
-                    _celdaTitulo(context, 'Fecha', flex: 2),
-                    _celdaTitulo(context, 'Servicio', flex: 4),
-                    _celdaTitulo(context, 'Ciudad', flex: 3),
-                    _celdaTitulo(context, 'Estado', flex: 2),
+                    Row(
+                      children: [
+                        const SizedBox(width: 48),
+                        _celdaTitulo(context, 'Fecha', flex: 2),
+                        _celdaTitulo(context, 'Hora', flex: 2),
+                        _celdaTitulo(context, 'Servicio', flex: 3),
+                        _celdaTitulo(context, 'Ciudad', flex: 2),
+                        _celdaTitulo(context, 'Dirección', flex: 5),
+                        _celdaTitulo(context, 'Proveedor', flex: 3),
+                        _celdaTitulo(context, 'Estado', flex: 2),
+                      ],
+                    ),
+                    for (final solicitud in solicitudes)
+                      _fila(context, solicitud),
                   ],
                 ),
-                for (final solicitud in solicitudes) _fila(context, solicitud),
-              ],
+              ),
             ),
           ),
         ),
@@ -344,7 +387,7 @@ class _HistorialSolicitudesDialogState
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Se sugerirán ${_seleccionada!.servicioNombre ?? 'el servicio'} y ${_seleccionada!.solicitudCiudad ?? 'la ciudad'} de esta solicitud. El precio será el vigente del catálogo.',
+              'Se completarán los datos disponibles de esta solicitud. El precio será el vigente del catálogo.',
               style: theme.bodySmall.copyWith(color: theme.primary),
             ),
           )
@@ -354,7 +397,7 @@ class _HistorialSolicitudesDialogState
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Selecciona una solicitud para sugerir servicio y ciudad.',
+                'Selecciona una solicitud para usar sus datos.',
                 style: theme.bodySmall.copyWith(color: theme.secondaryText),
               ),
             ),
@@ -415,7 +458,7 @@ class _HistorialSolicitudesDialogState
       backgroundColor: theme.secondaryBackground,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 960,
+          maxWidth: 1120,
           maxHeight: viewportHeight * 0.88,
         ),
         child: Padding(

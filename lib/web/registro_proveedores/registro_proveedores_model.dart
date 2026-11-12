@@ -27,9 +27,11 @@ class RegistroProveedoresModel
 
   // Model for Menu component.
   late MenuModel menuModel;
-  // Listado completo de pendientes (sin la caja de busqueda). Se pagina en
+  // Listado completo del estado de verificación seleccionado. Se pagina en
   // profesionales_query.dart para no toparse con el limite de 1000 filas.
   Future<List<VwProfesionalesCompletoRow>>? listaCompletaRequest;
+  String filtroVerificado = 'pendiente';
+  final Map<String, Future<int>> conteosPorVerificacion = {};
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
@@ -70,6 +72,7 @@ class RegistroProveedoresModel
   void invalidarConsultas() {
     listaCompletaRequest = null;
     requestCompleter = null;
+    conteosPorVerificacion.clear();
   }
 
   Future waitForRequestCompleted({

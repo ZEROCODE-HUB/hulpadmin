@@ -37,6 +37,7 @@ class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
   ///  Local state fields for this component.
 
   List<String> serviciosid = [];
+  bool mostrarErrorServicios = false;
   void addToServiciosid(String item) => serviciosid.add(item);
   void removeFromServiciosid(String item) => serviciosid.remove(item);
   void removeAtIndexFromServiciosid(int index) => serviciosid.removeAt(index);

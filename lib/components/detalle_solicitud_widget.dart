@@ -112,6 +112,7 @@ class _DetalleSolicitudWidgetState extends State<DetalleSolicitudWidget> {
 
     return DetalleSolicitudTabs(
       encabezado: _encabezado(solicitud),
+      solicitudId: solicitud.solicitudId,
       datos: DetalleSolicitudDatosWidget(
         solicitud: solicitud,
         mostrarChat: _model.showChat,

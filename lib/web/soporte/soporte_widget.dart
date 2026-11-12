@@ -11,6 +11,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
@@ -61,6 +63,22 @@ class _SoporteWidgetState extends State<SoporteWidget> {
 
     super.dispose();
   }
+
+  Widget _buildLoadingHeaderBar(BuildContext context) => AdminPageHeaderBar(
+        routeTitle: 'Soporte',
+        searchHint: 'Buscar solicitante',
+        controller: _model.textController,
+        focusNode: _model.textFieldFocusNode,
+        trailingPadding: AdminPageSpacing.headerHorizontal(context),
+        onChanged: (_) => EasyDebounce.debounce(
+          '_model.textController',
+          const Duration(milliseconds: 2000),
+          () async {
+            safeSetState(() => _model.requestCompleter = null);
+            await _model.waitForRequestCompleted();
+          },
+        ),
+      );
 
   Widget _buildBreadcrumb(BuildContext context) {
     return Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 8, children: [
@@ -199,6 +217,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -229,16 +249,11 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                FlutterFlowTheme.of(context).primary,
-                              ),
-                            ),
-                          ),
+                        return AdminPageLoadingSkeleton(
+                          topBar: _buildLoadingHeaderBar(context),
+                          filterCount: 2,
+                          columnCount: 5,
+                          rowCount: 5,
                         );
                       }
                       List<SoporteRow> containerSoporteRowList = snapshot.data!;
@@ -268,12 +283,19 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                       padding: const EdgeInsetsDirectional.only(start: 24.0),
                                       child: _buildBreadcrumb(context),
                                     ),
-                                    const Spacer(flex: 2),
                                   ],
-                                  Flexible(child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        12.0, 0.0, 12.0, 0.0),
-                                    child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 394),
+                                  Expanded(
+                                    child: Align(
+                                      alignment:
+                                          AlignmentDirectional.centerEnd,
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsetsDirectional.fromSTEB(
+                                                    headerHorizontal,
+                                                    0.0,
+                                                    12.0,
+                                                    0.0),
+                                    child: AdminHeaderSearchWidth(
                                       child: TextFormField(
                                         controller: _model.textController,
                                         focusNode: _model.textFieldFocusNode,
@@ -422,10 +444,13 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                             .asValidator(context),
                                       ),
                                     ),
-                                  )),
+                                    ))),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 12.0, 12.0),
+                                        16.0,
+                                        12.0,
+                                        headerHorizontal,
+                                        12.0),
                                     child: Icon(
                                       Icons.notifications_none,
                                       color:
@@ -447,18 +472,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
+                                    return AdminPageLoadingSkeleton(
+                                      filterCount: 2,
+                                      columnCount: 5,
+                                      rowCount: 5,
                                     );
                                   }
                                   List<SoporteRow>
@@ -477,19 +494,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                       builder: (context, snapshot) {
                                         // Customize what your widget looks like when it's loading.
                                         if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: CircularProgressIndicator(
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                                ),
-                                              ),
-                                            ),
+                                          return AdminPageLoadingSkeleton(
+                                            filterCount: 2,
+                                            columnCount: 5,
+                                            rowCount: 5,
                                           );
                                         }
                                         List<SoporteRow>
@@ -514,21 +522,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                             builder: (context, snapshot) {
                                               // Customize what your widget looks like when it's loading.
                                               if (!snapshot.hasData) {
-                                                return Center(
-                                                  child: SizedBox(
-                                                    width: 50.0,
-                                                    height: 50.0,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                      ),
-                                                    ),
-                                                  ),
+                                                return AdminPageLoadingSkeleton(
+                                                  filterCount: 2,
+                                                  columnCount: 5,
+                                                  rowCount: 5,
                                                 );
                                               }
                                               List<SoporteRow>
@@ -539,7 +536,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                 decoration: BoxDecoration(),
                                                 child: Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(MenuWidget.esMovil(context) ? 12.0 : 24.0, 16.0, MenuWidget.esMovil(context) ? 12.0 : 24.0, 0.0),
+                                                      .fromSTEB(pageHorizontal, 16.0, pageHorizontal, 0.0),
                                                   child: SoporteResponsiveContent(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -875,7 +872,8 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                 color: Color(0xFFE20E0E),
                                                                                 size: 24.0,
                                                                               ),
-                                                                            ),],
+                                                                            ),
+],
   counter: Text.rich(TextSpan(children: [
     const TextSpan(text: 'Número de solicitudes: '),
     TextSpan(text: containerSoporteRowList.length.toString(),
@@ -891,7 +889,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                               EdgeInsetsDirectional
                                                                   .fromSTEB(
                                                                       0.0,
-                                                                      0.0,
+                                                                      28.0,
                                                                       0.0,
                                                                       20.0),
                                                           child: Builder(

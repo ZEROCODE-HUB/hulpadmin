@@ -1,8 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hulp_admin/components/detalle_solicitud_tabs.dart';
+import 'package:hulp_admin/components/solicitud_historial_widget.dart';
+import 'package:hulp_admin/flutter_flow/flutter_flow_theme.dart';
 
 void main() {
+  testWidgets('los filtros de Historial muestran su color en Material 2',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(useMaterial3: false),
+      home: const Scaffold(
+        body: SolicitudHistorialWidget(solicitudId: null, visible: true),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    Color? fondo(String etiqueta) {
+      final tinta = tester.widget<Ink>(find.descendant(
+        of: find.widgetWithText(ChoiceChip, etiqueta),
+        matching: find.byType(Ink),
+      ));
+      return (tinta.decoration as ShapeDecoration).color;
+    }
+
+    expect(fondo('Todo'), hulpPrimaryGreen);
+    expect(fondo('Operación'), Colors.white);
+    expect(fondo('Cambios'), Colors.white);
+
+    await tester.tap(find.text('Cambios'));
+    await tester.pumpAndSettle();
+    expect(fondo('Todo'), Colors.white);
+    expect(fondo('Cambios'), hulpPrimaryGreen);
+  });
+
   for (final width in [320.0, 1200.0]) {
     testWidgets(
         'Detalles conserva campos, acciones y cierre al cambiar pestañas a $width px',

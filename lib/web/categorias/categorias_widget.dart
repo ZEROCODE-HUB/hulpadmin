@@ -13,6 +13,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
@@ -252,6 +254,21 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
     super.dispose();
   }
 
+  Widget _buildLoadingHeaderBar(BuildContext context) => AdminPageHeaderBar(
+        routeTitle: 'Categorías',
+        searchHint: 'Buscar categoría',
+        controller: _model.textController,
+        focusNode: _model.textFieldFocusNode,
+        onChanged: (_) => EasyDebounce.debounce(
+          '_model.textController',
+          const Duration(milliseconds: 2000),
+          () async {
+            safeSetState(() => _model.requestCompleter = null);
+            await _model.waitForRequestCompleted();
+          },
+        ),
+      );
+
   Widget _buildBreadcrumb(BuildContext context) {
     return Row(
   mainAxisSize: MainAxisSize.max,
@@ -374,11 +391,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
         (MenuWidget.esMovil(context)
             ? 0.0
             : (FFAppState().MenuAbierto ? 280.0 : 112.0));
-    final contentPadding = contentWidth < 900.0 ? 16.0 : 40.0;
-    final searchPadding = contentWidth < 600.0 ? 16.0 : 40.0;
+    final contentPadding = AdminPageSpacing.contentHorizontal(context);
+    final searchPadding = AdminPageSpacing.headerHorizontal(context);
     final searchWidth =
-        (contentWidth - searchPadding * 2 - 56.0)
-            .clamp(160.0, 394.0)
+        (contentWidth - searchPadding * 2 - 68.0)
+            .clamp(160.0, AdminHeaderSearchWidth.standardWidth)
             .toDouble();
     return GestureDetector(
       onTap: () {
@@ -412,16 +429,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                FlutterFlowTheme.of(context).primary,
-                              ),
-                            ),
-                          ),
+                        return AdminPageLoadingSkeleton(
+                          topBar: _buildLoadingHeaderBar(context),
+                          filterCount: 1,
+                          columnCount: 5,
+                          rowCount: 5,
                         );
                       }
                       List<VwResumenCategoriasRow>
@@ -442,16 +454,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
-                                ),
+                              return AdminPageLoadingSkeleton(
+                                topBar: _buildLoadingHeaderBar(context),
+                                filterCount: 1,
+                                columnCount: 5,
+                                rowCount: 5,
                               );
                             }
                             List<VwResumenCategoriasRow>
@@ -483,12 +490,12 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                             padding: const EdgeInsetsDirectional.only(start: 24.0),
                                             child: _buildBreadcrumb(context),
                                           ),
-                                          const Spacer(flex: 2),
                                         ],
+                                        const Spacer(),
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  searchPadding, 0.0, 0.0, 0.0),
+                                                  searchPadding, 0.0, 12.0, 0.0),
                                           child: Container(
                                             width: searchWidth,
                                             child: TextFormField(
@@ -662,7 +669,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 12.0, searchPadding, 12.0),
+                                                  16.0, 12.0, searchPadding, 12.0),
                                           child: Icon(
                                             Icons.notifications_none,
                                             color: FlutterFlowTheme.of(context)
@@ -676,7 +683,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                   Flexible(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          contentPadding, 24.0, contentPadding, 0.0),
+                                          contentPadding, 16.0, contentPadding, 0.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [

@@ -20,6 +20,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
+import '/flutter_flow/ubicacion_helpers.dart';
 import 'dart:async';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -54,17 +55,23 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   final _fechaHoraKey = GlobalKey<FechaHoraSolicitudWidgetState>();
   DateTime? _selectedServiceDate;
   DateTime? _selectedServiceTime;
+  DateTime? _horaSugeridaPorHistorial;
+  bool _horaEditadaManualmente = false;
+  bool _direccionSugeridaPorHistorial = false;
+  bool _proveedorSugeridoPorHistorial = false;
+  bool _proveedorEditadoManualmente = false;
   bool get _legacyDateTimePickerEnabled => false;
 
-  void _updateSelectedServiceDateTime() {
+  DateTime? get _fechaHoraSeleccionada {
     final date = _selectedServiceDate;
     final time = _selectedServiceTime;
-    safeSetState(() {
-      _model.datePicked = date == null || time == null
-          ? null
-          : DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
+    return date == null || time == null
+        ? null
+        : DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
+
+  void _updateSelectedServiceDateTime() =>
+      safeSetState(() => _model.datePicked = _fechaHoraSeleccionada);
 
   Future<List<CiudadesRow>> _consultarCiudadesActivas() =>
       _model.ciudadesActivasRequest ??= CiudadesTable().queryRows(
@@ -75,6 +82,51 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       _model.serviciosDisponiblesRequest ??= ServiciosTable().queryRows(
         queryFn: (q) => q.order('nombre', ascending: true),
       );
+
+  Future<List<VwProfesionalesCompletoRow>> _consultarProfesionalesDisponibles(
+    String? servicioId,
+  ) {
+    if (servicioId == null || servicioId.isEmpty) {
+      return Future.value(<VwProfesionalesCompletoRow>[]);
+    }
+    return _model.profesionalesPorServicio.putIfAbsent(
+      servicioId,
+      () async {
+        final profesionales = await consultarProfesionales(
+          estado: 'activo',
+          verificado: 'verificado',
+          servicioId: servicioId,
+        );
+        final disponibles = await consultarIdsProfesionalesDisponibles(
+          profesionales.map((profesional) => profesional.profesionalId),
+        );
+        return profesionales
+            .where((profesional) =>
+                disponibles.contains(profesional.profesionalId))
+            .toList(growable: false);
+      },
+    );
+  }
+
+  void _establecerServicioSeleccionado(String? servicioId) {
+    if (_model.servicioSeleccValue == servicioId) return;
+    _model.servicioSeleccValue = servicioId;
+    _model.proveedorSeleccionadoValue = null;
+    _proveedorSugeridoPorHistorial = false;
+  }
+
+  void _limpiarSugerenciasDelHistorial() {
+    _direccionSugeridaPorHistorial = false;
+    if (!_horaEditadaManualmente && _horaSugeridaPorHistorial != null) {
+      _horaSugeridaPorHistorial = null;
+      _selectedServiceTime = null;
+      _model.datePicked = _fechaHoraSeleccionada;
+    }
+    if (_proveedorSugeridoPorHistorial) {
+      _proveedorSugeridoPorHistorial = false;
+      _model.proveedorSeleccionadoValue = null;
+    }
+  }
 
   Future<List<VwSolicitudesServiciosCompletaRow>> _consultarHistorialCliente(
     String clienteId, {
@@ -114,6 +166,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     final cliente =
         usuarios.where((usuario) => usuario.id == usuarioId).firstOrNull;
     safeSetState(() {
+      _limpiarSugerenciasDelHistorial();
       _model.usuarioSeleccionadoValue = usuarioId;
       _clienteNombre = [cliente?.nombres, cliente?.apellidos]
           .whereType<String>()
@@ -140,7 +193,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       // reemplazar mientras no haya sido editada manualmente.
       if (_model.servicioSugeridoPorHistorial &&
           !_model.servicioEditadoManualmente) {
-        _model.servicioSeleccValue = null;
+        _establecerServicioSeleccionado(null);
         _model.servicioSugeridoPorHistorial = false;
         _model.precioss = null;
         _model.precio = '0';
@@ -209,7 +262,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     // sigue directamente con el ingreso manual y el respaldo de su perfil.
     if (historial.isEmpty) return;
 
-    final resultadoHistorial = await showDialog<ResultadoHistorialSolicitudes>(
+    final resultadoHistorial =
+        await showMapSafeDialog<ResultadoHistorialSolicitudes>(
       context: context,
       builder: (_) => HistorialSolicitudesDialog(
         nombreCliente: _clienteNombre,
@@ -242,11 +296,16 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       return;
     }
 
-    await _aplicarSugerenciasSolicitud(clienteId, solicitudSeleccionada);
+    await _aplicarSugerenciasSolicitud(
+      clienteId,
+      revision,
+      solicitudSeleccionada,
+    );
   }
 
   void _limpiarClienteSeleccionado() {
     safeSetState(() {
+      _limpiarSugerenciasDelHistorial();
       _revisionHistorial++;
       _model.usuarioSeleccionadoValue = null;
       _clienteNombre = '';
@@ -270,7 +329,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
       if (_model.servicioSugeridoPorHistorial &&
           !_model.servicioEditadoManualmente) {
-        _model.servicioSeleccValue = null;
+        _establecerServicioSeleccionado(null);
         _model.servicioSugeridoPorHistorial = false;
         _model.precioss = null;
         _model.precio = '0';
@@ -281,13 +340,18 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   Future<void> _aplicarSugerenciasSolicitud(
     String clienteId,
+    int revision,
     VwSolicitudesServiciosCompletaRow referencia,
   ) async {
     try {
       final servicios = await _consultarServiciosDisponibles();
       final ciudades = await _consultarCiudadesActivas();
 
-      if (!mounted || _model.usuarioSeleccionadoValue != clienteId) return;
+      if (!mounted ||
+          _revisionHistorial != revision ||
+          _model.usuarioSeleccionadoValue != clienteId) {
+        return;
+      }
 
       final servicioId = referencia.servicioId;
       final servicio = servicioId == null
@@ -308,14 +372,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         if (_puedeReemplazarServicioConHistorial) {
           if (servicio == null) {
             if (_model.servicioSugeridoPorHistorial) {
-              _model.servicioSeleccValue = null;
+              _establecerServicioSeleccionado(null);
             }
             _model.servicioSugeridoPorHistorial = false;
             _model.servicioHistorialNoDisponible = servicioId == null
                 ? null
                 : 'El servicio de la solicitud seleccionada ya no está disponible. Selecciona otro.';
           } else {
-            _model.servicioSeleccValue = servicio.id;
+            _establecerServicioSeleccionado(servicio.id);
             _model.servicioSugeridoPorHistorial = true;
             _model.servicioEditadoManualmente = false;
             _model.servicioHistorialNoDisponible = null;
@@ -340,7 +404,43 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _model.ciudadHistorialNoDisponible = null;
           }
         }
+
+        final hora = referencia.hora?.time;
+        if (hora != null && !_horaEditadaManualmente) {
+          _horaSugeridaPorHistorial = hora;
+          _selectedServiceTime = hora;
+          _model.datePicked = _fechaHoraSeleccionada;
+        }
+
+        final direccion = referencia.ubicacion?.trim() ?? '';
+        final ciudadSeleccionada = _model.ciudadSeleccValue;
+        if (direccion.isNotEmpty &&
+            !_model.direccionEditadaManualmente &&
+            (ciudadSeleccionada == null ||
+                ciudadHistorica.isEmpty ||
+                ciudad?.id == ciudadSeleccionada)) {
+          final latitud = referencia.latitud;
+          final longitud = referencia.longitud;
+          _direccionGuardada = null;
+          _model.direccionTextController.text = direccion;
+          _model.coordenadas = latitud != null &&
+                  longitud != null &&
+                  latitud.abs() <= 90 &&
+                  longitud.abs() <= 180
+              ? Coordenadas(latitud, longitud)
+              : null;
+          _model.direccionSugeridaPorCliente = false;
+          _direccionSugeridaPorHistorial = true;
+          _revisionMapa++;
+        }
       });
+
+      unawaited(_sugerirProveedorHistorial(
+        clienteId,
+        revision,
+        referencia.profesionalId,
+        _model.servicioSeleccValue,
+      ));
 
       // Se carga el precio vigente del catálogo, no el precio de la solicitud
       // usada como referencia.
@@ -350,11 +450,47 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         unawaited(_cargarPrecioServicio(servicio.id));
       }
     } catch (_) {
-      if (!mounted || _model.usuarioSeleccionadoValue != clienteId) return;
+      if (!mounted ||
+          _revisionHistorial != revision ||
+          _model.usuarioSeleccionadoValue != clienteId) {
+        return;
+      }
       safeSetState(() {
         _model.servicioHistorialNoDisponible =
             'No se pudieron aplicar las sugerencias de la solicitud seleccionada.';
       });
+    }
+  }
+
+  Future<void> _sugerirProveedorHistorial(
+    String clienteId,
+    int revision,
+    String? proveedorId,
+    String? servicioId,
+  ) async {
+    if (proveedorId == null ||
+        proveedorId.isEmpty ||
+        servicioId == null ||
+        servicioId.isEmpty ||
+        _proveedorEditadoManualmente) {
+      return;
+    }
+    try {
+      final proveedores = await _consultarProfesionalesDisponibles(servicioId);
+      if (!mounted ||
+          _revisionHistorial != revision ||
+          _model.usuarioSeleccionadoValue != clienteId ||
+          _model.servicioSeleccValue != servicioId ||
+          _proveedorEditadoManualmente ||
+          !proveedores.any((p) => p.profesionalId == proveedorId)) {
+        return;
+      }
+      safeSetState(() {
+        _model.proveedorSeleccionadoValue = proveedorId;
+        _proveedorSugeridoPorHistorial = true;
+      });
+    } catch (_) {
+      // El selector de profesionales muestra el error de su consulta.
     }
   }
 
@@ -365,7 +501,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             (_model.direccionSugeridaPorCliente &&
                 !_model.direccionEditadaManualmente);
 
-    if (!puedeReemplazar) return;
+    if (!puedeReemplazar || _direccionSugeridaPorHistorial) return;
 
     safeSetState(() {
       if (direccionSugerida.isEmpty) {
@@ -446,6 +582,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       if (_model.coordenadas != null) _revisionMapa++;
       _model.coordenadas = null;
       _model.direccionSugeridaPorCliente = false;
+      _direccionSugeridaPorHistorial = false;
       _model.direccionEditadaManualmente = true;
     });
   }
@@ -453,6 +590,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   void _seleccionarCiudadManualmente(String? ciudadId) {
     safeSetState(() {
       if (ciudadId != _model.ciudadSeleccValue) {
+        if (_direccionSugeridaPorHistorial) {
+          _model.direccionTextController?.clear();
+          _direccionSugeridaPorHistorial = false;
+        }
         _direccionGuardada = null;
         _model.coordenadas = null;
         _revisionMapa++;
@@ -468,7 +609,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
 
   void _seleccionarServicioManualmente(String? servicioId) {
     safeSetState(() {
-      _model.servicioSeleccValue = servicioId;
+      _establecerServicioSeleccionado(servicioId);
       _model.servicioSugeridoPorHistorial = false;
       _model.servicioEditadoManualmente = true;
       _model.servicioHistorialNoDisponible = null;
@@ -848,47 +989,70 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       children: [
         _buildFieldLabel(context, 'Profesional (Opcional)'),
         const SizedBox(height: 8.0),
-        FutureBuilder<List<VwProfesionalesCompletoRow>>(
-          future: _model.profesionalesDisponiblesRequest ??=
-              consultarProfesionales(
-                  estado: 'activo', verificado: 'verificado'),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text(
-                'No se pudieron cargar los profesionales',
-                style: FlutterFlowTheme.of(context).bodySmall,
-              );
-            }
-            if (!snapshot.hasData) {
-              return const Center(
-                child: SizedBox(
-                  width: 20.0,
-                  height: 20.0,
-                  child: CircularProgressIndicator(strokeWidth: 2.0),
-                ),
-              );
-            }
-            final proveedores = porProveedor(snapshot.data!).toList()
-              ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
-            return SearchableDropdown(
-              values: proveedores
-                  .map((p) => p.profesionalId ?? '')
-                  .where((id) => id.isNotEmpty)
-                  .toList(),
-              labels: proveedores
-                  .where((p) => (p.profesionalId ?? '').isNotEmpty)
-                  .map((p) =>
-                      p.nombreCompleto ??
-                      '${p.nombres ?? ''} ${p.apellidos ?? ''}'.trim())
-                  .toList(),
-              selectedValue: _model.proveedorSeleccionadoValue,
-              onChanged: (val) =>
-                  safeSetState(() => _model.proveedorSeleccionadoValue = val),
-              hint: 'Sin asignar',
-            );
-          },
-        ),
+        _buildProfesionalSelector(context),
       ],
+    );
+  }
+
+  Widget _buildProfesionalSelector(BuildContext context) {
+    final servicioId = _model.servicioSeleccValue;
+    if (servicioId == null || servicioId.isEmpty) {
+      final theme = FlutterFlowTheme.of(context);
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsetsDirectional.fromSTEB(12.0, 13.0, 12.0, 13.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBFAF9),
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(color: theme.alternate, width: 0.5),
+        ),
+        child: Text(
+          'Seleccione un servicio para ver profesionales',
+          style: theme.bodyMedium.override(color: theme.secondaryText),
+        ),
+      );
+    }
+
+    return FutureBuilder<List<VwProfesionalesCompletoRow>>(
+      future: _consultarProfesionalesDisponibles(servicioId),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text(
+            'No se pudieron cargar los profesionales',
+            style: FlutterFlowTheme.of(context).bodySmall,
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Center(
+            child: SizedBox(
+              width: 20.0,
+              height: 20.0,
+              child: CircularProgressIndicator(strokeWidth: 2.0),
+            ),
+          );
+        }
+        final proveedores = porProveedor(snapshot.data!).toList()
+          ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
+        return SearchableDropdown(
+          values: proveedores
+              .map((p) => p.profesionalId ?? '')
+              .where((id) => id.isNotEmpty)
+              .toList(),
+          labels: proveedores
+              .where((p) => (p.profesionalId ?? '').isNotEmpty)
+              .map((p) =>
+                  p.nombreCompleto ??
+                  '${p.nombres ?? ''} ${p.apellidos ?? ''}'.trim())
+              .toList(),
+          selectedValue: _model.proveedorSeleccionadoValue,
+          onChanged: (val) => safeSetState(() {
+            _model.proveedorSeleccionadoValue = val;
+            _proveedorSugeridoPorHistorial = false;
+            _proveedorEditadoManualmente = true;
+          }),
+          hint: 'Sin asignar',
+        );
+      },
     );
   }
 
@@ -1024,9 +1188,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           decoration: decorarInputHulp(
               context,
               _inputDecoration(
-            context,
-            valueOrDefault<String>(_model.precio, '0'),
-          ),
+                context,
+                valueOrDefault<String>(_model.precio, '0'),
+              ),
               etiqueta: 'Precio'),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
           validator:
@@ -1045,6 +1209,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         FechaHoraSolicitudWidget(
           key: _fechaHoraKey,
           firstDate: getCurrentTimestamp,
+          initialTime: _horaSugeridaPorHistorial,
           showInstructions: false,
           timeLabel: 'Hora *',
           onDateChanged: (date) {
@@ -1052,6 +1217,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _updateSelectedServiceDateTime();
           },
           onTimeChanged: (time) {
+            _horaEditadaManualmente = true;
             _selectedServiceTime = time;
             _updateSelectedServiceDateTime();
           },
@@ -1070,6 +1236,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       _model.ciudadSugeridaPorHistorial = false;
       _model.ciudadSugeridaPorCliente = false;
       _model.direccionSugeridaPorCliente = false;
+      _direccionSugeridaPorHistorial = false;
       _model.direccionEditadaManualmente = true;
       _model.ciudadHistorialNoDisponible = null;
       _model.ciudadPerfilNoDisponible = null;
@@ -1136,17 +1303,22 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           coordenadasIniciales: _model.coordenadas,
           ciudadId: _model.ciudadSeleccValue,
           direccionActual: () => _model.direccionTextController.text,
-          onCambio: (punto) => safeSetState(() {
-            if (punto != _model.coordenadas) _direccionGuardada = null;
-            _model.coordenadas = punto;
-            _model.direccionSugeridaPorCliente = false;
-            _model.direccionEditadaManualmente = true;
-          }),
+          onCambio: (punto) {
+            if (punto == _model.coordenadas) return;
+            safeSetState(() {
+              _direccionGuardada = null;
+              _model.coordenadas = punto;
+              _model.direccionSugeridaPorCliente = false;
+              _direccionSugeridaPorHistorial = false;
+              _model.direccionEditadaManualmente = true;
+            });
+          },
           onDireccionSugerida: (valor) {
             safeSetState(() {
               _direccionGuardada = null;
               _model.direccionTextController?.text = valor;
               _model.direccionSugeridaPorCliente = false;
+              _direccionSugeridaPorHistorial = false;
               _model.direccionEditadaManualmente = true;
             });
           },
@@ -1194,7 +1366,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           maxLines: 5,
           decoration: decorarInputHulp(
             context,
-              _inputDecoration(context, 'Agrega notas adicionales...'),
+            _inputDecoration(context, 'Agrega notas adicionales...'),
             etiqueta: 'Notas adicionales',
           ),
           cursorColor: FlutterFlowTheme.of(context).primaryText,
@@ -1235,6 +1407,20 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     try {
       final tieneProfesional = _model.proveedorSeleccionadoValue != null &&
           _model.proveedorSeleccionadoValue != '';
+      if (tieneProfesional &&
+          !await profesionalPuedeRecibirSolicitudes(
+              _model.proveedorSeleccionadoValue)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'El profesional seleccionado ya no está disponible. Elige otro o continúa sin asignar.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
       await SolicitudesServicioTable().insert({
         if (SupaFlow.finanzasV1Habilitadas)
           '_finanzas': _finanzasKey.currentState!.entradas,
@@ -1250,7 +1436,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             PostgresTime(functions.formatTimestamp(_model.datePicked!, false))),
         'precio':
             valueOrDefault<double>(_model.precioss?.firstOrNull?.precio, 0.0),
-        'estado': tieneProfesional && !usaEstadosSprint3 ? 'aceptadas' : 'entrantes',
+        'estado':
+            tieneProfesional && !usaEstadosSprint3 ? 'aceptadas' : 'entrantes',
         'servicio_id': _model.servicioSeleccValue,
         'estado_pago': 'pendiente',
         'precio_base':
@@ -1492,67 +1679,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                         .fontStyle,
                                               ),
                                         ),
-                                        FutureBuilder<
-                                            List<VwProfesionalesCompletoRow>>(
-                                          future: _model
-                                                  .profesionalesDisponiblesRequest ??=
-                                              consultarProfesionales(
-                                            estado: 'activo',
-                                            verificado: 'verificado',
-                                          ),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasError) {
-                                              return Text(
-                                                'No se pudieron cargar los profesionales',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                    .bodySmall,
-                                              );
-                                            }
-                                            if (!snapshot.hasData) {
-                                              return const Center(
-                                                child: SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
-                                                ),
-                                              );
-                                            }
-
-                                            final proveedores = porProveedor(
-                                              snapshot.data!,
-                                            ).toList()
-                                              ..sort((a, b) => (a.nombres ?? '')
-                                                  .compareTo(b.nombres ?? ''));
-
-                                            return SearchableDropdown(
-                                              values: proveedores
-                                                  .map((p) =>
-                                                      p.profesionalId ?? '')
-                                                  .where((id) => id.isNotEmpty)
-                                                  .toList(),
-                                              labels: proveedores
-                                                  .where((p) =>
-                                                      (p.profesionalId ?? '')
-                                                          .isNotEmpty)
-                                                  .map((p) =>
-                                                      p.nombreCompleto ??
-                                                      '${p.nombres ?? ''} ${p.apellidos ?? ''}'
-                                                          .trim())
-                                                  .toList(),
-                                              selectedValue: _model
-                                                  .proveedorSeleccionadoValue,
-                                              onChanged: (val) => safeSetState(
-                                                  () => _model
-                                                      .proveedorSeleccionadoValue =
-                                                  val),
-                                              hint: 'Sin asignar',
-                                            );
-                                          },
-                                        ),
+                                        _buildProfesionalSelector(context),
                                       ].divide(SizedBox(height: 8.0)),
                                     ),
                                   ),
@@ -1622,7 +1749,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               decoration: decorarInputHulp(
                                                   context,
                                                   InputDecoration(
-                                                isDense: true,
+                                                    isDense: true,
                                                     labelStyle: FlutterFlowTheme
                                                             .of(context)
                                                         .labelMedium
@@ -1652,93 +1779,93 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                   .labelMedium
                                                                   .fontStyle,
                                                         ),
-                                                hintText:
-                                                    'Digite la descripción',
+                                                    hintText:
+                                                        'Digite la descripción',
                                                     hintStyle: FlutterFlowTheme
                                                             .of(context)
-                                                    .labelMedium
-                                                    .override(
+                                                        .labelMedium
+                                                        .override(
                                                           font:
                                                               GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                          ),
                                                           color:
                                                               Color(0xFF8A8A8A),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontStyle,
+                                                          fontSize: 16.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
                                                     errorBorder:
                                                         OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    focusedErrorBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                filled: true,
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    filled: true,
                                                     fillColor:
                                                         Color(0xFFFBFAF9),
                                                   )),
@@ -1827,7 +1954,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               decoration: decorarInputHulp(
                                                   context,
                                                   InputDecoration(
-                                                isDense: true,
+                                                    isDense: true,
                                                     labelStyle: FlutterFlowTheme
                                                             .of(context)
                                                         .labelMedium
@@ -1861,92 +1988,92 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                         'Digite la dirección',
                                                     hintStyle: FlutterFlowTheme
                                                             .of(context)
-                                                    .labelMedium
-                                                    .override(
+                                                        .labelMedium
+                                                        .override(
                                                           font:
                                                               GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                          ),
                                                           color:
                                                               Color(0xFF8A8A8A),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontStyle,
+                                                          fontSize: 16.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
                                                     errorBorder:
                                                         OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    focusedErrorBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                filled: true,
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    filled: true,
                                                     fillColor:
                                                         Color(0xFFFBFAF9),
-                                              ),
+                                                  ),
                                                   etiqueta: 'Dirección'),
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -2056,7 +2183,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               decoration: decorarInputHulp(
                                                   context,
                                                   InputDecoration(
-                                                isDense: true,
+                                                    isDense: true,
                                                     labelStyle: FlutterFlowTheme
                                                             .of(context)
                                                         .labelMedium
@@ -2086,99 +2213,99 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                   .labelMedium
                                                                   .fontStyle,
                                                         ),
-                                                hintText:
-                                                    valueOrDefault<String>(
-                                                  _model.precio,
-                                                  '0',
-                                                ),
+                                                    hintText:
+                                                        valueOrDefault<String>(
+                                                      _model.precio,
+                                                      '0',
+                                                    ),
                                                     hintStyle: FlutterFlowTheme
                                                             .of(context)
-                                                    .labelMedium
-                                                    .override(
+                                                        .labelMedium
+                                                        .override(
                                                           font:
                                                               GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .labelMedium
+                                                                    .fontStyle,
+                                                          ),
                                                           color:
                                                               Color(0xFF8A8A8A),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium
-                                                              .fontStyle,
+                                                          fontSize: 16.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
                                                     ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
+                                                                    context)
+                                                                .alternate,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
                                                     errorBorder:
                                                         OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    focusedErrorBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
                                                         color:
                                                             FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 0.5,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                filled: true,
+                                                                    context)
+                                                                .error,
+                                                        width: 0.5,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                    filled: true,
                                                     fillColor:
                                                         Color(0xFFFBFAF9),
-                                              ),
+                                                  ),
                                                   etiqueta: 'Precio'),
                                               style:
                                                   FlutterFlowTheme.of(context)
@@ -2306,35 +2433,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                         .toList(),
                                                 selectedValue:
                                                     _model.servicioSeleccValue,
-                                                onChanged: (val) {
-                                                  safeSetState(() => _model
-                                                          .servicioSeleccValue =
-                                                      val);
-                                                  if (val != null) {
-                                                    ServiciosTable()
-                                                        .queryRows(
-                                                      queryFn: (q) =>
-                                                          q.eqOrNull('id', val),
-                                                    )
-                                                        .then((rows) {
-                                                      _model.precioss = rows;
-                                                      if (rows.isNotEmpty) {
-                                                        _model.precio = rows
-                                                                .first.precio
-                                                                ?.toString() ??
-                                                            '0';
-                                                        safeSetState(() {
-                                                          _model
-                                                              .preciobaseTextController
-                                                              ?.text = rows
-                                                                  .first.precio
-                                                                  ?.toString() ??
-                                                              '0';
-                                                        });
-                                                      }
-                                                    });
-                                                  }
-                                                },
+                                                onChanged:
+                                                    _seleccionarServicioManualmente,
                                                 hint: 'Seleccione el servicio',
                                               );
                                             },
@@ -2347,27 +2447,27 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               'Ciudad*',
                                               style:
                                                   FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font: GoogleFonts.inter(
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    fontSize: 16.0,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        fontSize: 16.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                        fontStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
                                             ),
                                           ),
                                           FutureBuilder<List<CiudadesRow>>(
@@ -2401,12 +2501,12 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                               return SearchableDropdown(
                                                 values:
                                                     ciudadSeleccCiudadesRowList
-                                                    .map((c) => c.id)
-                                                    .toList(),
+                                                        .map((c) => c.id)
+                                                        .toList(),
                                                 labels:
                                                     ciudadSeleccCiudadesRowList
-                                                    .map((c) => c.nombre)
-                                                    .toList(),
+                                                        .map((c) => c.nombre)
+                                                        .toList(),
                                                 selectedValue:
                                                     _model.ciudadSeleccValue,
                                                 onChanged: (val) {
@@ -2449,7 +2549,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                               context)
                                                           .bodyMedium
                                                           .fontStyle,
-                                            ),
+                                                ),
                                           ),
                                           ConstrainedBox(
                                             constraints:
@@ -2468,94 +2568,23 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                             ),
                                           ),
                                           if (_legacyDateTimePickerEnabled)
-                                          InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
+                                            InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
                                               highlightColor:
                                                   Colors.transparent,
-                                            onTap: () async {
-                                              final _datePickedDate =
-                                                  await showDatePicker(
-                                                context: context,
-                                                initialDate:
-                                                    getCurrentTimestamp,
+                                              onTap: () async {
+                                                final _datePickedDate =
+                                                    await showDatePicker(
+                                                  context: context,
+                                                  initialDate:
+                                                      getCurrentTimestamp,
                                                   firstDate:
                                                       getCurrentTimestamp,
-                                                lastDate: DateTime(2050),
-                                                builder: (context, child) {
-                                                  return wrapInMaterialDatePickerTheme(
-                                                    context,
-                                                    child!,
-                                                    headerBackgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    headerForegroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .info,
-                                                    headerTextStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .headlineLarge
-                                                            .override(
-                                                              font: GoogleFonts
-                                                                  .interTight(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                              fontSize: 32.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                  .headlineLarge
-                                                                  .fontStyle,
-                                                            ),
-                                                    pickerBackgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .secondaryBackground,
-                                                    pickerForegroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primaryText,
-                                                    selectedDateTimeBackgroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                    selectedDateTimeForegroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .info,
-                                                    actionButtonForegroundColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primaryText,
-                                                    iconSize: 24.0,
-                                                  );
-                                                },
-                                              );
-
-                                              TimeOfDay? _datePickedTime;
-                                              if (_datePickedDate != null) {
-                                                _datePickedTime =
-                                                    await showTimePicker(
-                                                  context: context,
-                                                  initialTime:
-                                                      TimeOfDay.fromDateTime(
-                                                          getCurrentTimestamp),
+                                                  lastDate: DateTime(2050),
                                                   builder: (context, child) {
-                                                    return wrapInMaterialTimePickerTheme(
+                                                    return wrapInMaterialDatePickerTheme(
                                                       context,
                                                       child!,
                                                       headerBackgroundColor:
@@ -2581,8 +2610,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                                       .headlineLarge
                                                                       .fontStyle,
                                                                 ),
-                                                                  fontSize:
-                                                                      32.0,
+                                                                fontSize: 32.0,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight:
@@ -2617,89 +2645,161 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                     );
                                                   },
                                                 );
-                                              }
 
-                                              if (_datePickedDate != null &&
-                                                  _datePickedTime != null) {
-                                                safeSetState(() {
+                                                TimeOfDay? _datePickedTime;
+                                                if (_datePickedDate != null) {
+                                                  _datePickedTime =
+                                                      await showTimePicker(
+                                                    context: context,
+                                                    initialTime:
+                                                        TimeOfDay.fromDateTime(
+                                                            getCurrentTimestamp),
+                                                    builder: (context, child) {
+                                                      return wrapInMaterialTimePickerTheme(
+                                                        context,
+                                                        child!,
+                                                        headerBackgroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primary,
+                                                        headerForegroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .info,
+                                                        headerTextStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .headlineLarge
+                                                                .override(
+                                                                  font: GoogleFonts
+                                                                      .interTight(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    fontStyle: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .headlineLarge
+                                                                        .fontStyle,
+                                                                  ),
+                                                                  fontSize:
+                                                                      32.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .headlineLarge
+                                                                      .fontStyle,
+                                                                ),
+                                                        pickerBackgroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .secondaryBackground,
+                                                        pickerForegroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                        selectedDateTimeBackgroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primary,
+                                                        selectedDateTimeForegroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .info,
+                                                        actionButtonForegroundColor:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                        iconSize: 24.0,
+                                                      );
+                                                    },
+                                                  );
+                                                }
+
+                                                if (_datePickedDate != null &&
+                                                    _datePickedTime != null) {
+                                                  safeSetState(() {
                                                     _model.datePicked =
                                                         DateTime(
-                                                    _datePickedDate.year,
-                                                    _datePickedDate.month,
-                                                    _datePickedDate.day,
-                                                    _datePickedTime!.hour,
-                                                    _datePickedTime.minute,
-                                                  );
-                                                });
-                                              } else if (_model.datePicked !=
-                                                  null) {
-                                                safeSetState(() {
-                                                  _model.datePicked =
-                                                      getCurrentTimestamp;
-                                                });
-                                              }
-                                            },
-                                            child: Container(
-                                              width: double.infinity,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      12.0, 13.0, 12.0, 13.0),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFFBFAF9),
-                                                borderRadius:
+                                                      _datePickedDate.year,
+                                                      _datePickedDate.month,
+                                                      _datePickedDate.day,
+                                                      _datePickedTime!.hour,
+                                                      _datePickedTime.minute,
+                                                    );
+                                                  });
+                                                } else if (_model.datePicked !=
+                                                    null) {
+                                                  safeSetState(() {
+                                                    _model.datePicked =
+                                                        getCurrentTimestamp;
+                                                  });
+                                                }
+                                              },
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        12.0, 13.0, 12.0, 13.0),
+                                                decoration: BoxDecoration(
+                                                  color: Color(0xFFFBFAF9),
+                                                  borderRadius:
                                                       BorderRadius.circular(
                                                           8.0),
-                                                border: Border.all(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  width: 0.5,
+                                                  border: Border.all(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .alternate,
+                                                    width: 0.5,
+                                                  ),
                                                 ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
                                                         _model.datePicked !=
                                                                 null
-                                                          ? dateTimeFormat(
-                                                              "d/M/yyyy  HH:mm",
+                                                            ? dateTimeFormat(
+                                                                "d/M/yyyy  HH:mm",
                                                                 _model
                                                                     .datePicked)
-                                                          : 'Seleccione fecha y hora',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(),
-                                                            color: _model
-                                                                        .datePicked !=
-                                                                    null
-                                                                ? FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primaryText
-                                                                : Color(
-                                                                    0xFF8A8A8A),
-                                                            fontSize: 16.0,
+                                                            : 'Seleccione fecha y hora',
+                                                        style: FlutterFlowTheme
+                                                                .of(context)
+                                                            .bodyMedium
+                                                            .override(
+                                                              font: GoogleFonts
+                                                                  .inter(),
+                                                              color: _model
+                                                                          .datePicked !=
+                                                                      null
+                                                                  ? FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText
+                                                                  : Color(
+                                                                      0xFF8A8A8A),
+                                                              fontSize: 16.0,
                                                               letterSpacing:
                                                                   0.0,
-                                                          ),
+                                                            ),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  Icon(
-                                                    Icons
-                                                        .calendar_month_outlined,
+                                                    Icon(
+                                                      Icons
+                                                          .calendar_month_outlined,
                                                       color:
                                                           FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 20.0,
-                                                  ),
-                                                ],
+                                                                  context)
+                                                              .secondaryText,
+                                                      size: 20.0,
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
                                         ].divide(SizedBox(height: 8.0)),
                                       ),
                                     ),
@@ -2753,108 +2853,108 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                         decoration: decorarInputHulp(
                                             context,
                                             InputDecoration(
-                                          isDense: true,
+                                              isDense: true,
                                               labelStyle:
                                                   FlutterFlowTheme.of(context)
-                                              .labelMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
+                                                      .labelMedium
+                                                      .override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
+                                                                .labelMedium
+                                                                .fontWeight,
+                                                        fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                          hintText: 'Ingresa notas',
+                                                                .labelMedium
+                                                                .fontStyle,
+                                                      ),
+                                              hintText: 'Ingresa notas',
                                               hintStyle:
                                                   FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .bodyMedium
+                                                                  .fontStyle,
+                                                        ),
+                                                        fontSize: 16.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontWeight,
+                                                        fontStyle:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .fontStyle,
+                                                      ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .alternate,
+                                                  width: 0.5,
                                                 ),
-                                                fontSize: 16.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                        .bodyMedium
-                                                        .fontStyle,
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
                                               ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .alternate,
-                                              width: 0.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                              width: 0.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
+                                                  width: 0.5,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                              errorBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .error,
-                                              width: 0.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedErrorBorder:
-                                              OutlineInputBorder(
-                                            borderSide: BorderSide(
+                                                  width: 0.5,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                              focusedErrorBorder:
+                                                  OutlineInputBorder(
+                                                borderSide: BorderSide(
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .error,
-                                              width: 0.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          filled: true,
-                                          fillColor: Color(0xFFFBFAF9),
+                                                  width: 0.5,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                              filled: true,
+                                              fillColor: Color(0xFFFBFAF9),
                                             )),
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
@@ -2991,7 +3091,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                         _model.precioss?.firstOrNull?.precio,
                                         0.0,
                                       ),
-                                      'estado': usaEstadosSprint3 ? 'entrantes' : 'aceptadas',
+                                      'estado': usaEstadosSprint3
+                                          ? 'entrantes'
+                                          : 'aceptadas',
                                       'servicio_id': _model.servicioSeleccValue,
                                       'estado_pago': 'pendiente',
                                       'precio_base': valueOrDefault<double>(

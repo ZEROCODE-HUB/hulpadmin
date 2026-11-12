@@ -13,6 +13,7 @@ import 'package:hulp_admin/app_state.dart';
 import 'package:hulp_admin/environment_values.dart';
 import 'package:hulp_admin/components/selector_ubicacion_widget.dart';
 import 'package:hulp_admin/flutter_flow/flutter_flow_widgets.dart';
+import 'package:hulp_admin/flutter_flow/ubicacion_helpers.dart';
 import 'package:hulp_admin/components/crear_solicitud_widget.dart';
 import 'package:hulp_admin/components/fecha_hora_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
@@ -24,6 +25,7 @@ import 'package:hulp_admin/components/dropdown_solicitud_estado_widget.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_data_table.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_filter_bar.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_widget.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -39,6 +41,7 @@ const _solicitud = {
   'cliente_nombre_completo': 'Cliente con nombres y apellidos largos',
   'solicitud_ciudad': 'Bogotá',
   'ubicacion': 'Calle 123, apartamento 456, torre 7',
+  'notas_cliente': 'Nota del cliente',
   'precio_solicitud': 100000.0,
   'precio_total': 100000.0,
   'fecha': '2026-10-26',
@@ -97,6 +100,10 @@ void main() {
   var usarMapa = false;
   var solicitudVersionada = false;
   var datosFinanzasDetalle = false;
+  var fallarHistorial = false;
+  var peticionesHistorial = 0;
+  var usarHistorialCliente = false;
+  var proveedorHistoricoDisponible = true;
   double? precioBaseSolicitud = 100000;
   late ByteData fontBytes;
   setUpAll(() async {
@@ -121,6 +128,45 @@ void main() {
         if (request.url.path.endsWith('/functions/v1/solicitudes-finanzas')) {
           expect(request.method.toUpperCase(), 'POST');
           final accion = jsonDecode(request.body)['accion'];
+          if (accion == 'historial_admin') {
+            expect(jsonDecode(request.body)['id'], 'solicitud-1');
+            peticionesHistorial++;
+            if (fallarHistorial) {
+              return http.Response('{"message":"Historial no disponible"}', 503,
+                  headers: {'content-type': 'application/json'});
+            }
+            return http.Response(
+              jsonEncode({
+                'creacion': {
+                  'fecha': '2026-11-08T20:05:00Z',
+                  'tipo': 'externo'
+                },
+                'eventos': [
+                  {
+                    'id': 'evento-1',
+                    'accion': 'aceptar',
+                    'fecha': '2026-11-09T04:42:00Z',
+                    'autor': {'rol': 'proveedor', 'nombre': 'Laura Méndez'},
+                  },
+                ],
+                'revisiones': [
+                  for (final (revision, precio) in [(1, 68900), (2, 120000)])
+                    {
+                      'revision': revision,
+                      'fecha': '2026-11-09T05:24:00Z',
+                      'entradas': {
+                        'datos': {'precio_base': precio},
+                        'items': [],
+                      },
+                      'resultados': {},
+                      'motivo': 'Cotización tras visita técnica',
+                    },
+                ],
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }
           if (accion == 'leer') {
             return http.Response(
                 jsonEncode({
@@ -195,6 +241,52 @@ void main() {
           'precio_base': precioBaseSolicitud,
           if (solicitudVersionada) 'finanzas_version': 1,
         };
+        if (usarHistorialCliente) {
+          final List<Map<String, Object?>>? datos =
+              switch (request.url.pathSegments.last) {
+            'usuarios' => [
+                {'id': 'cliente-1', 'nombres': 'Cliente', 'rol': 'usuario'},
+              ],
+            'servicios' => [
+                {
+                  'id': 'servicio-1',
+                  'nombre': 'Limpieza de prueba',
+                  'precio': 15000,
+                },
+              ],
+            'ciudades' => [
+                {'id': 'ciudad-1', 'nombre': 'Palmira', 'activo': true},
+                {'id': 'ciudad-2', 'nombre': 'Cali', 'activo': true},
+              ],
+            'vw_profesionales_completo' => [
+                if (proveedorHistoricoDisponible)
+                  {
+                    'profesional_id': 'proveedor-1',
+                    'nombre_completo': 'Laura Méndez',
+                  },
+              ],
+            'vw_solicitudes_servicios_completa' => [
+                {
+                  ...solicitud,
+                  'servicio_id': 'servicio-1',
+                  'servicio_nombre': 'Limpieza de prueba',
+                  'solicitud_ciudad': 'Palmira',
+                  'hora': '14:35:00',
+                  'ubicacion': 'Calle 12 # 34-56',
+                  'latitud': 3.54,
+                  'longitud': -76.30,
+                  'profesional_id': 'proveedor-1',
+                  'proveedor_nombre_completo': 'Laura Méndez',
+                },
+              ],
+            _ => null,
+          };
+          if (datos != null) {
+            return http.Response(jsonEncode(datos), 200,
+                request: request,
+                headers: {'content-type': 'application/json'});
+          }
+        }
         final Object data =
             request.url.path.endsWith('/vw_solicitudes_servicios_completa')
                 ? (request.url.queryParameters['limit'] == '1'
@@ -214,6 +306,10 @@ void main() {
     datosFinanzasDetalle = false;
     precioBaseSolicitud = 100000;
     fallarSolicitudes = false;
+    fallarHistorial = false;
+    peticionesHistorial = 0;
+    usarHistorialCliente = false;
+    proveedorHistoricoDisponible = true;
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
@@ -234,6 +330,14 @@ void main() {
     });
   });
 
+  Future<void> completarPeticiones(WidgetTester tester) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
   Future<void> cargar(
       WidgetTester tester, Widget child, double width, double height,
       {double scale = 1, double keyboard = 0}) async {
@@ -251,11 +355,7 @@ void main() {
         home: child,
       ),
     ));
-    for (var i = 0; i < 3; i++) {
-      await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 50)));
-      await tester.pump(const Duration(milliseconds: 100));
-    }
+    await completarPeticiones(tester);
   }
 
   Future<void> abrirTabFinanzasDetalle(
@@ -318,14 +418,21 @@ void main() {
         expect(find.text('Precios Adicionales'), findsOneWidget);
       }
       await tester.tap(historial);
+      await completarPeticiones(tester);
       await tester.pumpAndSettle();
-      expect(find.text('Sin información de historial para mostrar.'),
-          findsOneWidget);
+      expect(find.text('Actividad de la solicitud'), findsOneWidget);
+      expect(find.text('Solicitud aceptada'), findsOneWidget);
+      expect(find.text('Precio lista actualizado'), findsOneWidget);
+      expect(peticionesHistorial, 1);
       await tester.tap(datos);
       await tester.pumpAndSettle();
       expect(tester.widget<TextField>(descripcion).controller!.text,
           'Descripción conservada');
       expect(find.text('Información actual de contacto'), findsOneWidget);
+      expect(
+          find.byWidgetPredicate(
+              (w) => w is SelectableText && w.data == 'Nota del cliente'),
+          findsOneWidget);
       await tester.tap(finanzas);
       await tester.pumpAndSettle();
       if (versionada) {
@@ -336,11 +443,6 @@ void main() {
                 .controller!
                 .text,
             '105000');
-        expect(
-            find.byWidgetPredicate((w) =>
-                w is SelectableText &&
-                w.data == 'Notas del cliente: Nota del cliente'),
-            findsOneWidget);
       }
       final guardar = find.widgetWithText(FFButtonWidget, 'Guardar cambios');
       expect(
@@ -352,6 +454,56 @@ void main() {
       await tester.pump();
     });
   }
+
+  testWidgets(
+      'detalles carga Historial al abrir, reintenta y filtra en memoria',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    fallarHistorial = true;
+    await cargar(
+      tester,
+      const Scaffold(body: DetalleSolicitudWidget(solicitudId: 'solicitud-1')),
+      1200,
+      540,
+    );
+    expect(peticionesHistorial, 0);
+    await tester.tap(find.text('Historial'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('No se pudo cargar el historial.'), findsOneWidget);
+
+    fallarHistorial = false;
+    await tester.tap(find.text('Reintentar'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('9 de noviembre de 2026'), findsOneWidget);
+    expect(find.text('Cerrar').hitTestable(), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('11:42 p. m.'),
+      100,
+      scrollable: find.descendant(
+        of: find.byType(ListView),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(find.text('8 de noviembre de 2026'), findsOneWidget);
+    expect(find.text('App de proveedora · Laura Méndez'), findsOneWidget);
+    expect(find.text('Cerrar').hitTestable(), findsOneWidget);
+
+    await tester.tap(find.text('Cambios'));
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitud aceptada'), findsNothing);
+    expect(find.text('Precio lista actualizado'), findsOneWidget);
+    expect(find.text('\$68.900 → \$120.000'), findsOneWidget);
+
+    await tester.tap(find.text('Operación'));
+    await tester.pumpAndSettle();
+    expect(find.text('Precio lista actualizado'), findsNothing);
+    expect(find.text('Solicitud creada'), findsOneWidget);
+    expect(peticionesHistorial, 2);
+  });
 
   testWidgets('selector separa estado plegable del scroll al reconstruirse',
       (tester) async {
@@ -443,6 +595,98 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
+
+  for (final conservarHoraManual in [false, true]) {
+    testWidgets(
+        'Usar solicitud aplica el historial desde un modal protegido (hora manual: $conservarHoraManual)',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      usarHistorialCliente = true;
+      proveedorHistoricoDisponible = !conservarHoraManual;
+      await cargar(
+          tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+      if (conservarHoraManual) {
+        final campoHora = find.descendant(
+          of: find.byType(FechaHoraSolicitudWidget),
+          matching: find.byType(TextField),
+        );
+        await tester.ensureVisible(campoHora);
+        await tester.enterText(campoHora, '9:20am');
+      }
+      final buscador = find.byKey(const ValueKey('abrir_buscador_clientes'));
+      await tester.ensureVisible(buscador);
+      await tester.tap(buscador);
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('cliente_cliente-1')));
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de solicitudes'), findsOneWidget);
+      for (final texto in [
+        'Hora',
+        'Dirección',
+        'Proveedor',
+        '14:35',
+        'Calle 12 # 34-56',
+        'Laura Méndez',
+      ]) {
+        expect(
+            find.descendant(
+                of: find.byType(Dialog), matching: find.text(texto)),
+            findsOneWidget);
+      }
+      expect(
+        find.descendant(
+          of: find.byType(PointerInterceptor),
+          matching: find.byType(ModalBarrier),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Limpieza de prueba'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Usar solicitud'));
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de solicitudes'), findsNothing);
+      expect(find.byType(PointerInterceptor), findsNothing);
+      expect(find.text('Limpieza de prueba'), findsOneWidget);
+      expect(find.text('Palmira'), findsOneWidget);
+      expect(find.text(conservarHoraManual ? 'Sin asignar' : 'Laura Méndez'),
+          findsOneWidget);
+      expect(find.text('Calle 12 # 34-56'), findsOneWidget);
+      expect(
+          find.text(conservarHoraManual ? '9:20am' : '2:35pm'), findsOneWidget);
+      final fechaHora = tester.widget<FechaHoraSolicitudWidget>(
+          find.byType(FechaHoraSolicitudWidget));
+      expect(fechaHora.initialDate, isNull);
+      expect(
+          tester
+              .widget<SelectorUbicacionWidget>(
+                  find.byType(SelectorUbicacionWidget))
+              .coordenadasIniciales,
+          const Coordenadas(3.54, -76.30));
+
+      if (!conservarHoraManual) {
+        final ciudad = find.text('Palmira');
+        await tester.ensureVisible(ciudad);
+        await tester.tap(ciudad);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Cali'));
+        await tester.pumpAndSettle();
+        expect(find.text('Calle 12 # 34-56'), findsNothing);
+        expect(
+            tester
+                .widget<SelectorUbicacionWidget>(
+                    find.byType(SelectorUbicacionWidget))
+                .coordenadasIniciales,
+            isNull);
+      }
+    });
+  }
 
   testWidgets('un fallo de carga muestra Reintentar y luego recupera la tabla',
       (tester) async {

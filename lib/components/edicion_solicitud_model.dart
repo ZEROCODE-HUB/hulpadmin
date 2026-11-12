@@ -100,6 +100,7 @@ class EdicionSolicitudModel extends FlutterFlowModel<EdicionSolicitudWidget> {
   FormFieldController<String>? profesionalNuevoValueController;
   final Map<String, Future<List<VwProfesionalesCompletoRow>>>
       profesionalesPorServicio = {};
+  final Map<String, Future<Set<String>>> disponibilidadPorServicio = {};
   // State field(s) for nombre widget.
   FocusNode? nombreFocusNode12;
   TextEditingController? nombreTextController12;

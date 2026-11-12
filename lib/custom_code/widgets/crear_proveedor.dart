@@ -65,12 +65,14 @@ class CrearProveedor extends StatefulWidget {
     this.height,
     required this.serviciosid,
     this.action,
+    this.readOnly = false,
   });
 
   final double? width;
   final double? height;
   final List<String> serviciosid;
   final Future Function(List<String>? serviciosidsss)? action;
+  final bool readOnly;
 
   @override
   State<CrearProveedor> createState() => _CrearProveedorState();
@@ -284,7 +286,7 @@ class _CrearProveedorState extends State<CrearProveedor> {
 
   // Método para ejecutar la acción callback con la lista de servicios seleccionados
   void _executeAction() {
-    if (widget.action != null) {
+    if (!widget.readOnly && widget.action != null) {
       List<String> serviciosSeleccionados = _getServiciosSeleccionados();
 
       // Ejecutar la acción de manera asíncrona
@@ -413,12 +415,136 @@ class _CrearProveedorState extends State<CrearProveedor> {
       );
     }
 
+    if (widget.readOnly) {
+      return _buildReadOnlyServices();
+    }
+
     // El contenido principal se adapta completamente al contenido
     return Column(
       mainAxisSize: MainAxisSize.min, // Clave: Se adapta al contenido
       children: categorias
           .map((categoria) => _buildCategoriaCard(categoria))
           .toList(),
+    );
+  }
+
+  Widget _buildReadOnlyServices() {
+    final groups = <Widget>[];
+    for (final categoria in categorias) {
+      final subcategorias = categoria.subcategorias
+          .map((subcategoria) => MapEntry(
+                subcategoria,
+                subcategoria.servicios
+                    .where((servicio) => servicio.isSelected)
+                    .toList(),
+              ))
+          .where((entry) => entry.value.isNotEmpty)
+          .toList();
+      if (subcategorias.isEmpty) continue;
+
+      groups.add(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth >= 900
+                ? (constraints.maxWidth - 24) / 3
+                : constraints.maxWidth >= 560
+                    ? (constraints.maxWidth - 12) / 2
+                    : constraints.maxWidth;
+            return SizedBox(
+              width: width,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FBF8),
+                  border: Border.all(color: const Color(0xFFDCE9DF)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      categoria.nombre,
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Readex Pro',
+                            color: FlutterFlowTheme.of(context).customColor1,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...subcategorias.map((entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                entry.key.nombre,
+                                style: FlutterFlowTheme.of(context)
+                                    .bodySmall
+                                    .override(
+                                      fontFamily: 'Readex Pro',
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryText,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 5),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 5,
+                                children: entry.value
+                                    .map((servicio) => Chip(
+                                          avatar: Icon(
+                                            Icons.check_rounded,
+                                            size: 15,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                          ),
+                                          label: Text(servicio.nombre),
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide.none,
+                                          backgroundColor:
+                                              const Color(0xFFDFF3E5),
+                                          labelStyle: FlutterFlowTheme.of(
+                                                  context)
+                                              .bodySmall
+                                              .override(
+                                                fontFamily: 'Readex Pro',
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryText,
+                                              ),
+                                        ))
+                                    .toList(),
+                              ),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    if (groups.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Text(
+          'No hay servicios ofrecidos registrados.',
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                fontFamily: 'Readex Pro',
+                color: FlutterFlowTheme.of(context).secondaryText,
+              ),
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: groups,
     );
   }
 

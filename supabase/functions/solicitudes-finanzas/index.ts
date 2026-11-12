@@ -59,6 +59,62 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         p_idempotencia_id: body.idempotencia_id,
       }));
     }
+    if (body.accion === 'historial_admin') {
+      if (!isAdmin) return reply({ message: 'Sin permiso' }, 403);
+      if (!esUuid(body.id)) return reply({ message: 'Identificador inválido' }, 400);
+      const { data: solicitud, error: solicitudError } = await admin.from('solicitudes_servicio')
+        .select('creado_en,tipo').eq('id', body.id).maybeSingle();
+      if (solicitudError) throw solicitudError;
+      if (!solicitud) return reply({ message: 'Solicitud no encontrada' }, 404);
+
+      const leerRevisiones = async () => {
+        const revisiones = [];
+        const pagina = 500;
+        let revision = 0;
+        while (true) {
+          const { data, error } = await admin.from('solicitud_finanzas_historial')
+            .select('revision,entradas,resultados,autor_id,motivo,creado_en')
+            .eq('solicitud_id', body.id).gt('revision', revision).order('revision').limit(pagina);
+          if (error) throw error;
+          revisiones.push(...data);
+          if (data.length < pagina) return revisiones;
+          revision = data[data.length - 1].revision;
+        }
+      };
+      const [eventos, revisiones] = await Promise.all([
+        rpc('solicitud_estado_historial_v1', { p_actor: actor, p_id: body.id }) as Promise<Array<{
+          id: string; accion: string; actor_id: string | null; ocurrido_en: string;
+        }>>,
+        leerRevisiones(),
+      ]);
+      const autores = new Map<string, { nombre: string; rol: string }>();
+      const ids = [...new Set([
+        ...eventos.map((evento) => evento.actor_id),
+        ...revisiones.map((revision) => revision.autor_id),
+      ].filter(esUuid))];
+      for (let inicio = 0; inicio < ids.length; inicio += 100) {
+        const { data, error } = await admin.from('usuarios')
+          .select('id,nombres,apellidos,rol').in('id', ids.slice(inicio, inicio + 100));
+        if (error) throw error;
+        for (const usuario of data) {
+          autores.set(usuario.id, {
+            nombre: [usuario.nombres, usuario.apellidos].filter(Boolean).join(' ').trim(),
+            rol: usuario.rol,
+          });
+        }
+      }
+      // creado_en es timestamp sin zona con default now() en UTC en Hulp/test.
+      return reply({
+        creacion: solicitud.creado_en ? { fecha: `${solicitud.creado_en}Z`, tipo: solicitud.tipo } : null,
+        eventos: eventos.map(({ id, accion, actor_id, ocurrido_en }) => ({
+          id, accion, fecha: ocurrido_en, autor: actor_id ? autores.get(actor_id) ?? null : null,
+        })),
+        revisiones: revisiones.map(({ revision, entradas, resultados, autor_id, motivo, creado_en }) => ({
+          revision, entradas, resultados, motivo, fecha: creado_en,
+          autor: autor_id ? autores.get(autor_id) ?? null : null,
+        })),
+      });
+    }
     if (body.accion === 'historial_estado' || body.accion === 'finalizar_admin') {
       if (!esUuid(body.id)) return reply({ message: 'Identificador inválido' }, 400);
       if (body.accion === 'historial_estado') {

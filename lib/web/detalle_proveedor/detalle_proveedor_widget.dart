@@ -5,6 +5,7 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_page_spacing.dart';
 import '/flutter_flow/upload_data.dart';
 import '/components/notificacion2_widget.dart';
 import '/components/notificacioneliminar_widget.dart';
@@ -1886,9 +1887,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final contentWidth = viewportWidth -
         (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
-    final pagePadding = contentWidth < 600.0
-        ? 16.0
-        : (contentWidth < 1000.0 ? 24.0 : 40.0);
+    final pagePadding = AdminPageSpacing.horizontalForWidth(contentWidth);
 
     return GestureDetector(
       onTap: () {
@@ -1935,7 +1934,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                     return SingleChildScrollView(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(
-                            pagePadding, 24.0, pagePadding, 40.0),
+                            pagePadding, 16.0, pagePadding, 24.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
