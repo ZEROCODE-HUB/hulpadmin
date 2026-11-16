@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/hulp_numeric_input.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -66,8 +67,7 @@ class AgregarSoporteModel extends FlutterFlowModel<AgregarSoporteWidget> {
     if (val == null || val.isEmpty) {
       return 'Precio es obligatorio';
     }
-
-    return null;
+    return HulpNumericInput.validateDecimal(val, fieldName: 'el precio');
   }
 
   // State field(s) for proveedor_id widget.
@@ -106,8 +106,7 @@ class AgregarSoporteModel extends FlutterFlowModel<AgregarSoporteWidget> {
     if (val == null || val.isEmpty) {
       return 'Telefono del usuario es obligatorio';
     }
-
-    return null;
+    return HulpNumericInput.validateInteger(val, fieldName: 'el teléfono');
   }
 
   // State field(s) for email_usuario widget.
@@ -147,8 +146,7 @@ class AgregarSoporteModel extends FlutterFlowModel<AgregarSoporteWidget> {
     if (val == null || val.isEmpty) {
       return 'Telefono proveedor es obligatorio';
     }
-
-    return null;
+    return HulpNumericInput.validateInteger(val, fieldName: 'el teléfono');
   }
 
   // State field(s) for email_proveedor widget.

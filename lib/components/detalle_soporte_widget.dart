@@ -6,9 +6,9 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'dart:ui';
-import '/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
@@ -21,9 +21,11 @@ class DetalleSoporteWidget extends StatefulWidget {
   const DetalleSoporteWidget({
     super.key,
     required this.idSoporte,
+    this.onGuardado,
   });
 
   final String? idSoporte;
+  final VoidCallback? onGuardado;
 
   @override
   State<DetalleSoporteWidget> createState() => _DetalleSoporteWidgetState();
@@ -1245,6 +1247,14 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                                     ?.toString(),
                                               ),
                                               focusNode: _model.precioFocusNode,
+                                              keyboardType: const TextInputType
+                                                  .numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                              inputFormatters: [
+                                                HulpNumericInput
+                                                    .decimalFormatter,
+                                              ],
                                               autofocus: false,
                                               obscureText: false,
                                               decoration: decorarInputHulp(
@@ -1905,6 +1915,10 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                             ),
                                             focusNode:
                                                 _model.telefonoUsuarioFocusNode,
+                                            keyboardType: TextInputType.phone,
+                                            inputFormatters: [
+                                              HulpNumericInput.integerFormatter,
+                                            ],
                                             autofocus: false,
                                             obscureText: false,
                                             decoration: decorarInputHulp(
@@ -2568,6 +2582,11 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                               ),
                                               focusNode: _model
                                                   .telefonoProveedorFocusNode,
+                                              keyboardType: TextInputType.phone,
+                                              inputFormatters: [
+                                                HulpNumericInput
+                                                    .integerFormatter,
+                                              ],
                                               autofocus: false,
                                               obscureText: false,
                                               decoration: decorarInputHulp(
@@ -3133,6 +3152,10 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                           .validate()) {
                                     return;
                                   }
+                                  final navigator = Navigator.of(context);
+                                  final ruta = ModalRoute.of(context);
+                                  final onGuardado = widget.onGuardado;
+
                                   await SoporteTable().update(
                                     data: {
                                       'asunto': _model.dropDownAsuntoValue,
@@ -3167,9 +3190,10 @@ class _DetalleSoporteWidgetState extends State<DetalleSoporteWidget> {
                                       widget!.idSoporte,
                                     ),
                                   );
-                                  Navigator.pop(context);
-
-                                  context.goNamed(SoporteWidget.routeName);
+                                  if (navigator.mounted && ruta?.isCurrent == true) {
+                                    navigator.pop();
+                                  }
+                                  onGuardado?.call();
                                 },
                                 text: 'Guardar',
                                 options: FFButtonOptions(

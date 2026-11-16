@@ -6,7 +6,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
-import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -18,10 +17,12 @@ class AceptarProveedorWidget extends StatefulWidget {
     super.key,
     required this.idproveedor,
     this.cedula,
+    this.onGuardado,
   });
 
   final String? idproveedor;
   final FFUploadedFile? cedula;
+  final VoidCallback? onGuardado;
 
   @override
   State<AceptarProveedorWidget> createState() => _AceptarProveedorWidgetState();
@@ -959,6 +960,10 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                           ''))
                               ? null
                               : () async {
+                                  final navigator = Navigator.of(context);
+                                  final ruta = ModalRoute.of(context);
+                                  final onGuardado = widget.onGuardado;
+
                                   await UsuariosTable().update(
                                     data: {
                                       'verificado': 'verificado',
@@ -974,18 +979,10 @@ class _AceptarProveedorWidgetState extends State<AceptarProveedorWidget> {
                                       widget!.idproveedor,
                                     ),
                                   );
-                                  Navigator.pop(context);
-
-                                  context.pushNamed(
-                                    RegistroProveedoresWidget.routeName,
-                                    extra: <String, dynamic>{
-                                      '__transition_info__': TransitionInfo(
-                                        hasTransition: true,
-                                        transitionType: PageTransitionType.fade,
-                                        duration: Duration(milliseconds: 0),
-                                      ),
-                                    },
-                                  );
+                                  if (navigator.mounted && ruta?.isCurrent == true) {
+                                    navigator.pop();
+                                  }
+                                  onGuardado?.call();
                                 },
                           text: 'Aceptar inscripción',
                           options: FFButtonOptions(

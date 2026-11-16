@@ -5,6 +5,7 @@ import 'solicitud_finanzas_form.dart';
 import 'solicitud_historial_widget.dart';
 import '/components/modal_con_encabezado_fijo.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/web/solicitudes/menu_estado_solicitud.dart';
 import 'solicitud_responsive_fields.dart';
 import '/components/direcciones_cliente_selector.dart';
@@ -37,9 +38,11 @@ import 'edicion_solicitud_model.dart';
 export 'edicion_solicitud_model.dart';
 
 class EdicionSolicitudWidget extends StatefulWidget {
-  const EdicionSolicitudWidget({super.key, required this.solicitudId});
+  const EdicionSolicitudWidget(
+      {super.key, required this.solicitudId, this.onCambio});
 
   final String? solicitudId;
+  final VoidCallback? onCambio;
 
   @override
   State<EdicionSolicitudWidget> createState() => _EdicionSolicitudWidgetState();
@@ -179,8 +182,8 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                     ),
                                     const SizedBox(height: 16.0),
                                     _buildTwoColumnRow(
-                                      _buildCiudadField(context, solicitud),
                                       _buildServicioField(context, solicitud),
+                                      _buildCiudadField(context, solicitud),
                                     ),
                                     const SizedBox(height: 16.0),
                                     _buildTwoColumnRow(
@@ -353,7 +356,10 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                         estadoActual: solicitud.estadoSolicitud ?? 'Sin estado',
                         index: 1,
                         solicitudId: solicitud.solicitudId!,
-                        actionnavegacion: () async => Navigator.pop(context))));
+                        actionnavegacion: () async {
+                          widget.onCambio?.call();
+                          Navigator.pop(context);
+                        })));
           });
 
   Widget _buildTwoColumnRow(Widget left, Widget right,
@@ -471,6 +477,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           correo: anterior?.correo ?? solicitud.clienteCorreo ?? ''),
     );
     if (!mounted || result == null) return;
+    widget.onCambio?.call();
     setState(() => _contactosGuardados[usuarioId] = result);
   }
 
@@ -491,9 +498,16 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
     String? servicioId,
     Iterable<String?> profesionalIds,
   ) {
+    final ids = profesionalIds
+        .whereType<String>()
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    final clave = '${servicioId ?? ''}:${ids.join(',')}';
     return _model.disponibilidadPorServicio.putIfAbsent(
-      servicioId ?? '',
-      () => consultarIdsProfesionalesDisponibles(profesionalIds),
+      clave,
+      () => consultarIdsProfesionalesDisponibles(ids),
     );
   }
 
@@ -514,7 +528,10 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
             if (snapshot.hasError) {
               return const Text('No se pudieron cargar los profesionales.');
             }
-            if (!snapshot.hasData) return _buildLoadingField();
+            if (snapshot.connectionState != ConnectionState.done ||
+                !snapshot.hasData) {
+              return _buildLoadingField();
+            }
             final profesionales = porProveedor(snapshot.data!).toList()
               ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
             return FutureBuilder<Set<String>>(
@@ -528,7 +545,9 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                     'No se pudo verificar la disponibilidad de los profesionales.',
                   );
                 }
-                if (!disponibilidadSnapshot.hasData) {
+                if (disponibilidadSnapshot.connectionState !=
+                        ConnectionState.done ||
+                    !disponibilidadSnapshot.hasData) {
                   return _buildLoadingField();
                 }
 
@@ -672,8 +691,11 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           controller: _model.nombreTextController7,
           focusNode: _model.nombreFocusNode7,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [HulpNumericInput.decimalFormatter],
           decoration: decorarInputHulp(context, _inputDecoration(context, '0'),
               etiqueta: 'Precio'),
+          validator:
+              _model.nombreTextController7Validator?.asValidator(context),
         ),
       ],
     );
@@ -1053,6 +1075,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
             matchingRows: (rows) => rows.eqOrNull('id', widget.solicitudId));
       }
 
+      widget.onCambio?.call();
       if (profesionalCambio) {
         _model.apiResult0mz = await SendNotificationUserCall.call(
           userIdSupabase: profesionalNuevo,
@@ -1435,6 +1458,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                                         columnVwSolicitudesServiciosCompletaRow!
                                                             .solicitudId!,
                                                     actionnavegacion: () async {
+                                                      widget.onCambio?.call();
                                                       Navigator.pop(context);
                                                     },
                                                   ),
@@ -3293,6 +3317,14 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                               ),
                                               focusNode:
                                                   _model.nombreFocusNode7,
+                                              keyboardType: const TextInputType
+                                                  .numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                              inputFormatters: [
+                                                HulpNumericInput
+                                                    .decimalFormatter,
+                                              ],
                                               autofocus: false,
                                               obscureText: false,
                                               decoration: decorarInputHulp(
@@ -4835,6 +4867,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                     );
                                   }
 
+                                  widget.onCambio?.call();
                                   Navigator.pop(context);
 
                                   safeSetState(() {});

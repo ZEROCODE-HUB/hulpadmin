@@ -26,6 +26,8 @@ import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show PostgresChangeEvent, RealtimeChannel, RealtimeSubscribeStatus;
 import 'usuarios_model.dart';
 export 'usuarios_model.dart';
 
@@ -40,6 +42,39 @@ class UsuariosWidget extends StatefulWidget {
 }
 
 class _UsuariosWidgetState extends State<UsuariosWidget> {
+  RealtimeChannel? _usuariosRealtimeChannel;
+  Timer? _usuariosRefreshTimer;
+
+  void _suscribirCambiosUsuarios() {
+    _usuariosRealtimeChannel = SupaFlow.client
+        .channel('admin-usuarios-${DateTime.now().microsecondsSinceEpoch}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'usuarios',
+          callback: (_) => _programarActualizacionUsuarios(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'solicitudes_servicio',
+          callback: (_) => _programarActualizacionUsuarios(),
+        )
+        .subscribe((status, _) {
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            _programarActualizacionUsuarios();
+          }
+        });
+  }
+
+  void _programarActualizacionUsuarios() {
+    _usuariosRefreshTimer?.cancel();
+    _usuariosRefreshTimer = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      safeSetState(() => _model.requestCompleter = null);
+    });
+  }
+
   Future<void> _editarPerfilCliente(VwListaUsuariosConServiciosRow usuario) async {
     final id = usuario.id;
     if (id == null) {
@@ -54,9 +89,11 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cliente no encontrado.')));
         return;
       }
-      await showMapSafeDialog<bool>(context: context, barrierDismissible: false,
+      final cambiado = await showMapSafeDialog<bool>(context: context, barrierDismissible: false,
         builder: (_) => EditarClienteModal(perfil: perfil));
-      if (mounted) safeSetState(() => _model.requestCompleter = null);
+      if (mounted && cambiado == true) {
+        safeSetState(() => _model.requestCompleter = null);
+      }
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo cargar el perfil.')));
     }
@@ -200,6 +237,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
     _model = createModel(context, () => UsuariosModel());
 
     _model.dropDownValue ??= 'Recientes';
+    _suscribirCambiosUsuarios();
 
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
@@ -214,6 +252,16 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
 
   @override
   void dispose() {
+    _usuariosRefreshTimer?.cancel();
+    final channel = _usuariosRealtimeChannel;
+    if (channel != null) {
+      unawaited(
+        SupaFlow.client
+            .removeChannel(channel)
+            .then<void>((_) {})
+            .catchError((_) {}),
+      );
+    }
     _model.dispose();
 
     super.dispose();

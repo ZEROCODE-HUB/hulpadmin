@@ -28,6 +28,7 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'solicitudes_model.dart';
 export 'solicitudes_model.dart';
 
@@ -51,6 +52,8 @@ class SolicitudesWidget extends StatefulWidget {
 }
 
 class _SolicitudesWidgetState extends State<SolicitudesWidget> {
+  static const _ticketDescendente = 'Ticket descendente';
+
   late SolicitudesModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -177,9 +180,9 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
       }).toList();
     }
 
-    final orden = _model.dropDownOrdenValue ?? 'Recientes primero';
-    if (orden == 'Ticket ascendente' || orden == 'Ticket descendente') {
-      final ticketsDescendente = orden == 'Ticket descendente';
+    final orden = _model.dropDownOrdenValue ?? _ticketDescendente;
+    if (orden == 'Ticket ascendente' || orden == _ticketDescendente) {
+      final ticketsDescendente = orden == _ticketDescendente;
       final withTicket = list.where((e) => e.ticket != null).toList();
       final sinTicket = list.where((e) => e.ticket == null).toList();
       final sorted = withTicket
@@ -203,6 +206,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     mostrarMenuEstadoSolicitud(
       anchorContext: anchorContext,
       builder: (dialogContext) {
+        final menuRoute = ModalRoute.of(dialogContext);
+        final menuNavigator = Navigator.of(dialogContext);
         return Material(
           color: Colors.transparent,
           child: GestureDetector(
@@ -216,8 +221,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               solicitudId: item.solicitudId!,
               userid: item.clienteIdUsuario?.toString(),
               actionnavegacion: () async {
-                if (Navigator.of(context).canPop()) context.pop();
-                navigateWithFade(context, SolicitudesWidget.routeName);
+                if (menuNavigator.mounted && menuRoute?.isCurrent == true) {
+                  menuNavigator.pop();
+                }
+                _refrescarClientes();
               },
             ),
           ),
@@ -227,27 +234,55 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   }
 
   void _onDelete(BuildContext context, VwSolicitudesServiciosCompletaRow item) {
+    final solicitudId = item.solicitudId;
+    if (solicitudId == null) return;
+
     showCenteredDialog(
       context,
       Notificacion2Widget(
         titulo: 'Solicitudes',
-        texto: 'Estas seguro de eliminar la solicitud?',
+        texto: '¿Estás seguro de eliminar la solicitud?',
         boton: 'Aceptar',
         succes: false,
         action: () async {
-          await SolicitudesServicioTable().delete(
-            matchingRows: (rows) => rows.eqOrNull('id', item.solicitudId),
-          );
+          const restriccionesFinancieras = [
+            'recibos_solicitud_id_fkey',
+            'transacciones_solicitud_id_fkey',
+          ];
+          var exito = true;
+          var mensaje = 'Solicitud eliminada exitosamente';
+          try {
+            await SolicitudesServicioTable().delete(
+              matchingRows: (rows) => rows.eq('id', solicitudId),
+            );
+          } on PostgrestException catch (error) {
+            exito = false;
+            mensaje = switch (error.code) {
+              'PT409' => error.message,
+              '23503'
+                  when restriccionesFinancieras.any(error.message.contains) =>
+                'No puedes eliminar la solicitud porque tiene recibos o transacciones asociados.',
+              '23503' =>
+                'No puedes eliminar la solicitud porque tiene registros vinculados.',
+              _ => 'No se pudo eliminar la solicitud. Inténtalo de nuevo.',
+            };
+          } catch (_) {
+            exito = false;
+            mensaje = 'No se pudo eliminar la solicitud. Inténtalo de nuevo.';
+          }
+          if (!context.mounted) return;
           showCenteredDialog(
             context,
             Notificacion2Widget(
               titulo: 'Solicitudes',
-              texto: 'Solicitud eliminada exitosamente',
+              texto: mensaje,
               boton: 'Aceptar',
-              succes: true,
-              action: () async {
-                navigateWithFade(context, SolicitudesWidget.routeName);
-              },
+              succes: exito,
+              action: exito
+                  ? () async {
+                      navigateWithFade(context, SolicitudesWidget.routeName);
+                    }
+                  : null,
             ),
           );
         },
@@ -268,16 +303,19 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         },
       ),
     );
-    _refrescarClientes();
   }
 
   Future<void> _onEdit(
       BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    var cambiado = false;
     await showCenteredDialog(
       context,
-      EdicionSolicitudWidget(solicitudId: item.solicitudId!),
+      EdicionSolicitudWidget(
+        solicitudId: item.solicitudId!,
+        onCambio: () => cambiado = true,
+      ),
     );
-    _refrescarClientes();
+    if (cambiado) _refrescarClientes();
   }
 
   void _refrescarClientes() {
@@ -760,13 +798,13 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               FlutterFlowDropDown<String>(
                 controller: _model.dropDownOrdenValueController ??=
                     FormFieldController<String>(
-                  _model.dropDownOrdenValue ??= 'Recientes primero',
+                  _model.dropDownOrdenValue ??= _ticketDescendente,
                 ),
-                options: [
+                options: const [
                   'Recientes primero',
                   'Antiguos primero',
                   'Ticket ascendente',
-                  'Ticket descendente',
+                  _ticketDescendente,
                 ],
                 onChanged: (val) =>
                     safeSetState(() => _model.dropDownOrdenValue = val),

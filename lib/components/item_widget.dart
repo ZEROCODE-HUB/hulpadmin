@@ -13,6 +13,7 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'item_model.dart';
@@ -412,6 +413,9 @@ class _ItemWidgetState extends State<ItemWidget> {
                                           textInputAction:
                                               TextInputAction.next,
                                           obscureText: false,
+                                          inputFormatters: [
+                                            HulpNumericInput.integerFormatter,
+                                          ],
                                             decoration: decorarInputHulp(
                                                 context,
                                                 InputDecoration(
@@ -590,6 +594,9 @@ class _ItemWidgetState extends State<ItemWidget> {
                                           textInputAction:
                                               TextInputAction.done,
                                           obscureText: false,
+                                          inputFormatters: [
+                                            HulpNumericInput.integerFormatter,
+                                          ],
                                             decoration: decorarInputHulp(
                                                 context,
                                                 InputDecoration(
@@ -764,6 +771,9 @@ class _ItemWidgetState extends State<ItemWidget> {
                               autofocus: false,
                               textInputAction: TextInputAction.done,
                               obscureText: false,
+                              inputFormatters: [
+                                HulpNumericInput.decimalFormatter,
+                              ],
                                 decoration: decorarInputHulp(
                                     context,
                                     InputDecoration(

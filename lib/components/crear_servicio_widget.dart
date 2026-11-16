@@ -1,6 +1,7 @@
 import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
 import '/backend/schema/structs/index.dart';
+import '/components/hulp_numeric_input.dart';
 import '/components/item_widget.dart';
 import '/components/notificacion2_widget.dart';
 import '/components/responsive_layout_rows.dart';
@@ -1126,6 +1127,13 @@ class _CrearServicioWidgetState extends State<CrearServicioWidget> {
                             child: TextFormField(
                               controller: _model.preciobaseTextController,
                               focusNode: _model.preciobaseFocusNode,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              inputFormatters: [
+                                HulpNumericInput.decimalFormatter,
+                              ],
                               autofocus: false,
                               obscureText: false,
                               decoration: decorarInputHulp(

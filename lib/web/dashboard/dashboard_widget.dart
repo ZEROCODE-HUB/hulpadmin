@@ -34,6 +34,17 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarPanelTrasCerrarMenu(
+    BuildContext dialogContext,
+    VoidCallback invalidarConsulta,
+  ) {
+    if (dialogContext.mounted &&
+        ModalRoute.of(dialogContext)?.isCurrent == true) {
+      Navigator.of(dialogContext).pop();
+    }
+    safeSetState(invalidarConsulta);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -2823,15 +2834,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                                 index: solicitudesIndex,
                                                                                                 solicitudId: solicitudesItem.solicitudId!,
                                                                                                 actionnavegacion: () async {
-                                                                                                  context.pushNamed(
-                                                                                                    DashboardWidget.routeName,
-                                                                                                    extra: <String, dynamic>{
-                                                                                                      '__transition_info__': TransitionInfo(
-                                                                                                        hasTransition: true,
-                                                                                                        transitionType: PageTransitionType.fade,
-                                                                                                        duration: Duration(milliseconds: 0),
-                                                                                                      ),
-                                                                                                    },
+                                                                                                  _actualizarPanelTrasCerrarMenu(
+                                                                                                    dialogContext,
+                                                                                                    () => _model.containerSupabaseStream1 = null,
                                                                                                   );
                                                                                                 },
                                                                                               ),
@@ -3370,19 +3375,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                 index: solicitudesIndex,
                                                                                 proveedorId: solicitudesItem.profesionalId!,
                                                                                 actionnavegacion: () async {
-                                                                                  if (Navigator.of(context).canPop()) {
-                                                                                    context.pop();
-                                                                                  }
-                                                                                  context.pushNamed(
-                                                                                    DashboardWidget.routeName,
-                                                                                    extra: <String, dynamic>{
-                                                                                      '__transition_info__': TransitionInfo(
-                                                                                        hasTransition: true,
-                                                                                        transitionType: PageTransitionType.fade,
-                                                                                        duration: Duration(milliseconds: 0),
-                                                                                      ),
-                                                                                    },
-                                                                                  );
+                                                                                  safeSetState(() => _model.containerSupabaseStream2 = null);
                                                                                 },
                                                                               ),
                                                                             ),
@@ -3835,18 +3828,9 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                                                                                             index: soportelIndex,
                                                                                             soporteId: soportelItem.id,
                                                                                             actionnavegacion: () async {
-                                                                                              if (Navigator.of(context).canPop()) {
-                                                                                                context.pop();
-                                                                                              }
-                                                                                              context.pushNamed(
-                                                                                                DashboardWidget.routeName,
-                                                                                                extra: <String, dynamic>{
-                                                                                                  '__transition_info__': TransitionInfo(
-                                                                                                    hasTransition: true,
-                                                                                                    transitionType: PageTransitionType.fade,
-                                                                                                    duration: Duration(milliseconds: 0),
-                                                                                                  ),
-                                                                                                },
+                                                                                              _actualizarPanelTrasCerrarMenu(
+                                                                                                dialogContext,
+                                                                                                () => _model.containerSupabaseStream3 = null,
                                                                                               );
                                                                                             },
                                                                                           ),

@@ -153,6 +153,10 @@ class _DropdownSolicitudEstadoWidgetState
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
+                            final solicitudId = widget.solicitudId;
+                            final userId = widget.userid;
+                            final onGuardado = widget.actionnavegacion;
+
                             if (listaOpcionesItem == 'finalizadas') {
                               final finalizada = await showDialog<bool>(
                                 context: context,
@@ -164,7 +168,7 @@ class _DropdownSolicitudEstadoWidgetState
                                     alignment: AlignmentDirectional(0.0, 0.0)
                                         .resolve(Directionality.of(context)),
                                     child: FinalizarServicio2Widget(
-                                      servicioId: widget!.solicitudId!,
+                                      servicioId: solicitudId!,
                                     ),
                                   );
                                 },
@@ -177,18 +181,18 @@ class _DropdownSolicitudEstadoWidgetState
                                 },
                                 matchingRows: (rows) => rows.eqOrNull(
                                   'id',
-                                  widget!.solicitudId,
+                                  solicitudId,
                                 ),
                               );
                             }
 
+                            await onGuardado?.call();
+
                             await SenNotificationUserHulpCall.call(
-                              userIdSupabase: widget!.userid,
+                              userIdSupabase: userId,
                               title: 'Su solicitud esta ${listaOpcionesItem}',
                               message: 'Haga click aqui para entrar',
                             );
-
-                            await widget.actionnavegacion?.call();
                           },
                           child: Row(
                             mainAxisSize: MainAxisSize.max,

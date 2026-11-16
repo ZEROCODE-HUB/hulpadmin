@@ -1,5 +1,6 @@
 import '/backend/schema/structs/index.dart';
 import '/components/notificacion2_widget.dart';
+import '/components/hulp_numeric_input.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -31,17 +32,27 @@ class ItemModel extends FlutterFlowModel<ItemWidget> {
   FocusNode? textFieldFocusNode1;
   TextEditingController? textController2;
   String? Function(BuildContext, String?)? textController2Validator;
+  String? _textController2Validator(BuildContext context, String? val) =>
+      HulpNumericInput.validateInteger(val, fieldName: 'la cantidad');
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode2;
   TextEditingController? textController3;
   String? Function(BuildContext, String?)? textController3Validator;
+  String? _textController3Validator(BuildContext context, String? val) =>
+      HulpNumericInput.validateInteger(val, fieldName: 'el precio por unidad');
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode3;
   TextEditingController? textController4;
   String? Function(BuildContext, String?)? textController4Validator;
+  String? _textController4Validator(BuildContext context, String? val) =>
+      HulpNumericInput.validateDecimal(val, fieldName: 'el precio');
 
   @override
-  void initState(BuildContext context) {}
+  void initState(BuildContext context) {
+    textController2Validator = _textController2Validator;
+    textController3Validator = _textController3Validator;
+    textController4Validator = _textController4Validator;
+  }
 
   @override
   void dispose() {

@@ -15,6 +15,7 @@ import 'dart:math' show min;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
+import '/components/hulp_numeric_input.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -278,6 +279,8 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
   Widget _dialogField(BuildContext ctx, String label, TextEditingController c,
       {bool saving = false,
       bool requiredField = false,
+      bool soloEnteros = false,
+      bool rutNit = false,
       TextInputType? keyboard}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,11 +299,32 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
         TextFormField(
           controller: c,
           keyboardType: keyboard,
+          inputFormatters: soloEnteros
+              ? [HulpNumericInput.integerFormatter]
+              : rutNit
+                  ? [HulpNumericInput.taxIdFormatter]
+                  : null,
           enabled: !saving,
-          validator: requiredField
-              ? (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Campo obligatorio' : null
-              : null,
+          validator: (v) {
+            if (requiredField && (v == null || v.trim().isEmpty)) {
+              return 'Campo obligatorio';
+            }
+            if (soloEnteros) {
+              return HulpNumericInput.validateInteger(
+                v,
+                fieldName: label,
+                required: requiredField,
+              );
+            }
+            if (rutNit) {
+              return HulpNumericInput.validateTaxId(
+                v,
+                fieldName: label,
+                required: requiredField,
+              );
+            }
+            return null;
+          },
           decoration: decorarInputHulp(context, InputDecoration(
             isDense: true,
             filled: true,
@@ -574,9 +598,11 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
         _dialogField(ctx, 'Tipo de cuenta', tipoCtrl, saving: saving),
         const SizedBox(height: 14),
         _dialogField(ctx, 'Número de cuenta', numCtrl,
-            saving: saving, keyboard: TextInputType.number),
+            saving: saving,
+            keyboard: TextInputType.number,
+            soloEnteros: true),
         const SizedBox(height: 14),
-        _dialogField(ctx, 'RUT', rutCtrl, saving: saving),
+        _dialogField(ctx, 'RUT', rutCtrl, saving: saving, rutNit: true),
       ],
       onSave: () async {
         if (cuenta != null) {
@@ -627,7 +653,10 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
             saving: saving, requiredField: true),
         const SizedBox(height: 14),
         _dialogField(ctx, 'Teléfono *', telCtrl,
-            saving: saving, requiredField: true, keyboard: TextInputType.phone),
+            saving: saving,
+            requiredField: true,
+            soloEnteros: true,
+            keyboard: TextInputType.phone),
         const SizedBox(height: 14),
         _dialogField(ctx, 'Relación *', relCtrl,
             saving: saving, requiredField: true),
@@ -829,7 +858,9 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                             saving: saving, requiredField: true),
                         const SizedBox(height: 14),
                         _dialogField(ctx, 'Teléfono', telCtrl,
-                            saving: saving, keyboard: TextInputType.phone),
+                            saving: saving,
+                            soloEnteros: true,
+                            keyboard: TextInputType.phone),
                         const SizedBox(height: 14),
                         _dialogCiudad(ctx, ciudadCtrl, saving),
                         const SizedBox(height: 14),
@@ -2621,7 +2652,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
         return StatefulBuilder(
           builder: (ctx, setLocal) {
             Widget field(String label, TextEditingController c,
-                {TextInputType? keyboard}) {
+                {TextInputType? keyboard, bool soloEnteros = false}) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2639,10 +2670,21 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                   TextFormField(
                     controller: c,
                     keyboardType: keyboard,
-                    enabled: !saving,
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Campo obligatorio'
+                    inputFormatters: soloEnteros
+                        ? [HulpNumericInput.integerFormatter]
                         : null,
+                    enabled: !saving,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Campo obligatorio';
+                      }
+                      return soloEnteros
+                          ? HulpNumericInput.validateInteger(
+                              v,
+                              fieldName: label,
+                            )
+                          : null;
+                    },
                     decoration: decorarInputHulp(ctx, InputDecoration(
                       isDense: true,
                       filled: true,
@@ -2721,7 +2763,7 @@ class _DetalleProveedorWidgetState extends State<DetalleProveedorWidget> {
                         field('Nombre *', nombreCtrl),
                         const SizedBox(height: 14),
                         field('Teléfono *', telCtrl,
-                            keyboard: TextInputType.phone),
+                            keyboard: TextInputType.phone, soloEnteros: true),
                         const SizedBox(height: 14),
                         field('Relación *', relCtrl),
                         const SizedBox(height: 24),

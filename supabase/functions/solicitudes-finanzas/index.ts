@@ -27,11 +27,7 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
   const reply = (value: unknown, status = 200, headers: Record<string, string> = {}) =>
     new Response(JSON.stringify(value), { status, headers: { ...cors, 'Content-Type': 'application/json', ...headers } });
   try {
-    // This rollout is deliberately limited to Hulp/test.
     const url = Deno.env.get('SUPABASE_URL')!;
-    if (new URL(url).hostname !== 'ptafsiwlhxomgqmdmidf.supabase.co') {
-      return reply({ message: 'Contrato no habilitado en este proyecto' }, 503);
-    }
     const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
       auth: { persistSession: false, autoRefreshToken: false },
     });

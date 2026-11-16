@@ -14,6 +14,7 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -27,12 +28,14 @@ class EditarServicioWidget extends StatefulWidget {
     required this.servicioId,
     required this.categria,
     required this.subcategria,
+    this.onGuardado,
   });
 
   final String? subcategoriaid;
   final String? servicioId;
   final VwResumenCategoriasRow? categria;
   final VwResumenSubcategoriasRow? subcategria;
+  final VoidCallback? onGuardado;
 
   @override
   State<EditarServicioWidget> createState() => _EditarServicioWidgetState();
@@ -695,6 +698,11 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                         ?.toString(),
                                   ),
                                   focusNode: _model.preciobaseFocusNode,
+                                  keyboardType: const TextInputType
+                                      .numberWithOptions(decimal: true),
+                                  inputFormatters: [
+                                    HulpNumericInput.decimalFormatter,
+                                  ],
                                   autofocus: false,
                                   obscureText: false,
                                   decoration: decorarInputHulp(
@@ -1744,6 +1752,9 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                                 _model.foto2 != '') &&
                                             (_model.foto3 != null &&
                                                 _model.foto3 != '')) {
+                                          final navigator = Navigator.of(context);
+                                          final ruta = ModalRoute.of(context);
+                                          final onGuardado = widget.onGuardado;
                                           await ServiciosTable().update(
                                             data: {
                                               'nombre': _model
@@ -1776,50 +1787,11 @@ class _EditarServicioWidgetState extends State<EditarServicioWidget> {
                                               widget!.servicioId,
                                             ),
                                           );
-                                          Navigator.pop(context);
-                                          await showDialog(
-                                            context: context,
-                                            builder: (dialogContext) {
-                                              return Dialog(
-                                                elevation: 0,
-                                                insetPadding:
-                                                    const EdgeInsets.all(16.0),
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                alignment: AlignmentDirectional(
-                                                        0.0, 0.0)
-                                                    .resolve(Directionality.of(
-                                                        context)),
-                                                child: Notificacion2Widget(
-                                                  titulo: 'Servicio',
-                                                  texto:
-                                                      'Servicio editado exitosamente',
-                                                  boton: 'Aceptar',
-                                                  succes: true,
-                                                  action: () async {
-                                                    if (!FFAppState()
-                                                        .MenuAbierto) {
-                                                      return;
-                                                    }
-                                                  },
-                                                ),
-                                              );
-                                            },
-                                          );
-
-                                          context.pushNamed(
-                                            ServiciosWidget.routeName,
-                                            queryParameters: {
-                                              'subcategoria': serializeParam(
-                                                widget!.subcategria,
-                                                ParamType.SupabaseRow,
-                                              ),
-                                              'categoria': serializeParam(
-                                                widget!.categria,
-                                                ParamType.SupabaseRow,
-                                              ),
-                                            }.withoutNulls,
-                                          );
+                                          if (navigator.mounted &&
+                                              ruta?.isCurrent == true) {
+                                            navigator.pop();
+                                          }
+                                          onGuardado?.call();
                                         } else {
                                           await showDialog(
                                             context: context,

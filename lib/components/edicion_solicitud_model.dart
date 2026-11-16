@@ -2,6 +2,7 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
+import '/components/hulp_numeric_input.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -61,6 +62,9 @@ class EdicionSolicitudModel extends FlutterFlowModel<EdicionSolicitudWidget> {
   FocusNode? nombreFocusNode7;
   TextEditingController? nombreTextController7;
   String? Function(BuildContext, String?)? nombreTextController7Validator;
+  String? _nombreTextController7Validator(BuildContext context, String? val) {
+    return HulpNumericInput.validateDecimal(val, fieldName: 'el precio base');
+  }
   List<ItemsReciboStruct> preciosAdicionalesSolicitud = [];
   void addToPreciosAdicionalesSolicitud(ItemsReciboStruct item) =>
       preciosAdicionalesSolicitud.add(item);
@@ -111,6 +115,7 @@ class EdicionSolicitudModel extends FlutterFlowModel<EdicionSolicitudWidget> {
   @override
   void initState(BuildContext context) {
     nombreTextController9Validator = _nombreTextController9Validator;
+    nombreTextController7Validator = _nombreTextController7Validator;
   }
 
   @override

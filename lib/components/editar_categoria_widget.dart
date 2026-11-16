@@ -8,7 +8,6 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
-import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
@@ -21,9 +20,11 @@ class EditarCategoriaWidget extends StatefulWidget {
   const EditarCategoriaWidget({
     super.key,
     required this.categoriarow,
+    this.onGuardado,
   });
 
   final VwResumenCategoriasRow? categoriarow;
+  final VoidCallback? onGuardado;
 
   @override
   State<EditarCategoriaWidget> createState() => _EditarCategoriaWidgetState();
@@ -475,6 +476,10 @@ class _EditarCategoriaWidgetState extends State<EditarCategoriaWidget> {
                                 !_model.formKey.currentState!.validate()) {
                               return;
                             }
+                            final navigator = Navigator.of(context);
+                            final ruta = ModalRoute.of(context);
+                            final onGuardado = widget.onGuardado;
+
                             await CategoriasTable().update(
                               data: {
                                 'nombre': _model.textController.text,
@@ -492,11 +497,10 @@ class _EditarCategoriaWidgetState extends State<EditarCategoriaWidget> {
                                 widget!.categoriarow?.id,
                               ),
                             );
-                            Navigator.pop(context);
-                            if (Navigator.of(context).canPop()) {
-                              context.pop();
+                            if (navigator.mounted && ruta?.isCurrent == true) {
+                              navigator.pop();
                             }
-                            context.pushNamed(CategoriasWidget.routeName);
+                            onGuardado?.call();
                           },
                           text: 'Guardar edición',
                           options: FFButtonOptions(

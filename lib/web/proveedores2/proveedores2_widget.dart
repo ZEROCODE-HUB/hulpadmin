@@ -48,6 +48,14 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarProveedorEditado() {
+    if (!mounted) return;
+    setState(_model.invalidarConsultas);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Proveedor editado correctamente')),
+    );
+  }
+
   Widget _buildRecentFilterPanel() {
     final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
           font: GoogleFonts.inter(),
@@ -1156,6 +1164,7 @@ class _Proveedores2WidgetState extends State<Proveedores2Widget> {
                                                                                     },
                                                                                     child: EditarProveedorWidget(
                                                                                       idproveedor: itemsItem,
+                                                                                      onGuardado: _actualizarProveedorEditado,
                                                                                     ),
                                                                                   ),
                                                                                 );

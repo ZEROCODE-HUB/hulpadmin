@@ -175,6 +175,7 @@ class _DropdownSoporteWidgetState extends State<DropdownSoporteWidget> {
                         hoverColor: Colors.transparent,
                         highlightColor: Colors.transparent,
                         onTap: () async {
+                          final onGuardado = widget.actionnavegacion;
                           await SoporteTable().update(
                             data: {
                               'estado': listaOpcionesItem,
@@ -184,9 +185,7 @@ class _DropdownSoporteWidgetState extends State<DropdownSoporteWidget> {
                               widget!.soporteId,
                             ),
                           );
-                          await widget.actionnavegacion?.call();
-
-                          safeSetState(() {});
+                          await onGuardado?.call();
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.max,

@@ -4,7 +4,7 @@ const serve = Deno.serve;
 Deno.serve = (() => ({})) as unknown as typeof Deno.serve;
 const { manejarSolicitud } = await import('./index.ts');
 Deno.serve = serve;
-Deno.env.set('SUPABASE_URL', 'https://ptafsiwlhxomgqmdmidf.supabase.co');
+Deno.env.set('SUPABASE_URL', 'https://backend.example');
 Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'credencial-ficticia-de-prueba');
 const actor = '11111111-1111-4111-8111-111111111111';
 const response = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status, headers: { 'Content-Type': 'application/json' } });

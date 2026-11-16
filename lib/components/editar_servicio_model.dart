@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/hulp_numeric_input.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -77,7 +78,7 @@ class EditarServicioModel extends FlutterFlowModel<EditarServicioWidget> {
       return 'Ingresa el precio base';
     }
 
-    return null;
+    return HulpNumericInput.validateDecimal(val, fieldName: 'el precio base');
   }
 
   // State field(s) for descripcion widget.

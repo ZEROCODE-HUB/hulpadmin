@@ -32,7 +32,7 @@ class _DetalleSolicitudTabsState extends State<DetalleSolicitudTabs> {
     final theme = FlutterFlowTheme.of(context);
     final escritorio = MediaQuery.sizeOf(context).width >= 700;
     return Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           widget.encabezado,
@@ -77,7 +77,7 @@ class _DetalleSolicitudTabsState extends State<DetalleSolicitudTabs> {
                               child: Text(label))),
                   ]))),
           SizedBox(height: tab == 2 ? 14 : 20),
-          Flexible(
+          Expanded(
               child: IndexedStack(index: tab, children: [
             SingleChildScrollView(controller: datosScroll, child: widget.datos),
             SingleChildScrollView(

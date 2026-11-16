@@ -1,6 +1,5 @@
 import '/components/modal_con_encabezado_fijo.dart';
 import '/backend/supabase/supabase.dart';
-import '/components/notificacion2_widget.dart';
 import '/components/responsive_layout_rows.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -19,9 +18,11 @@ class EditarProveedorWidget extends StatefulWidget {
   const EditarProveedorWidget({
     super.key,
     required this.idproveedor,
+    this.onGuardado,
   });
 
   final VwProfesionalesCompletoRow? idproveedor;
+  final VoidCallback? onGuardado;
 
   @override
   State<EditarProveedorWidget> createState() => _EditarProveedorWidgetState();
@@ -537,6 +538,15 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                             ),
                             FFButtonWidget(
                               onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                final ruta = ModalRoute.of(context);
+                                final onGuardado = widget.onGuardado;
+
+                                final proveedorId =
+                                    widget.idproveedor?.profesionalId;
+                                final serviciosIds =
+                                    List.of(_model.serviciosids);
+
                                 await UsuariosTable().update(
                                   data: {
                                     'nombres': _model.nombreTextController.text,
@@ -545,49 +555,26 @@ class _EditarProveedorWidgetState extends State<EditarProveedorWidget> {
                                   },
                                   matchingRows: (rows) => rows.eqOrNull(
                                     'id',
-                                    widget!.idproveedor?.profesionalId,
+                                    proveedorId,
                                   ),
                                 );
                                 await ProfesionalServiciosTable().delete(
                                   matchingRows: (rows) => rows.eqOrNull(
                                     'usuario_id',
-                                    widget!.idproveedor?.profesionalId,
+                                    proveedorId,
                                   ),
                                 );
-                                for (int loop1Index = 0;
-                                    loop1Index < _model.serviciosids.length;
-                                    loop1Index++) {
-                                  final currentLoop1Item =
-                                      _model.serviciosids[loop1Index];
+                                for (final servicioId in serviciosIds) {
                                   await ProfesionalServiciosTable().insert({
-                                    'usuario_id':
-                                        widget!.idproveedor?.profesionalId,
-                                    'servicio_id': currentLoop1Item,
+                                    'usuario_id': proveedorId,
+                                    'servicio_id': servicioId,
                                   });
                                 }
-                                await showDialog(
-                                  context: context,
-                                  builder: (dialogContext) {
-                                    return Dialog(
-                                      elevation: 0,
-                                      insetPadding: const EdgeInsets.all(16.0),
-                                      backgroundColor: Colors.transparent,
-                                      alignment: AlignmentDirectional(0.0, 0.0)
-                                          .resolve(Directionality.of(context)),
-                                      child: Notificacion2Widget(
-                                        titulo: 'Proveedores',
-                                        texto: 'Editado correctamente',
-                                        boton: 'Aceptar',
-                                        succes: true,
-                                        action: () async {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                );
-
-                                Navigator.pop(context);
+                                if (navigator.mounted &&
+                                    ruta?.isCurrent == true) {
+                                  navigator.pop();
+                                }
+                                onGuardado?.call();
                               },
                               text: 'Continuar',
                               options: FFButtonOptions(

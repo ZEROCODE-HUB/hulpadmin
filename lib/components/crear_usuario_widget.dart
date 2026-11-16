@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/backend/supabase/supabase.dart';
 import '/backend/direcciones_cliente.dart';
 import '/custom_code/actions/create_user.dart' as actions;
@@ -261,6 +262,7 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
       v == null || v.trim().isEmpty ? 'Completa este campo.' : null;
   Widget _dato(String label, TextEditingController c,
           {bool email = false,
+          bool soloNumeros = false,
           bool password = false,
           bool confirmar = false,
           int? maxLength}) =>
@@ -275,6 +277,10 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
               key: ValueKey(label),
               controller: c,
               maxLength: maxLength,
+              keyboardType: soloNumeros ? TextInputType.phone : null,
+              inputFormatters: soloNumeros
+                  ? [HulpNumericInput.integerFormatter]
+                  : null,
               obscureText:
                   password && (confirmar ? ocultarConfirmar : ocultarClave),
               decoration: decorarInputHulp(
@@ -309,6 +315,10 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
                       if (email &&
                           !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v!)) {
                         return 'Ingresa un correo válido.';
+                      }
+                      if (soloNumeros) {
+                        return HulpNumericInput.validateInteger(
+                            v, fieldName: 'el teléfono');
                       }
                       return null;
                     },
@@ -351,7 +361,8 @@ class _CrearUsuarioWidgetState extends State<CrearUsuarioWidget> {
             _dato('Número de documento *', documento)),
         _fila(
             _opciones('País *', ['+57'], pais, (v) => setState(() => pais = v)),
-            _dato('Número de teléfono *', telefono, maxLength: 11)),
+            _dato('Número de teléfono *', telefono,
+                maxLength: 11, soloNumeros: true)),
         const SizedBox(height: 10),
         const Text('Datos de usuario',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),

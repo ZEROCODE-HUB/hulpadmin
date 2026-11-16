@@ -215,14 +215,12 @@ class _EditarClienteModalState extends State<EditarClienteModal> {
             soloContacto: true);
       }
       if (!mounted) return;
-      setState(() {
-        contactoInicial = contactoActual;
-        widget.perfil.telefono = telefono.text.trim();
-        widget.perfil.correoElectronico =
-            correo.text.trim().isEmpty ? null : correo.text.trim();
-        cambiado = true;
-        aviso = 'Datos de contacto guardados.';
-      });
+      contactoInicial = contactoActual;
+      widget.perfil.telefono = telefono.text.trim();
+      widget.perfil.correoElectronico =
+          correo.text.trim().isEmpty ? null : correo.text.trim();
+      cambiado = true;
+      Navigator.of(context).pop(true);
     } on ActualizarClienteSolicitudException catch (e) {
       if (mounted) setState(() => error = e.message);
     } catch (_) {
@@ -616,7 +614,10 @@ class _EditarClienteModalState extends State<EditarClienteModal> {
     final origen =
         widget.perfil.usuarioExterno == true ? 'Externo' : 'Aplicativo';
     return WillPopScope(
-        onWillPop: _puedeCerrar,
+        onWillPop: () async {
+          await _cerrar();
+          return false;
+        },
         child: Dialog(
           insetPadding:
               const EdgeInsets.symmetric(horizontal: 18, vertical: 18),

@@ -40,6 +40,7 @@ const _operaciones = {
   'en_camino': (TipoActividadSolicitud.enCamino, 'En camino'),
   'empece': (TipoActividadSolicitud.iniciada, 'Servicio iniciado'),
   'termine': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
+  'finalizar_admin': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
 };
 
 const _camposEditables = {

@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 /// Conserva filtros y paginación PostgREST; el backend proyecta por rol.
-/// Solo Test tiene activado el contrato financiero de esta entrega.
 class SolicitudesHttpClient extends http.BaseClient {
-  SolicitudesHttpClient({http.Client? client})
-      : _inner = client ?? http.Client();
+  SolicitudesHttpClient({required Uri supabaseUrl, http.Client? client})
+      : _supabaseUrl = supabaseUrl,
+        _inner = client ?? http.Client();
+  final Uri _supabaseUrl;
   final http.Client _inner;
 
   @override
@@ -17,7 +18,8 @@ class SolicitudesHttpClient extends http.BaseClient {
       'vw_solicitudes_servicios_completa',
       'transacciones',
     };
-    if (request.url.host != 'ptafsiwlhxomgqmdmidf.supabase.co' ||
+    if (request.url.scheme != _supabaseUrl.scheme ||
+        request.url.authority != _supabaseUrl.authority ||
         !path.startsWith('/rest/v1/') ||
         !protected.contains(table) ||
         (table == 'transacciones' && request.method != 'POST')) {

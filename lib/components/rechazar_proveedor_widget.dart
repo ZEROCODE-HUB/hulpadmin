@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
-import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,9 +16,11 @@ class RechazarProveedorWidget extends StatefulWidget {
   const RechazarProveedorWidget({
     super.key,
     required this.proveedorId,
+    this.onGuardado,
   });
 
   final String? proveedorId;
+  final VoidCallback? onGuardado;
 
   @override
   State<RechazarProveedorWidget> createState() =>
@@ -238,6 +239,10 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                         ),
                         FFButtonWidget(
                           onPressed: () async {
+                            final navigator = Navigator.of(context);
+                            final ruta = ModalRoute.of(context);
+                            final onGuardado = widget.onGuardado;
+
                             await UsuariosTable().update(
                               data: {
                                 'verificado': 'no verificado',
@@ -247,10 +252,10 @@ class _RechazarProveedorWidgetState extends State<RechazarProveedorWidget> {
                                 widget!.proveedorId,
                               ),
                             );
-                            Navigator.pop(context);
-
-                            context
-                                .pushNamed(RegistroProveedoresWidget.routeName);
+                            if (navigator.mounted && ruta?.isCurrent == true) {
+                              navigator.pop();
+                            }
+                            onGuardado?.call();
                           },
                           text: 'Rechazar inscripción',
                           options: FFButtonOptions(

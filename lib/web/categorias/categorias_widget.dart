@@ -41,6 +41,13 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarListado() {
+    safeSetState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+  }
+
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
   static String? _trimOrNull(String? s) {
@@ -1383,6 +1390,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                                 },
                                                                                 child: EditarCategoriaWidget(
                                                                                   categoriarow: categoriasItem,
+                                                                                  onGuardado: _actualizarListado,
                                                                                 ),
                                                                               ),
                                                                             );

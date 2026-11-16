@@ -44,6 +44,10 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarProveedores() {
+    safeSetState(_model.invalidarConsultas);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -635,7 +639,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                 builder: (context) =>
                                                     FFButtonWidget(
                                                   onPressed: () async {
-                                                    await showDialog(
+                                                    final creado = await showDialog<bool>(
                                                       barrierDismissible: false,
                                                       context: context,
                                                       builder: (dialogContext) {
@@ -673,10 +677,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                         );
                                                       },
                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                    safeSetState(() => _model
-                                                        .invalidarConsultas());
+                                                    if (creado == true) {
+                                                      _actualizarProveedores();
+                                                    }
                                                   },
                                                   text: 'Agregar proveedor',
                                                   icon: Icon(
@@ -1788,32 +1791,8 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                   proveedoresDatosItem
                                                                           .profesionalId ??
                                                                       '',
-                                                              actionnavegacion:
-                                                                  () async {
-                                                                if (Navigator.of(
-                                                                        context)
-                                                                    .canPop()) {
-                                                                  context.pop();
-                                                                }
-                                                                context
-                                                                    .pushNamed(
-                                                                  RegistroProveedoresWidget
-                                                                      .routeName,
-                                                                  extra: <String,
-                                                                      dynamic>{
-                                                                    '__transition_info__':
-                                                                        TransitionInfo(
-                                                                      hasTransition:
-                                                                          true,
-                                                                      transitionType:
-                                                                          PageTransitionType
-                                                                              .fade,
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              0),
-                                                                    ),
-                                                                  },
-                                                                );
+                                                              actionnavegacion: () async {
+                                                                _actualizarProveedores();
                                                               },
                                                             ),
                                                           ),
@@ -1867,16 +1846,12 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                             child:
                                                                                 RechazarProveedorWidget(
                                                                               proveedorId: proveedoresDatosItem.profesionalId ?? '',
+                                                                              onGuardado: _actualizarProveedores,
                                                                             ),
                                                                           ),
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),
@@ -1926,16 +1901,12 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                             child:
                                                                                 AceptarProveedorWidget(
                                                                               idproveedor: proveedoresDatosItem.profesionalId ?? '',
+                                                                              onGuardado: _actualizarProveedores,
                                                                             ),
                                                                           ),
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),
@@ -1990,11 +1961,6 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),

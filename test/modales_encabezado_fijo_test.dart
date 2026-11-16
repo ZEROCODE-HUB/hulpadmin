@@ -36,6 +36,31 @@ import 'package:hulp_admin/components/rechazar_proveedor_widget.dart';
 import 'package:hulp_admin/components/ver_servicio_widget.dart';
 import 'package:hulp_admin/components/finalizar_servicio2_widget.dart';
 import 'package:hulp_admin/components/recibo_widget.dart';
+import 'package:hulp_admin/web/categorias/categorias_widget.dart';
+import 'package:hulp_admin/web/servicios/servicios_widget.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+class _CanalSinRed implements WebSocketChannel {
+  @override
+  final WebSocketSink sink = _SumideroSinRed();
+  @override
+  Future<void> get ready async {}
+  @override
+  String? get closeReason => null;
+  @override
+  int? get closeCode => null;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _SumideroSinRed implements WebSocketSink {
+  @override
+  Future<void> close([int? closeCode, String? closeReason]) async {}
+  @override
+  void add(dynamic data) {}
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class _Fuentes extends AssetManifest {
   @override
@@ -62,6 +87,10 @@ class _Fuentes extends AssetManifest {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late ByteData fontBytes;
+  String? nombreEditado;
+  String? categoriaEditada;
+  var permitirEdicionServicio = false;
+  var permitirEdicionCategoria = false;
   setUpAll(() async {
     final config =
         jsonDecode(await File('.dart_tool/package_config.json').readAsString())
@@ -81,9 +110,34 @@ void main() {
       anonKey: 'test-key',
       debug: false,
       httpClient: MockClient((request) async {
+        if (permitirEdicionCategoria &&
+            request.method == 'PATCH' &&
+            request.url.pathSegments.last == 'categorias') {
+          expect(request.url.queryParameters['id'], 'eq.cat-1');
+          categoriaEditada = jsonDecode(request.body)['nombre'] as String;
+          return http.Response('', 204, request: request);
+        }
+        if (permitirEdicionServicio &&
+            request.method == 'PATCH' &&
+            request.url.pathSegments.last == 'servicios') {
+          expect(request.url.queryParameters['id'], 'eq.servicio-1');
+          nombreEditado = jsonDecode(request.body)['nombre'] as String;
+          return http.Response('', 204, request: request);
+        }
         expect(request.method, 'GET'); // Abrir/cerrar nunca escribe datos.
         final tabla = request.url.pathSegments.last;
         final rows = <String, List<Map<String, dynamic>>>{
+          'vw_resumen_categorias': [
+            {
+              'id': 'cat-1',
+              'nombre': categoriaEditada ?? 'Plomería',
+              'estado': 'activo',
+              'imagen_url': 'https://imagenes.test/modal.png',
+              'creado_en': '2026-10-27T10:00:00Z',
+              'total_subcategorias': 1,
+              'total_solicitudes': 0,
+            },
+          ],
           'usuarios': [
             {
               'id': 'usuario-1',
@@ -92,12 +146,13 @@ void main() {
               'apellidos': 'Apellido'
             }
           ],
-          'servicios': [
+          if (tabla == 'servicios' || tabla == 'vw_resumen_servicios') tabla: [
             {
               'id': 'servicio-1',
               'subcategoria_id': 'sub-1',
-              'nombre': 'Servicio',
+              'nombre': nombreEditado ?? 'Servicio',
               'descripcion': 'Descripción',
+              'informacion_relevante': 'Información del servicio',
               'precio': 10000.0,
               'estado': 'activo',
               'destacado': false,
@@ -135,9 +190,14 @@ void main() {
             request: request, headers: {'content-type': 'application/json'});
       }),
     );
+    Supabase.instance.client.realtime.conn = _CanalSinRed();
   });
   tearDownAll(() => Supabase.instance.dispose());
   setUp(() {
+    permitirEdicionServicio = false;
+    nombreEditado = null;
+    permitirEdicionCategoria = false;
+    categoriaEditada = null;
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
@@ -153,6 +213,19 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 40)));
       await tester.pump(const Duration(milliseconds: 100));
     }
+  }
+
+  Future<void> prepararImagen(WidgetTester tester) async {
+    final image = await tester.runAsync(() async {
+      final recorder = ui.PictureRecorder();
+      Canvas(recorder).drawColor(Colors.white, BlendMode.src);
+      return recorder.endRecording().toImage(1, 1);
+    });
+    PaintingBinding.instance.imageCache.putIfAbsent(
+        const NetworkImage('https://imagenes.test/modal.png'),
+        () => OneFrameImageStreamCompleter(
+            Future.value(ImageInfo(image: image!.clone()))));
+    image!.dispose();
   }
 
   final categoria = VwResumenCategoriasRow({
@@ -222,6 +295,78 @@ void main() {
       'total': 10000.0
     })),
   };
+  testWidgets('editar actualiza el listado de servicios sin navegar',
+      (tester) async {
+    permitirEdicionServicio = true;
+    tester.view.physicalSize = const Size(1600, 950);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await prepararImagen(tester);
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+      value: FFAppState(),
+      child: MaterialApp(
+        home: ServiciosWidget(subcategoria: subcategoria, categoria: categoria),
+      ),
+    ));
+    await esperar(tester);
+    final listado = find.byType(ServiciosWidget);
+    final pantalla = tester.state(listado);
+    expect(find.text('Servicio'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.edit).first);
+    await esperar(tester);
+    final editor = find.byType(EditarServicioWidget);
+    final nombre =
+        find.descendant(of: editor, matching: find.byType(TextFormField)).first;
+    await tester.enterText(nombre, 'Servicio actualizado');
+    await tester.tap(find.text('Editar servicio').last);
+    await esperar(tester);
+
+    expect(nombreEditado, 'Servicio actualizado');
+    expect(editor, findsNothing);
+    expect(tester.state(listado), same(pantalla));
+    expect(find.text('Servicio actualizado'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+  });
+
+  testWidgets('editar categoría actualiza la tabla desde la misma ruta',
+      (tester) async {
+    permitirEdicionCategoria = true;
+    tester.view.physicalSize = const Size(1600, 950);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await prepararImagen(tester);
+
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+      value: FFAppState(),
+      child: const MaterialApp(home: CategoriasWidget()),
+    ));
+    await esperar(tester);
+    final listado = find.byType(CategoriasWidget);
+    final pantalla = tester.state(listado);
+    expect(find.text('Plomería'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.edit).first);
+    await esperar(tester);
+    final editor = find.byType(EditarCategoriaWidget);
+    final nombre =
+        find.descendant(of: editor, matching: find.byType(TextFormField)).first;
+    await tester.enterText(nombre, 'Plomería actualizada');
+    await tester.tap(find.text('Guardar edición'));
+    await esperar(tester);
+
+    expect(categoriaEditada, 'Plomería actualizada');
+    expect(editor, findsNothing);
+    expect(tester.state(listado), same(pantalla));
+    expect(find.text('Plomería actualizada'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+  });
+
   for (final caso in {...casos, ...cierresSimples}.entries) {
     testWidgets('${caso.key}: cierre fijo y accesible al desplazar',
         (tester) async {

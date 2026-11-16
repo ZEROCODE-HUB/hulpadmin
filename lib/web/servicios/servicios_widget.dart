@@ -9,6 +9,7 @@ import '/components/responsive_layout_rows.dart';
 import '/app_state.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
+import '/flutter_flow/dialog_helpers.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -23,6 +24,7 @@ import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:provider/provider.dart';
 import 'servicios_model.dart';
 export 'servicios_model.dart';
@@ -48,6 +50,77 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
   late ServiciosModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<void> _confirmarEliminacionServicio(String? servicioId) async {
+    if (servicioId == null) return;
+
+    String? mensaje;
+    var eliminado = false;
+    await showCenteredDialog(
+      context,
+      NotificacioneliminarWidget(
+        titulo: 'Eliminar servicio',
+        texto: '¿Seguro de borrar este servicio?',
+        succes: false,
+        action: () async {
+          try {
+            await ServiciosTable().delete(
+              matchingRows: (rows) => rows.eq('id', servicioId),
+            );
+            eliminado = true;
+            mensaje = 'Servicio eliminado exitosamente';
+          } on PostgrestException catch (error) {
+            mensaje = switch (error.code) {
+              '23503'
+                  when error.message
+                      .contains('solicitudes_servicio_servicio_id_fkey') =>
+                'No puedes eliminar este servicio porque tiene solicitudes vinculadas.',
+              '23503' =>
+                'No puedes eliminar este servicio porque tiene registros vinculados.',
+              _ => 'No se pudo eliminar el servicio. Inténtalo de nuevo.',
+            };
+          }
+        },
+      ),
+    );
+
+    if (!mounted || mensaje == null) return;
+    await showCenteredDialog(
+      context,
+      Notificacion2Widget(
+        titulo: 'Servicio',
+        texto: mensaje,
+        boton: 'Aceptar',
+        succes: eliminado,
+        action: eliminado
+            ? () async {
+                context.pushNamed(
+                  ServiciosWidget.routeName,
+                  queryParameters: {
+                    'subcategoria': serializeParam(
+                      widget.subcategoria,
+                      ParamType.SupabaseRow,
+                    ),
+                    'categoria':
+                        serializeParam(widget.categoria, ParamType.SupabaseRow),
+                  }.withoutNulls,
+                );
+              }
+            : null,
+      ),
+    );
+  }
+
+  void _actualizarServiciosTrasEditar() {
+    if (!mounted) return;
+    setState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Servicio editado exitosamente')),
+    );
+  }
 
   Widget _buildServiceFilters(List<VwResumenServiciosRow> rows) {
     final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
@@ -1323,6 +1396,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                               servicioId: subcategoriasItem.id!,
                                                                               categria: widget!.categoria!,
                                                                               subcategria: widget!.subcategoria!,
+                                                                              onGuardado: _actualizarServiciosTrasEditar,
                                                                             ),
                                                                           ),
                                                                         );
@@ -1356,86 +1430,10 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                   highlightColor:
                                                                       Colors
                                                                           .transparent,
-                                                                  onTap:
-                                                                      () async {
-                                                                    await showDialog(
-                                                                      context:
-                                                                          context,
-                                                                      builder:
-                                                                          (dialogContext) {
-                                                                        return Dialog(
-                                                                          elevation:
-                                                                              0,
-                                                                          insetPadding:
-                                                                              const EdgeInsets.all(16.0),
-                                                                          backgroundColor:
-                                                                              Colors.transparent,
-                                                                          alignment:
-                                                                              AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                          child:
-                                                                              GestureDetector(
-                                                                            onTap:
-                                                                                () {
-                                                                              FocusScope.of(dialogContext).unfocus();
-                                                                              FocusManager.instance.primaryFocus?.unfocus();
-                                                                            },
-                                                                            child:
-                                                                                NotificacioneliminarWidget(
-                                                                              titulo: 'Eliminar servicio',
-                                                                              texto: '¿Seguro de borrar este servicio?',
-                                                                              succes: false,
-                                                                              action: () async {
-                                                                                await ServiciosTable().delete(
-                                                                                  matchingRows: (rows) => rows.eqOrNull(
-                                                                                    'id',
-                                                                                    subcategoriasItem.id,
-                                                                                  ),
-                                                                                );
-                                                                                await showDialog(
-                                                                                  context: context,
-                                                                                  builder: (dialogContext) {
-                                                                                    return Dialog(
-                                                                                      elevation: 0,
-                                                                                      insetPadding: const EdgeInsets.all(16.0),
-                                                                                      backgroundColor: Colors.transparent,
-                                                                                      alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                                      child: GestureDetector(
-                                                                                        onTap: () {
-                                                                                          FocusScope.of(dialogContext).unfocus();
-                                                                                          FocusManager.instance.primaryFocus?.unfocus();
-                                                                                        },
-                                                                                        child: Notificacion2Widget(
-                                                                                          titulo: 'Servicio',
-                                                                                          texto: 'Servicio eliminado exitosamente',
-                                                                                          boton: 'Aceptar',
-                                                                                          succes: true,
-                                                                                          action: () async {
-                                                                                            context.pushNamed(
-                                                                                              ServiciosWidget.routeName,
-                                                                                              queryParameters: {
-                                                                                                'subcategoria': serializeParam(
-                                                                                                  widget!.subcategoria,
-                                                                                                  ParamType.SupabaseRow,
-                                                                                                ),
-                                                                                                'categoria': serializeParam(
-                                                                                                  widget!.categoria,
-                                                                                                  ParamType.SupabaseRow,
-                                                                                                ),
-                                                                                              }.withoutNulls,
-                                                                                            );
-                                                                                          },
-                                                                                        ),
-                                                                                      ),
-                                                                                    );
-                                                                                  },
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    );
-                                                                  },
+                                                                  onTap: () =>
+                                                                      _confirmarEliminacionServicio(
+                                                                    subcategoriasItem.id,
+                                                                  ),
                                                                   child: Container(
                                                                     width: 35.0,
                                                                     height: 35.0,

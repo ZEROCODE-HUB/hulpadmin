@@ -8,7 +8,6 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
 import 'dart:ui';
-import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
@@ -23,11 +22,13 @@ class EditarSubcategoriaWidget extends StatefulWidget {
     required this.subcategoriaid,
     bool? ver,
     required this.categoriaId,
+    this.onGuardado,
   }) : this.ver = ver ?? false;
 
   final VwResumenSubcategoriasRow? subcategoriaid;
   final bool ver;
   final VwResumenCategoriasRow? categoriaId;
+  final VoidCallback? onGuardado;
 
   @override
   State<EditarSubcategoriaWidget> createState() =>
@@ -627,6 +628,10 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                     !_model.formKey.currentState!.validate()) {
                                   return;
                                 }
+                                final navigator = Navigator.of(context);
+                                final ruta = ModalRoute.of(context);
+                                final onGuardado = widget.onGuardado;
+
                                 await SubcategoriasTable().update(
                                   data: {
                                     'nombre': _model.textController1.text,
@@ -641,17 +646,10 @@ class _EditarSubcategoriaWidgetState extends State<EditarSubcategoriaWidget> {
                                     widget!.subcategoriaid?.id,
                                   ),
                                 );
-                                Navigator.pop(context);
-
-                                context.pushNamed(
-                                  SubcategoriaWidget.routeName,
-                                  queryParameters: {
-                                    'categoria': serializeParam(
-                                      widget!.categoriaId,
-                                      ParamType.SupabaseRow,
-                                    ),
-                                  }.withoutNulls,
-                                );
+                                if (navigator.mounted && ruta?.isCurrent == true) {
+                                  navigator.pop();
+                                }
+                                onGuardado?.call();
                               } else {
                                 Navigator.pop(context);
                               }

@@ -43,6 +43,10 @@ class _SolicitudesRechazadasWidgetState
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarRechazadas() {
+    safeSetState(() => _model.requestCompleter = null);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1585,8 +1589,9 @@ class _SolicitudesRechazadasWidgetState
                                                             proveedorId:
                                                                 proveedoresDatosItem
                                                                     .profesionalId!,
-                                                            actionnavegacion:
-                                                                () async {},
+                                                            actionnavegacion: () async {
+                                                              _actualizarRechazadas();
+                                                            },
                                                           ),
                                                         ),
                                                         Row(
@@ -1640,7 +1645,8 @@ class _SolicitudesRechazadasWidgetState
                                                                             },
                                                                             child:
                                                                                 RechazarProveedorWidget(
-                                                                              proveedorId: proveedoresDatosIndex.toString(),
+                                                                              proveedorId: proveedoresDatosItem.profesionalId!,
+                                                                              onGuardado: _actualizarRechazadas,
                                                                             ),
                                                                           ),
                                                                         );
@@ -1697,6 +1703,7 @@ class _SolicitudesRechazadasWidgetState
                                                                               AceptarProveedorWidget(
                                                                             idproveedor:
                                                                                 proveedoresDatosItem.profesionalId!,
+                                                                            onGuardado: _actualizarRechazadas,
                                                                           ),
                                                                         ),
                                                                       );

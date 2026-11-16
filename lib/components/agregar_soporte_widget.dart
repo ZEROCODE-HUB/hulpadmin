@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'dart:ui';
 import '/index.dart';
@@ -1115,6 +1116,11 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                       child: TextFormField(
                                         controller: _model.precioTextController,
                                         focusNode: _model.precioFocusNode,
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        inputFormatters: [
+                                          HulpNumericInput.decimalFormatter,
+                                        ],
                                         autofocus: false,
                                         obscureText: false,
                                         decoration: decorarInputHulp(
@@ -1718,6 +1724,10 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                                 .telefonoUsuarioTextController,
                                             focusNode:
                                                 _model.telefonoUsuarioFocusNode,
+                                            keyboardType: TextInputType.phone,
+                                            inputFormatters: [
+                                              HulpNumericInput.integerFormatter,
+                                            ],
                                             autofocus: false,
                                             obscureText: false,
                                             decoration: decorarInputHulp(
@@ -2359,6 +2369,10 @@ class _AgregarSoporteWidgetState extends State<AgregarSoporteWidget> {
                                                 .telefonoProveedorTextController,
                                             focusNode: _model
                                                 .telefonoProveedorFocusNode,
+                                            keyboardType: TextInputType.phone,
+                                            inputFormatters: [
+                                              HulpNumericInput.integerFormatter,
+                                            ],
                                             autofocus: false,
                                             obscureText: false,
                                             decoration: decorarInputHulp(

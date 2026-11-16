@@ -22,18 +22,6 @@ class SolicitudesStream extends Stream<List<Map<String, dynamic>>> {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    if (!client.rest.url
-        .toString()
-        .contains('ptafsiwlhxomgqmdmidf.supabase.co')) {
-      // Fuera de la rama activada conservar el stream anterior íntegro.
-      final original =
-          client.from('solicitudes_servicio').stream(primaryKey: ['id']);
-      final Stream<List<Map<String, dynamic>>> stream = filters.isEmpty
-          ? original
-          : original.eq(filters.entries.first.key, filters.entries.first.value);
-      return stream.listen(onData,
-          onError: onError, onDone: onDone, cancelOnError: cancelOnError);
-    }
     late StreamController<List<Map<String, dynamic>>> controller;
     RealtimeChannel? channel;
     var loading = false, queued = false, cancelled = false;

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import '/environment_values.dart';
 
-bool get usaEstadosSprint3 =>
-    Uri.tryParse(FFDevEnvironmentValues().supabaseUrl)?.host ==
-    'ptafsiwlhxomgqmdmidf.supabase.co';
+bool get usaEstadosSprint3 => true;
 
 String? estadoSolicitudParaFiltro(String? estado) {
   if (!usaEstadosSprint3) return estado;

@@ -10,10 +10,10 @@ import '/components/responsive_layout_rows.dart';
 import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/index.dart';
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'crear_proveedor_model.dart';
@@ -1224,6 +1224,10 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           focusNode: _model.telefonoFocusNode,
                                           autofocus: false,
                                           obscureText: false,
+                                          keyboardType: TextInputType.phone,
+                                          inputFormatters: [
+                                            HulpNumericInput.integerFormatter,
+                                          ],
                                           decoration: decorarInputHulp(
                                               context,
                                               InputDecoration(
@@ -1637,6 +1641,10 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                               _model.numerocuentaFocusNode,
                                           autofocus: false,
                                           obscureText: false,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            HulpNumericInput.integerFormatter,
+                                          ],
                                           decoration: decorarInputHulp(
                                               context,
                                               InputDecoration(
@@ -1833,6 +1841,10 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                           focusNode: _model.rutnitFocusNode,
                                           autofocus: false,
                                           obscureText: false,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            HulpNumericInput.taxIdFormatter,
+                                          ],
                                           decoration: decorarInputHulp(
                                               context,
                                               InputDecoration(
@@ -3083,22 +3095,9 @@ class _CrearProveedorWidgetState extends State<CrearProveedorWidget> {
                                   },
                                 );
 
-                                Navigator.pop(context);
-                                if (Navigator.of(context).canPop()) {
-                                  context.pop();
+                                if (context.mounted) {
+                                  Navigator.pop(context, true);
                                 }
-                                context.pushNamed(
-                                  RegistroProveedoresWidget.routeName,
-                                  extra: <String, dynamic>{
-                                    '__transition_info__': TransitionInfo(
-                                      hasTransition: true,
-                                      transitionType: PageTransitionType.fade,
-                                      duration: Duration(milliseconds: 0),
-                                    ),
-                                  },
-                                );
-
-                                safeSetState(() {});
                               },
                               text: 'Continuar',
                               options: FFButtonOptions(

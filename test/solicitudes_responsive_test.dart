@@ -48,6 +48,9 @@ const _solicitud = {
   'hora': '10:00:00',
 };
 
+const _direccionHistorica =
+    'Palmira\nCalle 12 # 34-56\nTorre 3, apartamento 402';
+
 // Realtime stays disconnected; the HTTP fixture supplies the initial stream data.
 class _CanalSinRed implements WebSocketChannel {
   @override
@@ -104,6 +107,9 @@ void main() {
   var peticionesHistorial = 0;
   var usarHistorialCliente = false;
   var proveedorHistoricoDisponible = true;
+  var servicioHistoricoDisponible = true;
+  var permitirCambioEstado = false;
+  String? estadoGuardado;
   double? precioBaseSolicitud = 100000;
   late ByteData fontBytes;
   setUpAll(() async {
@@ -142,6 +148,12 @@ void main() {
                   'tipo': 'externo'
                 },
                 'eventos': [
+                  {
+                    'id': 'evento-admin',
+                    'accion': 'finalizar_admin',
+                    'fecha': '2026-11-09T06:00:00Z',
+                    'autor': {'rol': 'administrador', 'nombre': 'Admin Test'},
+                  },
                   {
                     'id': 'evento-1',
                     'accion': 'aceptar',
@@ -227,6 +239,13 @@ void main() {
               200,
               headers: {'content-type': 'application/json'});
         }
+        if (permitirCambioEstado &&
+            request.method == 'PATCH' &&
+            request.url.path.endsWith('/solicitudes_servicio')) {
+          expect(request.url.queryParameters['id'], 'eq.solicitud-1');
+          estadoGuardado = jsonDecode(request.body)['estado'] as String;
+          return http.Response('', 204, request: request);
+        }
         expect(request.method,
             'GET'); // Rendering must never change payments or requests.
         if (fallarSolicitudes &&
@@ -238,6 +257,7 @@ void main() {
         }
         final solicitud = {
           ..._solicitud,
+          if (estadoGuardado != null) 'estado_solicitud': estadoGuardado,
           'precio_base': precioBaseSolicitud,
           if (solicitudVersionada) 'finanzas_version': 1,
         };
@@ -248,11 +268,12 @@ void main() {
                 {'id': 'cliente-1', 'nombres': 'Cliente', 'rol': 'usuario'},
               ],
             'servicios' => [
-                {
-                  'id': 'servicio-1',
-                  'nombre': 'Limpieza de prueba',
-                  'precio': 15000,
-                },
+                if (servicioHistoricoDisponible)
+                  {
+                    'id': 'servicio-1',
+                    'nombre': 'Limpieza de prueba',
+                    'precio': 15000,
+                  },
               ],
             'ciudades' => [
                 {'id': 'ciudad-1', 'nombre': 'Palmira', 'activo': true},
@@ -272,7 +293,9 @@ void main() {
                   'servicio_nombre': 'Limpieza de prueba',
                   'solicitud_ciudad': 'Palmira',
                   'hora': '14:35:00',
-                  'ubicacion': 'Calle 12 # 34-56',
+                  'ubicacion': servicioHistoricoDisponible
+                      ? 'Calle 12 # 34-56'
+                      : _direccionHistorica,
                   'latitud': 3.54,
                   'longitud': -76.30,
                   'profesional_id': 'proveedor-1',
@@ -302,6 +325,8 @@ void main() {
   tearDownAll(() => Supabase.instance.dispose());
 
   setUp(() {
+    permitirCambioEstado = false;
+    estadoGuardado = null;
     solicitudVersionada = false;
     datosFinanzasDetalle = false;
     precioBaseSolicitud = 100000;
@@ -310,6 +335,7 @@ void main() {
     peticionesHistorial = 0;
     usarHistorialCliente = false;
     proveedorHistoricoDisponible = true;
+    servicioHistoricoDisponible = true;
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
@@ -422,6 +448,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Actividad de la solicitud'), findsOneWidget);
       expect(find.text('Solicitud aceptada'), findsOneWidget);
+      expect(find.text('Servicio finalizado'), findsOneWidget);
+      expect(find.text('Web Admin · Admin Test'), findsOneWidget);
       expect(find.text('Precio lista actualizado'), findsOneWidget);
       expect(peticionesHistorial, 1);
       await tester.tap(datos);
@@ -688,6 +716,43 @@ void main() {
     });
   }
 
+  testWidgets('muestra toda la dirección del historial sin enfocar el campo',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    usarHistorialCliente = true;
+    servicioHistoricoDisponible = false;
+    await cargar(
+        tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+    await tester.tap(find.byKey(const ValueKey('abrir_buscador_clientes')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cliente_cliente-1')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limpieza de prueba'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usar solicitud'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+
+    final direccion = find.byWidgetPredicate((widget) =>
+        widget is EditableText &&
+        widget.controller.text == _direccionHistorica);
+    expect(direccion, findsOneWidget);
+    final editable = tester.widget<EditableText>(direccion);
+    expect(editable.focusNode.hasFocus, isFalse);
+    expect(editable.minLines, 2);
+    expect(editable.maxLines, isNull);
+    final render = tester.state<EditableTextState>(direccion).renderEditable;
+    final inicio = render.getLocalRectForCaret(const TextPosition(offset: 0));
+    final finalDireccion = render
+        .getLocalRectForCaret(TextPosition(offset: _direccionHistorica.length));
+    expect(finalDireccion.top, greaterThan(inicio.top));
+    expect(finalDireccion.bottom, lessThanOrEqualTo(render.size.height));
+  });
+
   testWidgets('un fallo de carga muestra Reintentar y luego recupera la tabla',
       (tester) async {
     addTearDown(tester.view.resetPhysicalSize);
@@ -767,6 +832,34 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
+  });
+
+  testWidgets('el cambio de estado actualiza la tabla en la misma pantalla',
+      (tester) async {
+    permitirCambioEstado = true;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await cargar(tester, const SolicitudesWidget(), 1600, 900);
+
+    final pantalla = tester.state(find.byType(SolicitudesWidget));
+    final tabla = find.byType(SolicitudesDataTable);
+    final tablaOriginal = tester.element(tabla);
+    await tester.tap(find.byType(SolicitudStatusBadgeWidget).first);
+    await tester.pumpAndSettle();
+
+    final menu = find.byType(DropdownSolicitudEstadoWidget);
+    await tester.tap(find.descendant(of: menu, matching: find.text('Cancelado')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+
+    expect(estadoGuardado, 'canceladas');
+    expect(menu, findsNothing);
+    expect(tester.state(find.byType(SolicitudesWidget)), same(pantalla));
+    expect(tester.element(tabla), same(tablaOriginal));
+    expect(find.descendant(of: tabla, matching: find.text('Cancelado')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   for (final (width, selected) in [

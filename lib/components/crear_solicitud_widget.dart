@@ -12,6 +12,7 @@ import '/components/item_widget.dart';
 import '/components/fecha_hora_solicitud_widget.dart';
 import '/components/historial_solicitudes_dialog.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/components/searchable_dropdown_widget.dart';
 import '/components/selector_ubicacion_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -1185,6 +1186,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         TextFormField(
           controller: _model.preciobaseTextController,
           focusNode: _model.preciobaseFocusNode,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [HulpNumericInput.decimalFormatter],
           decoration: decorarInputHulp(
               context,
               _inputDecoration(
@@ -1289,6 +1292,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         TextFormField(
           controller: _model.direccionTextController,
           focusNode: _model.direccionFocusNode,
+          minLines: 2,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
           decoration: decorarInputHulp(
               context, _inputDecoration(context, 'Digite la dirección'),
               etiqueta: 'Dirección'),
@@ -2178,6 +2184,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
                                                   .preciobaseTextController,
                                               focusNode:
                                                   _model.preciobaseFocusNode,
+                                              keyboardType: const TextInputType
+                                                  .numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                              inputFormatters: [
+                                                HulpNumericInput
+                                                    .decimalFormatter,
+                                              ],
                                               autofocus: false,
                                               obscureText: false,
                                               decoration: decorarInputHulp(

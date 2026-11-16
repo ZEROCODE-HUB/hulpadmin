@@ -46,6 +46,13 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarListado() {
+    safeSetState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1317,6 +1324,7 @@ class _SubcategoriaWidgetState extends State<SubcategoriaWidget> {
                                                                                 EditarSubcategoriaWidget(
                                                                               subcategoriaid: subcategoriasItem,
                                                                               ver: false,
+                                                                              onGuardado: _actualizarListado,
                                                                               categoriaId: widget!.categoria!,
                                                                             ),
                                                                           ),

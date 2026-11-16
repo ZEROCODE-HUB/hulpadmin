@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/components/hulp_input_decoration.dart';
 import '/components/hulp_modal_actions.dart';
+import '/components/hulp_numeric_input.dart';
 import '/backend/actualizar_cliente_solicitud.dart';
 import 'modal_con_encabezado_fijo.dart';
 
@@ -82,7 +83,8 @@ class _EditarContactoClienteModalState
           borderRadius: BorderRadius.circular(7),
           borderSide: const BorderSide(color: Color(0xFFD5D0CA))));
   Widget _campo(String label, TextEditingController controller,
-          TextInputType tipo, String? Function(String?) validar) =>
+          TextInputType tipo, String? Function(String?) validar,
+          {bool soloNumeros = false}) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: const TextStyle(fontSize: 14)),
         const SizedBox(height: 6),
@@ -90,6 +92,9 @@ class _EditarContactoClienteModalState
             controller: controller,
             enabled: !guardando,
             keyboardType: tipo,
+            inputFormatters: soloNumeros
+                ? [HulpNumericInput.integerFormatter]
+                : null,
             decoration: decorarInputHulp(
               context,
               _decoracion(),
@@ -143,9 +148,12 @@ class _EditarContactoClienteModalState
                                           'Teléfono *',
                                           telefono,
                                           TextInputType.phone,
-                                          (v) => (v?.trim().isEmpty ?? true)
-                                              ? 'Ingresa el teléfono.'
-                                              : null),
+                                          (v) => HulpNumericInput
+                                              .validateInteger(
+                                            v,
+                                            fieldName: 'el teléfono',
+                                          ),
+                                          soloNumeros: true),
                                       _campo(
                                           widget.correo.trim().isEmpty
                                               ? 'Correo electrónico'

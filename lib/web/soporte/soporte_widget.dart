@@ -41,6 +41,10 @@ class _SoporteWidgetState extends State<SoporteWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _actualizarSoporte() {
+    safeSetState(() => _model.requestCompleter = null);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1351,19 +1355,11 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                       index: 0,
                                                                                       soporteId: solicitudesDatosItem.id,
                                                                                       actionnavegacion: () async {
-                                                                                        if (Navigator.of(context).canPop()) {
-                                                                                          context.pop();
+                                                                                        if (dialogContext.mounted &&
+                                                                                            ModalRoute.of(dialogContext)?.isCurrent == true) {
+                                                                                          Navigator.of(dialogContext).pop();
                                                                                         }
-                                                                                        context.pushNamed(
-                                                                                          SoporteWidget.routeName,
-                                                                                          extra: <String, dynamic>{
-                                                                                            '__transition_info__': TransitionInfo(
-                                                                                              hasTransition: true,
-                                                                                              transitionType: PageTransitionType.fade,
-                                                                                              duration: Duration(milliseconds: 0),
-                                                                                            ),
-                                                                                          },
-                                                                                        );
+                                                                                        _actualizarSoporte();
                                                                                       },
                                                                                     ),
                                                                                   ),
@@ -1481,6 +1477,7 @@ class _SoporteWidgetState extends State<SoporteWidget> {
                                                                                       },
                                                                                       child: DetalleSoporteWidget(
                                                                                         idSoporte: solicitudesDatosItem.id,
+                                                                                        onGuardado: _actualizarSoporte,
                                                                                       ),
                                                                                     ),
                                                                                   );
