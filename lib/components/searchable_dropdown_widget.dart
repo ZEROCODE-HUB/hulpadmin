@@ -24,7 +24,7 @@ class SearchableDropdown extends StatelessWidget {
   final List<String> values;
   final List<String> labels;
   final String? selectedValue;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<String?>? onChanged;
   final String hint;
   final String searchHint;
   final List<String>? searchTexts;
@@ -40,14 +40,15 @@ class SearchableDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final label = _selectedLabel;
+    final enabled = onChanged != null;
     return InkWell(
-      onTap: () => _openDialog(context),
+      onTap: enabled ? () => _openDialog(context) : null,
       borderRadius: BorderRadius.circular(8.0),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsetsDirectional.fromSTEB(12.0, 13.0, 12.0, 13.0),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBFAF9),
+          color: enabled ? const Color(0xFFFBFAF9) : const Color(0xFFF7F6F5),
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(color: theme.alternate, width: 0.5),
         ),
@@ -58,14 +59,19 @@ class SearchableDropdown extends StatelessWidget {
                 label ?? hint,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                  color: label != null ? theme.primaryText : const Color(0xFF8A8A8A),
+                  color: enabled && label != null
+                      ? theme.primaryText
+                      : const Color(0xFF8A8A8A),
                   fontSize: 16.0,
                   letterSpacing: 0.0,
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                color: theme.secondaryText, size: 24.0),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: enabled ? theme.secondaryText : const Color(0xFF8A8A8A),
+              size: 24.0,
+            ),
           ],
         ),
       ),
@@ -84,7 +90,9 @@ class SearchableDropdown extends StatelessWidget {
         details: details,
       ),
     );
-    if (result != null) onChanged(result.isEmpty ? null : result);
+    if (result != null && context.mounted) {
+      onChanged?.call(result.isEmpty ? null : result);
+    }
   }
 }
 

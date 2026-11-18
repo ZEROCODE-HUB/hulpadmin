@@ -311,7 +311,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/to1bcnobshpm/talento_hulp.png',
                             action: () async {
-                              if (!widget.movil && Navigator.of(context).canPop()) {
+                              if (!widget.movil &&
+                                  Navigator.of(context).canPop()) {
                                 context.pop();
                               }
                               context.pushNamed(
@@ -392,7 +393,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             model: _model.menuSeleccionModel6,
                             updateCallback: () => safeSetState(() {}),
                             child: MenuSeleccionWidget(
-                            movil: widget.movil,
+                              movil: widget.movil,
                               textseleccion: 'Usuarios',
                               imagen:
                                   'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/4ytkvlil6egm/account_circle.png',
@@ -508,7 +509,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                                 ),
                               ),
                               if (menuExpandido)
-                                Flexible(child: Text(
+                                Flexible(
+                                    child: Text(
                                   'Cerrar sesión',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -546,9 +548,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
                   child: Text(
-                    menuExpandido
-                        ? 'v1.0.18 · 2026-11-01'
-                        : 'v1.0.18',
+                    menuExpandido ? 'v1.0.19 · 2026-11-18' : 'v1.0.19',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(
                             fontStyle: FlutterFlowTheme.of(context)
@@ -575,8 +575,11 @@ class _MenuWidgetState extends State<MenuWidget> {
 
   Widget _contenidoDesplazable(Widget child) {
     if (widget.movil) return child;
-    return LayoutBuilder(builder: (context, size) => SingleChildScrollView(
-      child: ConstrainedBox(constraints: BoxConstraints(minHeight: size.maxHeight), child: child),
-    ));
+    return LayoutBuilder(
+        builder: (context, size) => SingleChildScrollView(
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: size.maxHeight),
+                  child: child),
+            ));
   }
 }

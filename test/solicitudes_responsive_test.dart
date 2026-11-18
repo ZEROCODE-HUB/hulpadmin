@@ -15,6 +15,7 @@ import 'package:hulp_admin/components/selector_ubicacion_widget.dart';
 import 'package:hulp_admin/flutter_flow/flutter_flow_widgets.dart';
 import 'package:hulp_admin/flutter_flow/ubicacion_helpers.dart';
 import 'package:hulp_admin/components/crear_solicitud_widget.dart';
+import 'package:hulp_admin/components/searchable_dropdown_widget.dart';
 import 'package:hulp_admin/components/fecha_hora_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_datos_widget.dart';
@@ -108,6 +109,7 @@ void main() {
   var usarHistorialCliente = false;
   var proveedorHistoricoDisponible = true;
   var servicioHistoricoDisponible = true;
+  double precioServicioHistorico = 15000;
   var permitirCambioEstado = false;
   String? estadoGuardado;
   double? precioBaseSolicitud = 100000;
@@ -134,6 +136,10 @@ void main() {
         if (request.url.path.endsWith('/functions/v1/solicitudes-finanzas')) {
           expect(request.method.toUpperCase(), 'POST');
           final accion = jsonDecode(request.body)['accion'];
+          if (accion == 'proveedores_sprint4' && usarHistorialCliente) {
+            return http.Response('[{"id":"proveedor-1","nombre":"Laura Méndez"}]',
+                200, headers: {'content-type': 'application/json'});
+          }
           if (accion == 'historial_admin') {
             expect(jsonDecode(request.body)['id'], 'solicitud-1');
             peticionesHistorial++;
@@ -272,7 +278,7 @@ void main() {
                   {
                     'id': 'servicio-1',
                     'nombre': 'Limpieza de prueba',
-                    'precio': 15000,
+                    'precio': precioServicioHistorico,
                   },
               ],
             'ciudades' => [
@@ -573,6 +579,84 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('O pegar un enlace de Maps o unas coordenadas'));
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('crear mantiene Profesional visible y alineado al cambiar el tipo',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    usarFinanzas = true;
+    usarHistorialCliente = true;
+    precioServicioHistorico = 0;
+    rootBundle.evict('assets/environment_values/environment_test.json');
+    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
+    addTearDown(() async {
+      usarFinanzas = false;
+      usarHistorialCliente = false;
+      precioServicioHistorico = 15000;
+      rootBundle.evict('assets/environment_values/environment_test.json');
+      await tester.runAsync(() => FFDevEnvironmentValues().initialize());
+    });
+    await cargar(
+        tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+
+    final tipo = find.byType(DropdownButton<String>);
+    final servicio = find.text('Servicio *');
+    final ciudad = find.text('Ciudad *');
+    final posicionServicio = tester.getTopLeft(servicio);
+    final posicionCiudad = tester.getTopLeft(ciudad);
+    Finder profesional(String hint) => find.byWidgetPredicate(
+        (widget) => widget is SearchableDropdown && widget.hint == hint);
+
+    Future<void> elegir(String texto) async {
+      await tester.tap(tipo);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(texto).last);
+      await tester.pumpAndSettle();
+    }
+
+    final proveedorVacio = profesional('Seleccionar profesional...');
+    expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNull);
+    await elegir('Asignación directa');
+    expect(find.text('Profesional *'), findsOneWidget);
+    expect(
+      tester.widget<SearchableDropdown>(
+        profesional('Selecciona servicio y ciudad'),
+      ).onChanged,
+      isNull,
+    );
+    expect(tester.getTopLeft(servicio), posicionServicio);
+    expect(tester.getTopLeft(ciudad), posicionCiudad);
+
+    await tester.tap(find.text('Seleccione el servicio'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limpieza de prueba'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Seleccione la ciudad'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Palmira'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNotNull);
+    await tester.tap(proveedorVacio);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Laura Méndez'));
+    await tester.pumpAndSettle();
+    expect(find.text('Laura Méndez'), findsOneWidget);
+
+    for (final modalidad in ['Asignación abierta', 'Guardar sin asignar']) {
+      await elegir(modalidad);
+      expect(find.text('Profesional'), findsOneWidget);
+      expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNull);
+      expect(find.text('Laura Méndez'), findsNothing);
+      expect(tester.getTopLeft(servicio), posicionServicio);
+      expect(tester.getTopLeft(ciudad), posicionCiudad);
+    }
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

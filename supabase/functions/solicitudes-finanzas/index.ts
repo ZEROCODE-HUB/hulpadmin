@@ -44,16 +44,52 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
       if (error) throw error;
       return data;
     };
+    if (!isAdmin && esUuid(body.id) &&
+        ['leer', 'desglose_app', 'cotizar_cobro', 'historial_estado'].includes(body.accion)) {
+      const { data: solicitud, error } = await admin.from('solicitudes_servicio')
+        .select('tipo_asignacion').eq('id', body.id).maybeSingle();
+      if (error) throw error;
+      if (solicitud?.tipo_asignacion === 'sin_asignar') {
+        return reply({ message: 'Solicitud no encontrada' }, 404);
+      }
+    }
     if (body.accion === 'transicionar') {
       if (profile.rol !== 'proveedor') return reply({ message: 'Acción exclusiva de proveedor' }, 403);
       if (!esUuid(body.id) || !esUuid(body.idempotencia_id) ||
-        !['aceptar', 'en_camino', 'empece', 'termine'].includes(body.operacion)) {
+          !['aceptar', 'en_camino', 'empece', 'termine', 'rechazar', 'cancelar_proveedor'].includes(body.operacion) ||
+          (body.publicacion_id != null && !esUuid(body.publicacion_id))) {
         return reply({ message: 'Datos de transición inválidos' }, 400);
       }
-      return reply(await rpc('solicitud_transicion_v1', {
+      if (body.publicacion_id == null && ['aceptar', 'rechazar'].includes(body.operacion)) {
+        return reply({ message: 'Actualiza Talento para responder a esta oferta.' }, 409);
+      }
+      if (body.operacion === 'cancelar_proveedor' && !('publicacion_id' in body)) {
+        return reply({ message: 'Actualiza Talento para cancelar esta asignación.' }, 409);
+      }
+      return reply(await rpc('solicitud_transicion_sprint4', {
         p_actor: actor, p_id: body.id, p_accion: body.operacion,
-        p_idempotencia_id: body.idempotencia_id,
+        p_idempotencia: body.idempotencia_id, p_publicacion: body.publicacion_id ?? null,
       }));
+    }
+    if (['asignar_sprint4', 'perfil_sprint4', 'proveedores_sprint4'].includes(body.accion)) {
+      if (!isAdmin) return reply({ message: 'Sin permiso' }, 403);
+      if (body.accion === 'proveedores_sprint4') {
+        if (!esUuid(body.ciudad_id) || !esUuid(body.servicio_id)) return reply([], 200);
+        return reply(await rpc('proveedores_asignacion_sprint4', {
+          p_actor: actor, p_ciudad: body.ciudad_id, p_servicio: body.servicio_id,
+        }));
+      }
+      if (!esUuid(body.id) || (body.profesional_id != null && !esUuid(body.profesional_id)) ||
+          (body.publicacion_id != null && !esUuid(body.publicacion_id))) {
+        return reply({ message: 'Identificadores de asignación inválidos' }, 400);
+      }
+      const args = {
+        p_actor: actor, p_id: body.id, p_publicacion: body.publicacion_id ?? null,
+        p_profesional: body.profesional_id ?? null,
+      };
+      return reply(body.accion === 'perfil_sprint4'
+        ? await rpc('solicitud_perfil_enviado_sprint4', args)
+        : await rpc('solicitud_asignar_sprint4', { ...args, p_tipo: body.tipo }));
     }
     if (body.accion === 'historial_admin') {
       if (!isAdmin) return reply({ message: 'Sin permiso' }, 403);
@@ -77,12 +113,14 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
           revision = data[data.length - 1].revision;
         }
       };
-      const [eventos, revisiones] = await Promise.all([
-        rpc('solicitud_estado_historial_v1', { p_actor: actor, p_id: body.id }) as Promise<Array<{
-          id: string; accion: string; actor_id: string | null; ocurrido_en: string;
-        }>>,
+      const [resultadoEventos, revisiones] = await Promise.all([
+        admin.from('solicitud_estado_eventos')
+          .select('id,accion,actor_id,ocurrido_en,detalles')
+          .eq('solicitud_id', body.id).order('ocurrido_en'),
         leerRevisiones(),
       ]);
+      if (resultadoEventos.error) throw resultadoEventos.error;
+      const eventos = resultadoEventos.data;
       const autores = new Map<string, { nombre: string; rol: string }>();
       const ids = [...new Set([
         ...eventos.map((evento) => evento.actor_id),
@@ -102,8 +140,8 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
       // creado_en es timestamp sin zona con default now() en UTC en Hulp/test.
       return reply({
         creacion: solicitud.creado_en ? { fecha: `${solicitud.creado_en}Z`, tipo: solicitud.tipo } : null,
-        eventos: eventos.map(({ id, accion, actor_id, ocurrido_en }) => ({
-          id, accion, fecha: ocurrido_en, autor: actor_id ? autores.get(actor_id) ?? null : null,
+        eventos: eventos.map(({ id, accion, actor_id, ocurrido_en, detalles }) => ({
+          id, accion, fecha: ocurrido_en, detalles, autor: actor_id ? autores.get(actor_id) ?? null : null,
         })),
         revisiones: revisiones.map(({ revision, entradas, resultados, autor_id, motivo, creado_en }) => ({
           revision, entradas, resultados, motivo, fecha: creado_en,
@@ -201,10 +239,13 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
       if (body.datos && ('estado' in body.datos || 'fecha_aceptacion' in body.datos)) {
         return reply({ message: 'Usa la operación de estado correspondiente' }, 409);
       }
-      return reply(await rpc('solicitud_editar_v1', {
+      return reply(await rpc('solicitud_editar_sprint4', {
         p_actor: actor, p_id: body.id, p_revision: body.revision,
         p_datos: body.datos ?? {}, p_finanzas: body.entradas,
         p_items: body.items ?? [],
+        p_tipo: body.tipo_asignacion ?? null,
+        p_profesional: body.profesional_id ?? null,
+        p_publicacion: body.publicacion_id ?? null,
       }));
     }
     if (body.accion !== 'rest') return reply({ message: 'Acción inválida' }, 400);
@@ -226,8 +267,9 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         ...pick(input, financial),
         adelanto_proveedor: 0, aplica_wompi: false, aplica_ajuste_iva: false, requiere_fe: false,
       };
-      const created = await rpc('solicitud_crear_v1', {
+      const created = await rpc('solicitud_crear_sprint4', {
         p_actor: actor, p_datos: datos, p_finanzas: entradas, p_items: input._items ?? [],
+        p_tipo: isAdmin ? input.tipo_asignacion ?? null : null,
       });
       const { data: row, error } = await admin.from(table).select('*').eq('id', created.solicitud_id).single();
       if (error) throw error;
@@ -268,11 +310,17 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         return reply({ message: 'Usa la operación de estado correspondiente' }, 409);
       }
       const allowed = ['estado', 'fecha_cancelacion', 'fecha_pago', 'estado_pago'];
+      if (Object.keys(input).some(k => ['tipo_asignacion', 'publicacion_id', 'revision_asignacion',
+        'perfil_enviado_en', 'proveedor_cancelacion', 'cancelacion_proveedor_en', 'perfil_pendiente',
+        'asignacion_chat_id'].includes(k))) return reply({ message: 'Usa la operación de asignación.' }, 409);
+      if (profile.rol === 'proveedor' && ['cancelada', 'canceladas'].includes(input.estado)) {
+        return reply({ message: 'Actualiza Talento para cancelar esta asignación.' }, 409);
+      }
       if (!isAdmin && Object.keys(input).some((k) => !allowed.includes(k))) return reply({ message: 'Campos no permitidos' }, 403);
       if (!isAdmin) {
         const rule = profile.rol === 'proveedor'
           ? `profesional_id.eq.${actor}`
-          : `usuario_id.eq.${actor}`;
+          : `usuario_id.eq.${actor},tipo_asignacion.neq.sin_asignar`;
         const prior = params.get('and');
         params.set('and', `(${rule}${prior ? ',' + prior.slice(1, -1) : ''})`);
       }
@@ -285,15 +333,20 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
       }
     }
     const extra = new Set<string>();
+    let readTable = table;
+    let providerForRead: string | undefined;
     if (method === 'GET' || method === 'HEAD') {
       if (table === 'transacciones') return reply({ message: 'Operación no permitida' }, 403);
       if (!isAdmin) {
-        const state = table === 'solicitudes_servicio' ? 'estado' : 'estado_solicitud';
-        const rule = profile.rol === 'proveedor'
-          ? `or(profesional_id.eq.${actor},and(profesional_id.is.null,${state}.eq.entrantes))`
-          : `usuario_id.eq.${actor}`;
-        const prior = params.get('and');
-        params.set('and', `(${rule}${prior ? ',' + prior.slice(1, -1) : ''})`);
+        if (profile.rol === 'proveedor') {
+          providerForRead = actor;
+          readTable = table === 'solicitudes_servicio'
+            ? 'solicitudes_talento_v1'
+            : 'solicitudes_talento_completa_v1';
+        } else {
+          const prior = params.get('and');
+          params.set('and', `(usuario_id.eq.${actor},tipo_asignacion.neq.sin_asignar${prior ? ',' + prior.slice(1, -1) : ''})`);
+        }
         if (select !== '*') {
           for (const k of ['finanzas_version', 'pago_proveedor', 'saldo_transferir', 'total_cliente']) {
             if (!select.split(',').includes(k)) extra.add(k);
@@ -302,7 +355,7 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         }
       }
     }
-    const response = await fetch(`${url}/rest/v1/${table}?${params}`, {
+    const response = await fetch(`${url}/rest/v1/${readTable}?${params}`, {
       method,
       headers: {
         apikey: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -310,6 +363,7 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         'Content-Type': 'application/json',
         Prefer: queryPrefer(body.headers),
         Accept: String(queryHeader(body.headers, 'accept') ?? 'application/json'),
+        ...(providerForRead ? { 'x-hulp-proveedor': providerForRead } : {}),
         ...(queryHeader(body.headers, 'range') ? { Range: String(queryHeader(body.headers, 'range')) } : {}),
       },
       body: method === 'GET' || method === 'HEAD' ? undefined : JSON.stringify(input),

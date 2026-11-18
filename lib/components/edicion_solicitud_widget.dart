@@ -49,6 +49,8 @@ class EdicionSolicitudWidget extends StatefulWidget {
 }
 
 class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
+  String? _tipoAsignacionNuevo;
+  bool _proveedorDescartadoPorTipo = false;
   late EdicionSolicitudModel _model;
   final _contactosGuardados = <String, ContactoClienteEditado>{};
   final _finanzasKey = GlobalKey<SolicitudFinanzasFormState>();
@@ -514,85 +516,332 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
   Widget _buildProfesionalField(
       BuildContext context, VwSolicitudesServiciosCompletaRow solicitud) {
     final servicioId = _model.servicioNuevoValue ?? solicitud.servicioId;
+    final ciudadId =
+        _model.ciudadNuevaValue ?? solicitud.getField<String>('ciudad_id');
     final profesionalAsignado = solicitud.profesionalId;
-    final profesionalSeleccionado =
-        _model.profesionalNuevoValue ?? profesionalAsignado;
-    return Column(
+    final pendiente = solicitud.estadoSolicitud == 'entrantes';
+    final servicioCambio = servicioId != solicitud.servicioId;
+    final ciudadCambio = ciudadId != solicitud.getField<String>('ciudad_id');
+    final criteriosAsignacionCambiados =
+        pendiente && (servicioCambio || ciudadCambio);
+    final profesionalSeleccionado = _model.profesionalNuevoValue ??
+        (_proveedorDescartadoPorTipo || criteriosAsignacionCambiados
+            ? null
+            : profesionalAsignado);
+    final tipoGuardado = solicitud.getField<String>('tipo_asignacion') ??
+        (profesionalAsignado == null ? null : 'directa');
+    final tipo = _tipoAsignacionNuevo ?? tipoGuardado;
+    final nombreAsignado = solicitud.proveedorNombreCompleto?.trim();
+    final puedeCambiar = const {
+      'entrantes',
+      'aceptadas',
+      'iniciadas',
+      'en camino',
+      'en proceso'
+    }.contains(solicitud.estadoSolicitud);
+
+    if (!SupaFlow.sprint4Habilitado) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFieldLabel(context, 'Profesional (Opcional)'),
+          const SizedBox(height: 8.0),
+          _buildProfesionalSelectorLegacy(
+            context,
+            servicioId,
+            solicitud.profesionalId,
+            nombreAsignado,
+          ),
+        ],
+      );
+    }
+
+    final nombreVisible = tipo == tipoGuardado &&
+            !criteriosAsignacionCambiados &&
+            profesionalAsignado != null &&
+            (nombreAsignado?.isNotEmpty ?? false)
+        ? nombreAsignado
+        : null;
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildFieldLabel(context, 'Profesional (Opcional)'),
-        const SizedBox(height: 8.0),
-        FutureBuilder<List<VwProfesionalesCompletoRow>>(
-          future: _profesionalesActivosVerificados(servicioId),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return const Text('No se pudieron cargar los profesionales.');
-            }
-            if (snapshot.connectionState != ConnectionState.done ||
-                !snapshot.hasData) {
-              return _buildLoadingField();
-            }
-            final profesionales = porProveedor(snapshot.data!).toList()
-              ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
-            return FutureBuilder<Set<String>>(
-              future: _idsProfesionalesDisponibles(
-                servicioId,
-                profesionales.map((profesional) => profesional.profesionalId),
+        Expanded(
+          flex: 46,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildFieldLabel(context, 'Tipo de asignación *'),
+              const SizedBox(height: 8.0),
+              _buildTipoAsignacionSelector(
+                context,
+                value: tipo,
+                opciones: tiposAsignacionSprint4.entries
+                    .where((opcion) =>
+                        pendiente ||
+                        opcion.key == tipoGuardado ||
+                        opcion.key == 'directa')
+                    .toList(growable: false),
+                onChanged: puedeCambiar &&
+                        (pendiente || tipoGuardado != 'directa')
+                    ? (value) => safeSetState(() {
+                          if (value == tipo) return;
+                          _tipoAsignacionNuevo = value;
+                          _model.profesionalNuevoValue = null;
+                          _proveedorDescartadoPorTipo = value != tipoGuardado;
+                        })
+                    : null,
               ),
-              builder: (context, disponibilidadSnapshot) {
-                if (disponibilidadSnapshot.hasError) {
-                  return const Text(
-                    'No se pudo verificar la disponibilidad de los profesionales.',
-                  );
-                }
-                if (disponibilidadSnapshot.connectionState !=
-                        ConnectionState.done ||
-                    !disponibilidadSnapshot.hasData) {
-                  return _buildLoadingField();
-                }
-
-                final idsDisponibles = disponibilidadSnapshot.data!;
-                final opciones = profesionales.where((profesional) {
-                  final id = profesional.profesionalId;
-                  return id != null &&
-                      (idsDisponibles.contains(id) ||
-                          id == profesionalAsignado);
-                }).toList(growable: false);
-                final seleccionadoDisponible = opciones.any(
-                  (profesional) =>
-                      profesional.profesionalId == profesionalSeleccionado,
-                );
-
-                return SearchableDropdown(
-                  values: opciones
-                      .map((profesional) => profesional.profesionalId!)
-                      .toList(growable: false),
-                  labels: opciones.map((profesional) {
-                    final nombre =
-                        profesional.nombreCompleto ?? profesional.nombres ?? '';
-                    final id = profesional.profesionalId;
-                    if (id == profesionalAsignado &&
-                        !idsDisponibles.contains(id)) {
-                      return '$nombre (asignado · no disponible)';
-                    }
-                    return nombre;
-                  }).toList(growable: false),
-                  selectedValue:
-                      seleccionadoDisponible ? profesionalSeleccionado : null,
-                  onChanged: (value) =>
-                      safeSetState(() => _model.profesionalNuevoValue = value),
-                  hint: profesionalSeleccionado != null &&
-                          !seleccionadoDisponible
-                      ? profesionalSeleccionado == profesionalAsignado
-                          ? 'Profesional asignado no disponible'
-                          : 'El profesional seleccionado ya no está disponible'
-                      : 'Sin asignar',
-                );
-              },
-            );
-          },
+            ],
+          ),
+        ),
+        const SizedBox(width: 16.0),
+        Expanded(
+          flex: 54,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildFieldLabel(
+                  context, tipo == 'directa' ? 'Profesional *' : 'Profesional'),
+              const SizedBox(height: 8.0),
+              tipo == 'directa'
+                  ? _buildProfesionalSelectorSprint4(
+                      servicioId: servicioId,
+                      ciudadId: ciudadId,
+                      profesionalAsignado: profesionalAsignado,
+                      profesionalSeleccionado: profesionalSeleccionado,
+                      nombreAsignado: nombreVisible,
+                      conservarAsignado: !_proveedorDescartadoPorTipo &&
+                          !criteriosAsignacionCambiados,
+                      puedeCambiar: puedeCambiar,
+                      requiereReemplazo: !pendiente,
+                    )
+                  : _profesionalInactivo(
+                      nombreVisible ?? 'Seleccionar profesional...',
+                    ),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTipoAsignacionSelector(
+    BuildContext context, {
+    required String? value,
+    required List<MapEntry<String, String>> opciones,
+    required ValueChanged<String?>? onChanged,
+  }) {
+    final theme = FlutterFlowTheme.of(context);
+    final tipoValido = opciones.any((opcion) => opcion.key == value);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 13.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFAF9),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: theme.alternate, width: 0.5),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          isDense: true,
+          value: tipoValido ? value : null,
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: theme.secondaryText, size: 24.0),
+          borderRadius: BorderRadius.circular(8.0),
+          style: GoogleFonts.inter(color: theme.primaryText, fontSize: 16.0),
+          hint: Text(
+            'Selecciona un tipo',
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+                color: const Color(0xFF8A8A8A), fontSize: 16.0),
+          ),
+          items: [
+            for (final opcion in opciones)
+              DropdownMenuItem(
+                value: opcion.key,
+                child: Text(opcion.value, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _profesionalInactivo(String hint, {String? nombre}) => Tooltip(
+        message: nombre == null ? hint : '$nombre · $hint',
+        child: SearchableDropdown(
+          values: const [],
+          labels: const [],
+          onChanged: null,
+          hint: nombre ?? hint,
+        ),
+      );
+
+  Widget _buildProfesionalSelectorSprint4({
+    required String? servicioId,
+    required String? ciudadId,
+    required String? profesionalAsignado,
+    required String? profesionalSeleccionado,
+    required String? nombreAsignado,
+    required bool conservarAsignado,
+    required bool puedeCambiar,
+    required bool requiereReemplazo,
+  }) {
+    final nombreSeleccionado =
+        profesionalSeleccionado == profesionalAsignado ? nombreAsignado : null;
+    Widget inactivo(String mensaje) =>
+        _profesionalInactivo(mensaje, nombre: nombreSeleccionado);
+
+    if (!puedeCambiar && nombreSeleccionado != null) {
+      return _profesionalInactivo(nombreSeleccionado);
+    }
+    if ((servicioId?.isEmpty ?? true) || (ciudadId?.isEmpty ?? true)) {
+      return inactivo('Selecciona servicio y ciudad');
+    }
+
+    return FutureBuilder<List<VwProfesionalesCompletoRow>>(
+      future: _profesionalesActivosVerificados(servicioId),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return inactivo('No se pudieron cargar los profesionales');
+        }
+        if (snapshot.connectionState != ConnectionState.done ||
+            !snapshot.hasData) {
+          return inactivo('Cargando profesionales...');
+        }
+
+        final profesionales = porProveedor(snapshot.data!).toList()
+          ..sort((a, b) => (a.nombreCompleto ?? a.nombres ?? '')
+              .compareTo(b.nombreCompleto ?? b.nombres ?? ''));
+        return FutureBuilder<Set<String>>(
+          future: _model.disponibilidadPorServicio.putIfAbsent(
+            'sprint4:$ciudadId:$servicioId',
+            () => consultarProveedoresAsignacion(ciudadId, servicioId),
+          ),
+          builder: (context, disponibilidadSnapshot) {
+            if (disponibilidadSnapshot.hasError) {
+              return inactivo('No se pudo verificar la disponibilidad');
+            }
+            if (disponibilidadSnapshot.connectionState !=
+                    ConnectionState.done ||
+                !disponibilidadSnapshot.hasData) {
+              return inactivo('Verificando disponibilidad...');
+            }
+
+            final idsDisponibles = disponibilidadSnapshot.data!;
+            final opciones = profesionales.where((profesional) {
+              final id = profesional.profesionalId;
+              if (id == null) return false;
+              if (id == profesionalAsignado) {
+                return conservarAsignado ||
+                    (!requiereReemplazo && idsDisponibles.contains(id));
+              }
+              return idsDisponibles.contains(id);
+            }).toList(growable: false);
+            if (opciones.isEmpty) {
+              return inactivo('No hay profesionales disponibles');
+            }
+
+            final seleccionadoDisponible = opciones.any(
+              (profesional) =>
+                  profesional.profesionalId == profesionalSeleccionado,
+            );
+            return SearchableDropdown(
+              values: opciones
+                  .map((profesional) => profesional.profesionalId!)
+                  .toList(growable: false),
+              labels: opciones.map((profesional) {
+                final id = profesional.profesionalId;
+                final nombre =
+                    (id == profesionalAsignado ? nombreAsignado : null) ??
+                        profesional.nombreCompleto ??
+                        profesional.nombres ??
+                        '';
+                if (!idsDisponibles.contains(id) && id == profesionalAsignado) {
+                  return '$nombre (asignado · no disponible)';
+                }
+                return nombre;
+              }).toList(growable: false),
+              selectedValue:
+                  seleccionadoDisponible ? profesionalSeleccionado : null,
+              onChanged: puedeCambiar
+                  ? (value) => safeSetState(() {
+                        _model.profesionalNuevoValue = value;
+                        _proveedorDescartadoPorTipo = false;
+                        _tipoAsignacionNuevo = 'directa';
+                      })
+                  : null,
+              hint: nombreSeleccionado ??
+                  (profesionalSeleccionado != null && !seleccionadoDisponible
+                      ? 'El profesional seleccionado ya no está disponible'
+                      : 'Seleccionar profesional...'),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildProfesionalSelectorLegacy(
+    BuildContext context,
+    String? servicioId,
+    String? profesionalAsignado,
+    String? nombreAsignado,
+  ) {
+    return FutureBuilder<List<VwProfesionalesCompletoRow>>(
+      future: _profesionalesActivosVerificados(servicioId),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('No se pudieron cargar los profesionales.');
+        }
+        if (snapshot.connectionState != ConnectionState.done ||
+            !snapshot.hasData) {
+          return _buildLoadingField();
+        }
+        final profesionales = porProveedor(snapshot.data!).toList()
+          ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
+        return FutureBuilder<Set<String>>(
+          future: _idsProfesionalesDisponibles(
+            servicioId,
+            profesionales.map((profesional) => profesional.profesionalId),
+          ),
+          builder: (context, disponibilidadSnapshot) {
+            if (disponibilidadSnapshot.hasError) {
+              return const Text(
+                  'No se pudo verificar la disponibilidad de los profesionales.');
+            }
+            if (disponibilidadSnapshot.connectionState !=
+                    ConnectionState.done ||
+                !disponibilidadSnapshot.hasData) {
+              return _buildLoadingField();
+            }
+
+            final idsDisponibles = disponibilidadSnapshot.data!;
+            final opciones = profesionales.where((profesional) {
+              final id = profesional.profesionalId;
+              return id != null &&
+                  (idsDisponibles.contains(id) || id == profesionalAsignado);
+            }).toList(growable: false);
+            return SearchableDropdown(
+              values: opciones
+                  .map((profesional) => profesional.profesionalId!)
+                  .toList(growable: false),
+              labels: opciones
+                  .map((profesional) =>
+                      profesional.nombreCompleto ?? profesional.nombres ?? '')
+                  .toList(growable: false),
+              selectedValue:
+                  _model.profesionalNuevoValue ?? profesionalAsignado,
+              onChanged: (value) =>
+                  safeSetState(() => _model.profesionalNuevoValue = value),
+              hint: nombreAsignado?.isNotEmpty == true
+                  ? nombreAsignado!
+                  : 'Sin asignar',
+            );
+          },
+        );
+      },
     );
   }
 
@@ -653,7 +902,11 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
               labels: ciudades.map((c) => c.nombre ?? '').toList(),
               selectedValue: _model.ciudadNuevaValue ?? ciudadActual,
               onChanged: (value) => safeSetState(() {
+                final ciudadAnterior = _model.ciudadNuevaValue ?? ciudadActual;
                 _model.ciudadNuevaValue = value;
+                if (value != ciudadAnterior) {
+                  _model.profesionalNuevoValue = null;
+                }
                 _direccionId = null;
                 _model.coordenadas = null;
                 _puntoEditado = true;
@@ -744,9 +997,14 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
             nombreCliente: solicitud.clienteNombreCompleto ?? 'Cliente',
             seleccionada: _direccionId,
             onSeleccion: (direccion) => safeSetState(() {
+              final ciudadAnterior = _model.ciudadNuevaValue ??
+                  solicitud.getField<String>('ciudad_id');
               _direccionId = direccion.id;
               _model.nombreTextController6?.text = direccion.completa;
               _model.ciudadNuevaValue = direccion.ciudadId;
+              if (direccion.ciudadId != ciudadAnterior) {
+                _model.profesionalNuevoValue = null;
+              }
               _model.coordenadas = direccion.punto;
               _puntoEditado = true;
               _revisionMapa++;
@@ -1006,9 +1264,71 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
     final profesionalCambio = profesionalNuevo != null &&
         profesionalNuevo.isNotEmpty &&
         profesionalNuevo != solicitud.profesionalId;
+    final servicioId = _model.servicioNuevoValue ?? solicitud.servicioId;
+    final ciudadId =
+        _model.ciudadNuevaValue ?? solicitud.getField<String>('ciudad_id');
+    final criteriosAsignacionCambiados =
+        solicitud.estadoSolicitud == 'entrantes' &&
+            (servicioId != solicitud.servicioId ||
+                ciudadId != solicitud.getField<String>('ciudad_id'));
     final usuarioId = solicitud.usuarioId;
     try {
+      final sprint4 = SupaFlow.sprint4Habilitado;
+      final tipoGuardado = solicitud.getField<String>('tipo_asignacion');
+      final tipoActual =
+          tipoGuardado ?? (solicitud.profesionalId == null ? null : 'directa');
+      if (sprint4 &&
+          solicitud.estadoSolicitud == 'entrantes' &&
+          tipoActual == null &&
+          _tipoAsignacionNuevo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Selecciona un tipo de asignación para continuar.'),
+        ));
+        return;
+      }
+      final tipoCambio =
+          _tipoAsignacionNuevo != null && _tipoAsignacionNuevo != tipoActual;
+      final tipo = sprint4 &&
+              (tipoCambio || profesionalCambio || criteriosAsignacionCambiados)
+          ? (_tipoAsignacionNuevo ?? tipoActual)
+          : null;
+      final proveedor = tipo == 'directa'
+          ? (_proveedorDescartadoPorTipo || criteriosAsignacionCambiados
+              ? profesionalNuevo
+              : profesionalNuevo ?? solicitud.profesionalId)
+          : null;
+      if (tipo == 'directa' && (proveedor == null || proveedor.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Selecciona el profesional para la asignación directa.'),
+        ));
+        return;
+      }
+
+      final requiereValidarDisponibilidad = sprint4 &&
+          tipo == 'directa' &&
+          proveedor != null &&
+          (profesionalCambio ||
+              tipoCambio ||
+              criteriosAsignacionCambiados ||
+              _proveedorDescartadoPorTipo);
+      if (requiereValidarDisponibilidad) {
+        final idsDisponibles =
+            await consultarProveedoresAsignacion(ciudadId, servicioId);
+        if (!idsDisponibles.contains(proveedor)) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'El profesional no cumple los criterios de disponibilidad, ciudad y servicio. Selecciona otro.',
+              ),
+            ));
+          }
+          return;
+        }
+      }
+
       if (profesionalCambio &&
+          !sprint4 &&
           !await profesionalPuedeRecibirSolicitudes(profesionalNuevo)) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1068,6 +1388,22 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           'datos': datos,
           'entradas': finanzas.entradas,
           'items': finanzas.itemsGuardado,
+          if (tipo != null) ...{
+            'tipo_asignacion': tipo,
+            'profesional_id': proveedor,
+            'publicacion_id': solicitud.getField<String>('publicacion_id'),
+          },
+        });
+      } else if (tipo != null) {
+        await SupaFlow.client.functions.invoke('solicitudes-finanzas', body: {
+          'accion': 'guardar',
+          'id': widget.solicitudId,
+          'revision': null,
+          'datos': datos,
+          'entradas': null,
+          'tipo_asignacion': tipo,
+          'profesional_id': proveedor,
+          'publicacion_id': solicitud.getField<String>('publicacion_id'),
         });
       } else {
         await SolicitudesServicioTable().update(
@@ -1076,7 +1412,28 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
       }
 
       widget.onCambio?.call();
-      if (profesionalCambio) {
+      if (SupaFlow.sprint4Habilitado &&
+          profesionalCambio &&
+          solicitud.profesionalId != null &&
+          context.mounted) {
+        final contacto = solicitud.proveedorTelefono ?? '';
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Avisar al proveedor anterior'),
+            content: SelectableText(
+              '${solicitud.proveedorNombreCompleto ?? 'Proveedor anterior'}\n$contacto\n'
+              'Comunica el cambio manualmente por WhatsApp.',
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Entendido')),
+            ],
+          ),
+        );
+      }
+      if (profesionalCambio && !SupaFlow.sprint4Habilitado) {
         _model.apiResult0mz = await SendNotificationUserCall.call(
           userIdSupabase: profesionalNuevo,
           title: 'Solicitud asignada',

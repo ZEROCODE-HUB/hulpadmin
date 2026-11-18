@@ -7,6 +7,7 @@ enum TipoActividadSolicitud {
   iniciada,
   finalizada,
   financiera,
+  asignacion,
 }
 
 typedef CambioSolicitud = ({String campo, String anterior, String nuevo});
@@ -41,6 +42,13 @@ const _operaciones = {
   'empece': (TipoActividadSolicitud.iniciada, 'Servicio iniciado'),
   'termine': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
   'finalizar_admin': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
+  'publicar_oferta': (TipoActividadSolicitud.asignacion, 'Asignación actualizada'),
+  'rechazar_oferta': (TipoActividadSolicitud.asignacion, 'Oferta rechazada'),
+  'vencer_oferta': (TipoActividadSolicitud.asignacion, 'Venció sin aceptación'),
+  'reabrir_medianoche': (TipoActividadSolicitud.asignacion, 'Oferta abierta a medianoche'),
+  'cancelar_proveedor': (TipoActividadSolicitud.asignacion, 'Cancelación del proveedor'),
+  'reemplazar_proveedor': (TipoActividadSolicitud.asignacion, 'Proveedor reemplazado'),
+  'perfil_enviado': (TipoActividadSolicitud.asignacion, 'Perfil enviado'),
 };
 
 const _camposEditables = {
@@ -215,7 +223,9 @@ List<ActividadSolicitud> leerActividadesSolicitud(Map historial) {
       tipo: operacion.$1,
       titulo: operacion.$2,
       fecha: DateTime.parse(evento['fecha'] as String),
-      autor: _autor(evento['autor'] as Map?),
+      autor: evento['accion'] == 'cancelar_proveedor' && evento['detalles'] is Map
+          ? _texto((evento['detalles'] as Map)['nombre']) ?? _autor(evento['autor'] as Map?)
+          : _autor(evento['autor'] as Map?),
     ));
   }
   final revisiones = (historial['revisiones'] as List).cast<Map>().toList()

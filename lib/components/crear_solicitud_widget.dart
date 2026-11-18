@@ -43,6 +43,7 @@ class CrearSolicitudWidget extends StatefulWidget {
 
 class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   late CrearSolicitudModel _model;
+  String? _tipoAsignacion;
   final _finanzasKey = GlobalKey<SolicitudFinanzasFormState>();
   final _buscadorClienteKey = GlobalKey<BuscadorClienteDireccionesState>();
   int _tabSeleccionado = 0;
@@ -90,15 +91,18 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     if (servicioId == null || servicioId.isEmpty) {
       return Future.value(<VwProfesionalesCompletoRow>[]);
     }
+    final ciudadId = _model.ciudadSeleccValue;
     return _model.profesionalesPorServicio.putIfAbsent(
-      servicioId,
+      SupaFlow.sprint4Habilitado ? '$servicioId:$ciudadId' : servicioId,
       () async {
         final profesionales = await consultarProfesionales(
           estado: 'activo',
           verificado: 'verificado',
           servicioId: servicioId,
         );
-        final disponibles = await consultarIdsProfesionalesDisponibles(
+        final disponibles = SupaFlow.sprint4Habilitado
+            ? await consultarProveedoresAsignacion(ciudadId, servicioId)
+            : await consultarIdsProfesionalesDisponibles(
           profesionales.map((profesional) => profesional.profesionalId),
         );
         return profesionales
@@ -985,6 +989,41 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   }
 
   Widget _buildProfesionalField(BuildContext context) {
+    if (SupaFlow.sprint4Habilitado) {
+      final directa = _tipoAsignacion == 'directa';
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 46,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFieldLabel(context, 'Tipo de asignación *'),
+                const SizedBox(height: 8.0),
+                _buildTipoAsignacionSelector(context),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            flex: 54,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFieldLabel(
+                    context, directa ? 'Profesional *' : 'Profesional'),
+                const SizedBox(height: 8.0),
+                directa
+                    ? _buildProfesionalSelector(context)
+                    : _profesionalInactivo('Seleccionar profesional...'),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -995,8 +1034,67 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     );
   }
 
+  Widget _buildTipoAsignacionSelector(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 13.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFAF9),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: theme.alternate, width: 0.5),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          isDense: true,
+          value: _tipoAsignacion,
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: theme.secondaryText, size: 24.0),
+          borderRadius: BorderRadius.circular(8.0),
+          style: GoogleFonts.inter(color: theme.primaryText, fontSize: 16.0),
+          hint: Text(
+            'Selecciona un tipo',
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+                color: const Color(0xFF8A8A8A), fontSize: 16.0),
+          ),
+          items: [
+            for (final tipo in tiposAsignacionSprint4.entries)
+              DropdownMenuItem(
+                value: tipo.key,
+                child: Text(tipo.value, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: (tipo) => setState(() {
+            _tipoAsignacion = tipo;
+            if (tipo != 'directa') {
+              _model.proveedorSeleccionadoValue = null;
+              _proveedorSugeridoPorHistorial = false;
+            }
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _profesionalInactivo(String hint) => Tooltip(
+        message: hint,
+        child: SearchableDropdown(
+          values: const [],
+          labels: const [],
+          onChanged: null,
+          hint: hint,
+        ),
+      );
+
   Widget _buildProfesionalSelector(BuildContext context) {
     final servicioId = _model.servicioSeleccValue;
+    final sprint4 = SupaFlow.sprint4Habilitado;
+    if (sprint4 &&
+        ((servicioId?.isEmpty ?? true) ||
+            (_model.ciudadSeleccValue?.isEmpty ?? true))) {
+      return _profesionalInactivo('Selecciona servicio y ciudad');
+    }
     if (servicioId == null || servicioId.isEmpty) {
       final theme = FlutterFlowTheme.of(context);
       return Container(
@@ -1018,10 +1116,17 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       future: _consultarProfesionalesDisponibles(servicioId),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          if (sprint4) {
+            return _profesionalInactivo(
+                'No se pudieron cargar los profesionales');
+          }
           return Text(
             'No se pudieron cargar los profesionales',
             style: FlutterFlowTheme.of(context).bodySmall,
           );
+        }
+        if (sprint4 && snapshot.connectionState != ConnectionState.done) {
+          return _profesionalInactivo('Cargando profesionales...');
         }
         if (!snapshot.hasData) {
           return const Center(
@@ -1034,6 +1139,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         }
         final proveedores = porProveedor(snapshot.data!).toList()
           ..sort((a, b) => (a.nombres ?? '').compareTo(b.nombres ?? ''));
+        if (sprint4 && proveedores.isEmpty) {
+          return _profesionalInactivo('No hay profesionales disponibles');
+        }
         return SearchableDropdown(
           values: proveedores
               .map((p) => p.profesionalId ?? '')
@@ -1051,7 +1159,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _proveedorSugeridoPorHistorial = false;
             _proveedorEditadoManualmente = true;
           }),
-          hint: 'Sin asignar',
+          hint: sprint4 ? 'Seleccionar profesional...' : 'Sin asignar',
         );
       },
     );
@@ -1411,8 +1519,16 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
         !(_finanzasKey.currentState?.validar() ?? false)) return;
 
     try {
-      final tieneProfesional = _model.proveedorSeleccionadoValue != null &&
+      final tieneProfesional = (!SupaFlow.sprint4Habilitado || _tipoAsignacion == 'directa') &&
+          _model.proveedorSeleccionadoValue != null &&
           _model.proveedorSeleccionadoValue != '';
+      if (SupaFlow.sprint4Habilitado &&
+          (_tipoAsignacion == null || (_tipoAsignacion == 'directa' && !tieneProfesional))) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Selecciona el tipo de asignación y el profesional si es directa.'),
+        ));
+        return;
+      }
       if (tieneProfesional &&
           !await profesionalPuedeRecibirSolicitudes(
               _model.proveedorSeleccionadoValue)) {
@@ -1452,6 +1568,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
             _model.preciosAdicionalesSolicitud.fold(0.0, (s, e) => s + e.total),
         'servicio_nombre': _model.precioss?.firstOrNull?.nombre,
         'tipo': 'externo',
+        if (SupaFlow.sprint4Habilitado) 'tipo_asignacion': _tipoAsignacion,
         'informacion_adicional': _model.notasTextController.text,
         if (tieneProfesional)
           'profesional_id': _model.proveedorSeleccionadoValue,

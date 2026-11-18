@@ -1,5 +1,27 @@
 import '/backend/supabase/supabase.dart';
 
+const tiposAsignacionSprint4 = {
+  'abierta': 'Asignación abierta',
+  'directa': 'Asignación directa',
+  'sin_asignar': 'Guardar sin asignar',
+};
+
+Future<Set<String>> consultarProveedoresAsignacion(
+    String? ciudadId, String? servicioId) async {
+  if (ciudadId == null || servicioId == null) return {};
+  final respuesta = await SupaFlow.client.functions.invoke(
+    'solicitudes-finanzas',
+    body: {
+      'accion': 'proveedores_sprint4',
+      'ciudad_id': ciudadId,
+      'servicio_id': servicioId,
+    },
+  );
+  return (respuesta.data as List)
+      .map((fila) => (fila as Map)['id'] as String)
+      .toSet();
+}
+
 /// Consultas de proveedores sobre `vw_profesionales_completo`.
 ///
 /// La vista devuelve **una fila por servicio ofrecido**, no una por proveedor:

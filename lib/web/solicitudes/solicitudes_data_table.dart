@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/profesionales_query.dart';
 import '/components/solicitud_status_badge_widget.dart';
 import '/flutter_flow/cliente_nombre_helpers.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
@@ -37,6 +38,56 @@ class SolicitudesDataTable extends StatelessWidget {
       onMarkPaymentReceived;
   final Set<String> updatingPaymentIds;
 
+  Widget _proveedorSprint4(
+    BuildContext context,
+    VwSolicitudesServiciosCompletaRow item,
+    String? nombre,
+    TextStyle estilo,
+  ) {
+    final pendiente = item.estadoSolicitud == 'entrantes';
+    final tieneProveedor = nombre != null && nombre.isNotEmpty;
+    final revision = item.getField<String>('revision_asignacion');
+    final tipo = item.getField<String>('tipo_asignacion');
+    final perfilEnviado = item.getField<String>('perfil_enviado_en') != null;
+    final perfilPendiente = item.getField<bool>('perfil_pendiente') == true;
+    final cancelacion = item.getField<String>('proveedor_cancelacion');
+    final fecha = item.getField<DateTime>('cancelacion_proveedor_en');
+    final tipoVisible = tiposAsignacionSprint4[tipo];
+    final canceloProveedor = pendiente && cancelacion != null && !tieneProveedor;
+    final detalle = canceloProveedor
+        ? 'Canceló $cancelacion${fecha == null ? '' : ' · ${dateTimeFormat('d/M HH:mm', fecha.toUtc().subtract(const Duration(hours: 5)))}'}'
+        : revision ?? (!pendiente && perfilPendiente ? 'Perfil por enviar' : null);
+    final estiloDetalle = estilo.copyWith(fontSize: 12);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _textoCelda(
+          tieneProveedor ? (perfilEnviado ? '$nombre ✓' : nombre) : 'Sin asignar',
+          style: estilo.copyWith(
+            color: pendiente && tieneProveedor
+                ? const Color(0xFF747474)
+                : perfilEnviado
+                    ? Colors.green.shade800
+                    : pendiente
+                        ? FlutterFlowTheme.of(context).secondaryText
+                        : null,
+          ),
+        ),
+        if (tipoVisible != null) _textoCelda(tipoVisible, style: estiloDetalle),
+        if (detalle != null && detalle.isNotEmpty)
+          _textoCelda(
+            detalle,
+            style: estiloDetalle.copyWith(
+              color: revision != null || canceloProveedor
+                  ? Colors.deepOrange.shade800
+                  : null,
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScrollbarTheme(
@@ -55,7 +106,7 @@ class SolicitudesDataTable extends StatelessWidget {
           showFirstLastButtons: true,
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: MediaQuery.sizeOf(context).height * 1.0,
-          minWidth: 1800.0,
+          minWidth: 1880.0,
           headingRowHeight: 56.0,
           dataRowHeight: 60.0,
           columnSpacing: 20.0,
@@ -84,7 +135,7 @@ class SolicitudesDataTable extends StatelessWidget {
       _col('Ciudad', headerStyle),
       _col('Direccion', headerStyle, fixedWidth: 280.0),
       _col('Servicio', headerStyle),
-      _col('Proveedor', headerStyle),
+      _col('Proveedor', headerStyle, fixedWidth: 220.0),
       _col('Precio', headerStyle),
       _col('Pago', headerStyle, fixedWidth: 160.0),
       _col('Acciones', headerStyle, fixedWidth: 140.0),
@@ -192,7 +243,9 @@ class SolicitudesDataTable extends StatelessWidget {
           style: bodyStyle,
         )),
         // Proveedor
-        DataCell(_textoCelda(
+        DataCell(SupaFlow.sprint4Habilitado
+            ? _proveedorSprint4(context, item, proveedorNombre, bodyStyle)
+            : _textoCelda(
           proveedorNombre == null || proveedorNombre.isEmpty
               ? 'Sin asignar'
               : proveedorNombre,

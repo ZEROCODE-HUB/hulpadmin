@@ -225,6 +225,7 @@ class _EventoHistorial extends StatelessWidget {
         TipoActividadSolicitud.enCamino => Icons.local_shipping_outlined,
         TipoActividadSolicitud.iniciada => Icons.play_arrow_outlined,
         TipoActividadSolicitud.financiera => Icons.edit_outlined,
+        TipoActividadSolicitud.asignacion => Icons.assignment_ind_outlined,
       };
 
   @override

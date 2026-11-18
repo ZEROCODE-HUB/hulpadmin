@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hulp_admin/backend/supabase/supabase.dart';
+import 'package:hulp_admin/environment_values.dart';
 import 'package:hulp_admin/flutter_flow/flutter_flow_data_table.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_data_table.dart';
 
@@ -104,6 +107,86 @@ void main() {
     await tester.tap(find.byIcon(Icons.edit));
     await tester.pumpAndSettle();
     expect(ediciones, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('resalta al proveedor pendiente y muestra completos sus detalles',
+      (tester) async {
+    final mensajero = tester.binding.defaultBinaryMessenger;
+    var usarTest = true;
+    mensajero.setMockMessageHandler('flutter/assets', (mensaje) async {
+      if (utf8.decode(mensaje!.buffer.asUint8List()) ==
+          FFDevEnvironmentValues.environmentValuesPath) {
+        return ByteData.sublistView(Uint8List.fromList(utf8.encode(jsonEncode({
+          'supabaseUrl': usarTest ? 'https://ptafsiwlhxomgqmdmidf.supabase.co' : '',
+        }))));
+      }
+      return mensajero.delegate.send('flutter/assets', mensaje);
+    });
+    rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
+    addTearDown(() async {
+      usarTest = false;
+      rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
+      await FFDevEnvironmentValues().initialize();
+      mensajero.setMockMessageHandler('flutter/assets', null);
+      rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
+    });
+    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
+
+    tester.view.physicalSize = const Size(1880, 850);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller =
+        FlutterFlowDataTableController<VwSolicitudesServiciosCompletaRow>();
+    addTearDown(controller.dispose);
+    const pendiente = 'María Alejandra de los Ángeles Hernández Villamizar';
+    const revision = 'Servicio pendiente de aceptación. Contactar al proveedor '
+        'para confirmar la asignación antes del servicio.';
+    const confirmado = 'Camilo Ruiz';
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SolicitudesDataTable(
+          data: [
+            VwSolicitudesServiciosCompletaRow({
+              'ticket': 1159,
+              'estado_solicitud': 'entrantes',
+              'tipo_asignacion': 'directa',
+              'proveedor_nombre_completo': pendiente,
+              'revision_asignacion': revision,
+              'ubicacion': 'Calle 2',
+            }),
+            VwSolicitudesServiciosCompletaRow({
+              'ticket': 1158,
+              'estado_solicitud': 'aceptadas',
+              'tipo_asignacion': 'abierta',
+              'proveedor_nombre_completo': confirmado,
+            }),
+          ],
+          controller: controller,
+          onStatusTap: (_, __, ___) {},
+          onDelete: (_) {},
+          onViewDetails: (_) {},
+          onEdit: (_) {},
+          onMarkPaymentReceived: (_) {},
+          updatingPaymentIds: const {},
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Text>(find.text(pendiente)).style!.color,
+        const Color(0xFF747474));
+    expect(tester.widget<Text>(find.text(confirmado)).style!.color,
+        isNot(const Color(0xFF747474)));
+    expect(find.text('Asignación directa'), findsOneWidget);
+    for (final texto in [pendiente, revision]) {
+      final parrafo = tester.renderObject<RenderParagraph>(find.text(texto));
+      expect(parrafo.maxLines, isNull);
+      expect(parrafo.didExceedMaxLines, isFalse);
+    }
+    expect(tester.getBottomLeft(find.text(revision)).dy,
+        lessThan(tester.getTopLeft(find.text(confirmado)).dy));
     expect(tester.takeException(), isNull);
   });
 }
