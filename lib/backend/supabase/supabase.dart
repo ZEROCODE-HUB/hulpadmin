@@ -15,9 +15,7 @@ class SupaFlow {
 
   final _supabase = Supabase.instance.client;
   static SupabaseClient get client => instance._supabase;
-  static bool get sprint4Habilitado =>
-      Uri.tryParse(FFDevEnvironmentValues().supabaseUrl)?.host ==
-      'ptafsiwlhxomgqmdmidf.supabase.co';
+  static bool get sprint4Habilitado => true;
   static SolicitudesStream solicitudesStream() => SolicitudesStream(client);
   static bool get finanzasV1Habilitadas => true;
 

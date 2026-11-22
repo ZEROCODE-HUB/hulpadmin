@@ -20,6 +20,8 @@ import 'package:hulp_admin/components/fecha_hora_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_datos_widget.dart';
 import 'package:hulp_admin/components/edicion_solicitud_widget.dart';
+import 'package:hulp_admin/components/finalizar_servicio2_widget.dart';
+import 'package:hulp_admin/components/solicitud_finanzas_form.dart';
 import 'package:hulp_admin/components/hulp_date_range_picker_widget.dart';
 import 'package:hulp_admin/components/solicitud_status_badge_widget.dart';
 import 'package:hulp_admin/components/dropdown_solicitud_estado_widget.dart';
@@ -100,7 +102,6 @@ class _FuentesPrueba implements AssetManifest {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   var fallarSolicitudes = false;
-  var usarFinanzas = false;
   var usarMapa = false;
   var solicitudVersionada = false;
   var datosFinanzasDetalle = false;
@@ -109,8 +110,12 @@ void main() {
   var usarHistorialCliente = false;
   var proveedorHistoricoDisponible = true;
   var servicioHistoricoDisponible = true;
+  String? tipoAsignacionHistorica = 'directa';
   double precioServicioHistorico = 15000;
   var permitirCambioEstado = false;
+  var probarCierreSinProveedor = false;
+  String? ciudadCierre;
+  var consultasElegibilidadCierre = 0;
   String? estadoGuardado;
   double? precioBaseSolicitud = 100000;
   late ByteData fontBytes;
@@ -136,6 +141,16 @@ void main() {
         if (request.url.path.endsWith('/functions/v1/solicitudes-finanzas')) {
           expect(request.method.toUpperCase(), 'POST');
           final accion = jsonDecode(request.body)['accion'];
+          if (accion == 'proveedores_sprint4' && probarCierreSinProveedor) {
+            consultasElegibilidadCierre++;
+            expect(jsonDecode(request.body), {
+              'accion': 'proveedores_sprint4',
+              'ciudad_id': 'ciudad-cierre',
+              'servicio_id': 'servicio-cierre',
+            });
+            return http.Response('[{"id":"proveedor-elegible"}]', 200,
+                headers: {'content-type': 'application/json'});
+          }
           if (accion == 'proveedores_sprint4' && usarHistorialCliente) {
             return http.Response('[{"id":"proveedor-1","nombre":"Laura Méndez"}]',
                 200, headers: {'content-type': 'application/json'});
@@ -267,6 +282,36 @@ void main() {
           'precio_base': precioBaseSolicitud,
           if (solicitudVersionada) 'finanzas_version': 1,
         };
+        if (probarCierreSinProveedor) {
+          final datos = switch (request.url.pathSegments.last) {
+            'solicitudes_servicio' => [
+                {
+                  'id': 'solicitud-1',
+                  'servicio_id': 'servicio-cierre',
+                  'ciudad_id': ciudadCierre,
+                },
+              ],
+            'vw_profesionales_completo' => [
+                {
+                  'profesional_id': 'proveedor-elegible',
+                  'nombre_completo': 'Proveedor elegible',
+                },
+                {
+                  'profesional_id': 'proveedor-otra-ciudad',
+                  'nombre_completo': 'Proveedor de otra ciudad',
+                },
+              ],
+            _ => [],
+          };
+          if (request.url.pathSegments.last == 'vw_profesionales_completo') {
+            expect(request.url.queryParameters['servicio_id'],
+                'eq.servicio-cierre');
+            expect(request.url.queryParameters['estado'], 'eq.activo');
+            expect(request.url.queryParameters['verificado'], 'eq.verificado');
+          }
+          return http.Response(jsonEncode(datos), 200,
+              request: request, headers: {'content-type': 'application/json'});
+        }
         if (usarHistorialCliente) {
           final List<Map<String, Object?>>? datos =
               switch (request.url.pathSegments.last) {
@@ -297,6 +342,7 @@ void main() {
                   ...solicitud,
                   'servicio_id': 'servicio-1',
                   'servicio_nombre': 'Limpieza de prueba',
+                  'tipo_asignacion': tipoAsignacionHistorica,
                   'solicitud_ciudad': 'Palmira',
                   'hora': '14:35:00',
                   'ubicacion': servicioHistoricoDisponible
@@ -316,12 +362,14 @@ void main() {
                 headers: {'content-type': 'application/json'});
           }
         }
-        final Object data =
-            request.url.path.endsWith('/vw_solicitudes_servicios_completa')
-                ? (request.url.queryParameters['limit'] == '1'
-                    ? solicitud
-                    : [solicitud])
-                : [];
+        final Object data = switch (request.url.pathSegments.last) {
+          'vw_solicitudes_servicios_completa' =>
+            request.url.queryParameters['limit'] == '1' ? solicitud : [solicitud],
+          'servicios' => [
+              {'id': 'servicio-2', 'nombre': 'Servicio nuevo', 'precio': 42000},
+            ],
+          _ => [],
+        };
         return http.Response(jsonEncode(data), 200,
             request: request, headers: {'content-type': 'application/json'});
       }),
@@ -332,6 +380,8 @@ void main() {
 
   setUp(() {
     permitirCambioEstado = false;
+    probarCierreSinProveedor = false;
+    consultasElegibilidadCierre = 0;
     estadoGuardado = null;
     solicitudVersionada = false;
     datosFinanzasDetalle = false;
@@ -342,15 +392,14 @@ void main() {
     usarHistorialCliente = false;
     proveedorHistoricoDisponible = true;
     servicioHistoricoDisponible = true;
+    tipoAsignacionHistorica = 'directa';
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
       final name = utf8.decode(message!.buffer.asUint8List());
       if (name == 'assets/environment_values/environment_test.json') {
         final configuration = jsonEncode({
-          'supabaseUrl': usarFinanzas
-              ? 'https://ptafsiwlhxomgqmdmidf.supabase.co'
-              : 'https://solicitudes.test',
+          'supabaseUrl': 'https://solicitudes.test',
           'supabaseAnonKey': 'test-key',
           'googleMapsApiKey': usarMapa ? 'clave-ficticia' : '',
         });
@@ -589,17 +638,11 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
-    usarFinanzas = true;
     usarHistorialCliente = true;
     precioServicioHistorico = 0;
-    rootBundle.evict('assets/environment_values/environment_test.json');
-    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
-    addTearDown(() async {
-      usarFinanzas = false;
+    addTearDown(() {
       usarHistorialCliente = false;
       precioServicioHistorico = 15000;
-      rootBundle.evict('assets/environment_values/environment_test.json');
-      await tester.runAsync(() => FFDevEnvironmentValues().initialize());
     });
     await cargar(
         tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
@@ -667,14 +710,6 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
-    usarFinanzas = true;
-    rootBundle.evict('assets/environment_values/environment_test.json');
-    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
-    addTearDown(() async {
-      usarFinanzas = false;
-      rootBundle.evict('assets/environment_values/environment_test.json');
-      await tester.runAsync(() => FFDevEnvironmentValues().initialize());
-    });
     await cargar(
         tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
     final datos = find.widgetWithText(TextButton, 'Datos');
@@ -717,6 +752,7 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
       usarHistorialCliente = true;
       proveedorHistoricoDisponible = !conservarHoraManual;
+      if (conservarHoraManual) tipoAsignacionHistorica = null;
       await cargar(
           tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
       if (conservarHoraManual) {
@@ -767,7 +803,12 @@ void main() {
       expect(find.byType(PointerInterceptor), findsNothing);
       expect(find.text('Limpieza de prueba'), findsOneWidget);
       expect(find.text('Palmira'), findsOneWidget);
-      expect(find.text(conservarHoraManual ? 'Sin asignar' : 'Laura Méndez'),
+      expect(tester.widget<DropdownButton<String>>(
+          find.byType(DropdownButton<String>)).value, 'directa');
+      expect(
+          find.text(conservarHoraManual
+              ? 'No hay profesionales disponibles'
+              : 'Laura Méndez'),
           findsOneWidget);
       expect(find.text('Calle 12 # 34-56'), findsOneWidget);
       expect(
@@ -800,6 +841,87 @@ void main() {
     });
   }
 
+  for (final conCiudad in [true, false]) {
+    testWidgets('finalizar filtra profesionales por ciudad y servicio ($conCiudad)',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      probarCierreSinProveedor = true;
+      ciudadCierre = conCiudad ? 'ciudad-cierre' : null;
+      await cargar(
+        tester,
+        const Scaffold(
+          body: FinalizarServicio2Widget(servicioId: 'solicitud-1'),
+        ),
+        conCiudad ? 1200 : 420,
+        950,
+      );
+      final finalizar = find.text('Finalizar servicio sin metodos de pago');
+      await tester.ensureVisible(finalizar);
+      await tester.tap(finalizar);
+      await completarPeticiones(tester);
+      await tester.pump(const Duration(milliseconds: 350));
+      await completarPeticiones(tester);
+
+      expect(find.text('Asignar profesional'), findsOneWidget);
+      expect(consultasElegibilidadCierre, conCiudad ? 1 : 0);
+      expect(find.text('Proveedor elegible'),
+          conCiudad ? findsOneWidget : findsNothing);
+      expect(find.text('Proveedor de otra ciudad'), findsNothing);
+      expect(find.text('Finalizar sin profesional'), findsOneWidget);
+
+      if (conCiudad) {
+        await tester.tap(find.text('Proveedor elegible'));
+        await tester.pump();
+      }
+      final cancelar = find.widgetWithText(OutlinedButton, 'Cancelar');
+      final sinProfesional =
+          find.widgetWithText(OutlinedButton, 'Finalizar sin profesional');
+      final asignar = find.widgetWithText(FilledButton, 'Asignar y finalizar');
+      final centro = tester.getCenter(cancelar);
+      final centroSinProfesional = tester.getCenter(sinProfesional);
+      final centroAsignar = tester.getCenter(asignar);
+      expect(centroSinProfesional.dy, closeTo(centro.dy, 1));
+      expect(centroAsignar.dy, closeTo(centro.dy, 1));
+      expect(centroSinProfesional.dx, greaterThan(centro.dx));
+      expect(centroAsignar.dx, greaterThan(centroSinProfesional.dx));
+
+      await tester.tap(cancelar);
+      await tester.pumpAndSettle();
+    });
+  }
+
+  testWidgets('editar usa el precio del catálogo al cambiar el servicio',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    solicitudVersionada = true;
+    await cargar(
+      tester,
+      const Scaffold(
+        body: EdicionSolicitudWidget(solicitudId: 'solicitud-1'),
+      ),
+      1200,
+      950,
+    );
+    await tester.tap(find.text('Seleccionar servicio...'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Servicio nuevo'));
+    await completarPeticiones(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Desglose financiero'));
+    await tester.pumpAndSettle();
+
+    final finanzas = tester.state<SolicitudFinanzasFormState>(
+      find.byType(SolicitudFinanzasForm),
+    );
+    expect(finanzas.revision, 2);
+    expect(finanzas.entradas['precio_base'], 42000);
+    expect(finanzas.entradas['precio'], 42000);
+    expect(finanzas.entradas['motivo_precio_pagado'], isEmpty);
+  });
+
   testWidgets('muestra toda la dirección del historial sin enfocar el campo',
       (tester) async {
     addTearDown(tester.view.resetPhysicalSize);
@@ -807,6 +929,7 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     usarHistorialCliente = true;
     servicioHistoricoDisponible = false;
+    tipoAsignacionHistorica = 'abierta';
     await cargar(
         tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
     await tester.tap(find.byKey(const ValueKey('abrir_buscador_clientes')));
@@ -821,6 +944,9 @@ void main() {
     await completarPeticiones(tester);
     await tester.pumpAndSettle();
 
+    final tipo = tester.widget<DropdownButton<String>>(
+        find.byType(DropdownButton<String>));
+    expect(tipo.value, 'abierta');
     final direccion = find.byWidgetPredicate((widget) =>
         widget is EditableText &&
         widget.controller.text == _direccionHistorica);

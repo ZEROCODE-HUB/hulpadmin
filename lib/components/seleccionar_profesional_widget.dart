@@ -1,3 +1,4 @@
+import '/backend/supabase/profesionales_query.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -30,6 +31,7 @@ class SeleccionProfesional {
 /// proveedor: al borrarlo, su `profesional_id` se pone a nulo.
 Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
   BuildContext context, {
+  required String? ciudadId,
   required String? servicioId,
   String? servicioNombre,
 }) {
@@ -42,6 +44,7 @@ Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
       alignment:
           AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
       child: SeleccionarProfesionalWidget(
+        ciudadId: ciudadId,
         servicioId: servicioId,
         servicioNombre: servicioNombre,
       ),
@@ -52,11 +55,12 @@ Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
 class SeleccionarProfesionalWidget extends StatefulWidget {
   const SeleccionarProfesionalWidget({
     super.key,
+    required this.ciudadId,
     required this.servicioId,
     this.servicioNombre,
   });
 
-  /// Servicio del catálogo, para ofrecer solo a quien lo presta.
+  final String? ciudadId;
   final String? servicioId;
   final String? servicioNombre;
 
@@ -84,35 +88,21 @@ class _SeleccionarProfesionalWidgetState
     super.dispose();
   }
 
-  /// Solo proveedores **aprobados** que ofrezcan este servicio.
-  ///
-  /// Se consulta `vw_profesionales_completo` y no `vw_profesionales_servicios`
-  /// porque esta última no trae el estado, y sin él se acabaría asignando
-  /// trabajo a gente pendiente de aprobar o ya rechazada.
-  Future<List<VwProfesionalesCompletoRow>> _cargarProfesionales() {
-    return VwProfesionalesCompletoTable().queryRows(
-      queryFn: (q) => q
-          .eqOrNull('servicio_id', widget.servicioId)
-          .eqOrNull('verificado', 'verificado')
-          .order('nombres', ascending: true),
+  Future<List<VwProfesionalesCompletoRow>> _cargarProfesionales() async {
+    final profesionales = await consultarProfesionalesElegibles(
+      ciudadId: widget.ciudadId,
+      servicioId: widget.servicioId,
     );
+    return porProveedor(profesionales).toList()
+      ..sort((a, b) => (a.nombres ?? a.nombreCompleto ?? '')
+          .compareTo(b.nombres ?? b.nombreCompleto ?? ''));
   }
 
   List<VwProfesionalesCompletoRow> _filtrar(
       List<VwProfesionalesCompletoRow> filas) {
-    // Un proveedor podría venir repetido si tuviera el mismo servicio dado de
-    // alta dos veces; se deja uno por persona.
-    final vistos = <String>{};
-    final unicos = <VwProfesionalesCompletoRow>[];
-    for (final fila in filas) {
-      final id = fila.profesionalId;
-      if (id == null || id.isEmpty) continue;
-      if (vistos.add(id)) unicos.add(fila);
-    }
-
-    if (_busqueda.trim().isEmpty) return unicos;
     final aguja = _busqueda.trim().toLowerCase();
-    return unicos.where((fila) {
+    if (aguja.isEmpty) return filas;
+    return filas.where((fila) {
       final nombre = (fila.nombreCompleto ?? '').toLowerCase();
       final correo = (fila.correoElectronico ?? '').toLowerCase();
       return nombre.contains(aguja) || correo.contains(aguja);
@@ -122,6 +112,7 @@ class _SeleccionarProfesionalWidgetState
   @override
   Widget build(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
+    const paddingBoton = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
 
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
@@ -226,10 +217,13 @@ class _SeleccionarProfesionalWidgetState
                           return _aviso(
                             tema,
                             Icons.person_off_outlined,
-                            _busqueda.trim().isEmpty
-                                ? 'Ningún proveedor aprobado ofrece este servicio. '
+                            (widget.ciudadId?.isEmpty ?? true) ||
+                                    (widget.servicioId?.isEmpty ?? true)
+                                ? 'La solicitud debe tener ciudad y servicio para asignar un profesional.'
+                                : _busqueda.trim().isEmpty
+                                ? 'No hay profesionales disponibles para este servicio en la ciudad de la solicitud. '
                                     'Puedes finalizar la solicitud sin asignar profesional.'
-                                : 'Ningún proveedor aprobado coincide con la búsqueda.',
+                                : 'Ningún profesional disponible coincide con la búsqueda.',
                           );
                         }
 
@@ -319,28 +313,40 @@ class _SeleccionarProfesionalWidgetState
                     ),
                   ),
                 ),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8.0,
-                  runSpacing: 8.0,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    hulpModalCloseButton(
-                      text: 'Cancelar',
-                      onPressed: () => Navigator.pop(context),
+                    Flexible(
+                      flex: 2,
+                      child: hulpModalCloseButton(
+                        text: 'Cancelar',
+                        onPressed: () => Navigator.pop(context),
+                        padding: paddingBoton,
+                      ),
                     ),
-                    hulpModalSecondaryButton(
-                      context: context,
-                      text: 'Finalizar sin profesional',
-                      onPressed: () => Navigator.pop(
-                          context, SeleccionProfesional.sinAsignar()),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 4,
+                      child: hulpModalSecondaryButton(
+                        context: context,
+                        text: 'Finalizar sin profesional',
+                        onPressed: () => Navigator.pop(
+                            context, SeleccionProfesional.sinAsignar()),
+                        padding: paddingBoton,
+                      ),
                     ),
-                    hulpModalPrimaryButton(
-                      context: context,
-                      onPressed: _elegido == null
-                          ? null
-                          : () => Navigator.pop(context,
-                              SeleccionProfesional.asignar(_elegido!)),
-                      text: 'Asignar y finalizar',
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 4,
+                      child: hulpModalPrimaryButton(
+                        context: context,
+                        onPressed: _elegido == null
+                            ? null
+                            : () => Navigator.pop(context,
+                                SeleccionProfesional.asignar(_elegido!)),
+                        text: 'Asignar y finalizar',
+                        padding: paddingBoton,
+                      ),
                     ),
                   ],
                 ),

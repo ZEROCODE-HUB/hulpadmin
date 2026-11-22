@@ -46,12 +46,14 @@ class SolicitudFinanzasForm extends StatefulWidget {
   const SolicitudFinanzasForm(
       {super.key,
       required this.precioLista,
+      this.servicioSeleccionado,
       this.solicitudId,
       this.soloLectura = false,
       this.disposicionCrear = false,
       this.permitirGuardar = false,
       this.previsualizar});
   final double precioLista;
+  final ({String id, double precio})? servicioSeleccionado;
   final String? solicitudId;
   final bool soloLectura;
   final bool disposicionCrear;
@@ -172,10 +174,34 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
     super.didUpdateWidget(oldWidget);
     if (widget.solicitudId == null &&
         widget.precioLista != oldWidget.precioLista) {
-      _lista.text = widget.precioLista.toString();
-      _precio.text = widget.precioLista.toString();
-      _cambio();
+      final precioLista = widget.precioLista;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || widget.precioLista != precioLista) return;
+        _lista.text = precioLista.toString();
+        _precio.text = precioLista.toString();
+        _cambio();
+      });
     }
+    final servicio = widget.servicioSeleccionado;
+    if (!_loading &&
+        servicio != null &&
+        servicio != oldWidget.servicioSeleccionado) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _loading || widget.servicioSeleccionado != servicio) {
+          return;
+        }
+        _aplicarPrecioServicio(servicio.precio);
+      });
+    }
+  }
+
+  void _aplicarPrecioServicio(double precio) {
+    _lista.text = precio.toString();
+    _precio.text = precio.toString();
+    _motivo.clear();
+    _generation++;
+    _resultados = {};
+    _cambio();
   }
 
   Future<void> _cargar() async {
@@ -200,6 +226,10 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
           .map((i) => Map<String, dynamic>.from(i as Map))
           .toList();
       _resultados = s;
+      final servicio = widget.servicioSeleccionado;
+      if (servicio != null) {
+        _aplicarPrecioServicio(servicio.precio);
+      }
     } catch (e) {
       if (mounted) _error = 'No se pudo cargar el desglose. $e';
     } finally {

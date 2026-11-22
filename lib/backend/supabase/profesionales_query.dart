@@ -22,6 +22,30 @@ Future<Set<String>> consultarProveedoresAsignacion(
       .toSet();
 }
 
+Future<List<VwProfesionalesCompletoRow>> consultarProfesionalesElegibles({
+  required String? ciudadId,
+  required String? servicioId,
+}) async {
+  if (ciudadId == null ||
+      ciudadId.isEmpty ||
+      servicioId == null ||
+      servicioId.isEmpty) {
+    return [];
+  }
+
+  final ids = await consultarProveedoresAsignacion(ciudadId, servicioId);
+  if (ids.isEmpty) return [];
+
+  final profesionales = await consultarProfesionales(
+    estado: 'activo',
+    verificado: 'verificado',
+    servicioId: servicioId,
+  );
+  return profesionales
+      .where((profesional) => ids.contains(profesional.profesionalId))
+      .toList(growable: false);
+}
+
 /// Consultas de proveedores sobre `vw_profesionales_completo`.
 ///
 /// La vista devuelve **una fila por servicio ofrecido**, no una por proveedor:

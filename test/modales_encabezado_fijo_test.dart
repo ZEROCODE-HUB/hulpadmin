@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hulp_admin/app_state.dart';
 import 'package:hulp_admin/backend/supabase/supabase.dart';
 import 'package:hulp_admin/components/modal_con_encabezado_fijo.dart';
+import 'package:hulp_admin/components/aviso_proveedor_anterior_dialog.dart';
 import 'package:hulp_admin/components/aceptar_proveedor_widget.dart';
 import 'package:hulp_admin/components/agregar_soporte_widget.dart';
 import 'package:hulp_admin/components/crear_categoria_widget.dart';
@@ -438,6 +439,58 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await tester.pump();
+    });
+  }
+
+  for (final ancho in [320.0, 1000.0]) {
+    testWidgets('aviso al proveedor anterior mantiene las acciones a $ancho px',
+        (tester) async {
+      tester.view.physicalSize = Size(ancho, 460);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => AvisoProveedorAnteriorDialog(
+                  nombre: 'Proveedor de prueba',
+                  telefono: ancho == 320 ? null : '3001234567',
+                ),
+              ),
+              child: const Text('Abrir aviso'),
+            ),
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('Abrir aviso'));
+      await esperar(tester);
+      expect(find.text('Avisar al proveedor anterior'), findsOneWidget);
+      expect(find.widgetWithText(SelectableText, 'Proveedor de prueba'),
+          findsOneWidget);
+      expect(
+          find.widgetWithText(SelectableText,
+              ancho == 320 ? 'Sin teléfono registrado' : '3001234567'),
+          findsOneWidget);
+      final cerrar = find.byTooltip('Cerrar');
+      final entendido = find.widgetWithText(FilledButton, 'Entendido');
+      final rectCerrar = tester.getRect(cerrar);
+      final rectEntendido = tester.getRect(entendido);
+      final cuerpo = find.descendant(
+        of: find.byType(ModalConEncabezadoFijo),
+        matching: find.byType(SingleChildScrollView),
+      );
+      await tester.drag(cuerpo, const Offset(0, -260));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(cerrar), rectCerrar);
+      expect(tester.getRect(entendido), rectEntendido);
+      await tester.tap(ancho == 320 ? cerrar : entendido);
+      await tester.pumpAndSettle();
+      expect(find.byType(AvisoProveedorAnteriorDialog), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   }
 

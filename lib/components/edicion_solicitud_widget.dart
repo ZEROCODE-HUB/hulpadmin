@@ -3,7 +3,7 @@ import 'encabezado_solicitud_widget.dart';
 import 'notas_cliente_widget.dart';
 import 'solicitud_finanzas_form.dart';
 import 'solicitud_historial_widget.dart';
-import '/components/modal_con_encabezado_fijo.dart';
+import 'aviso_proveedor_anterior_dialog.dart';
 import '/components/hulp_modal_actions.dart';
 import '/components/hulp_numeric_input.dart';
 import '/web/solicitudes/menu_estado_solicitud.dart';
@@ -54,6 +54,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
   late EdicionSolicitudModel _model;
   final _contactosGuardados = <String, ContactoClienteEditado>{};
   final _finanzasKey = GlobalKey<SolicitudFinanzasFormState>();
+  ({String id, double precio})? _servicioSeleccionado;
   final _tabSeleccionado = ValueNotifier<int>(0);
   final _datosScroll = ScrollController(keepScrollOffset: false);
   final _finanzasScroll = ScrollController(keepScrollOffset: false);
@@ -220,6 +221,8 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
                                         key: _finanzasKey,
                                         disposicionCrear: true,
                                         precioLista: solicitud.precioBase ?? 0,
+                                        servicioSeleccionado:
+                                            _servicioSeleccionado,
                                         solicitudId: solicitud.solicitudId,
                                       )
                                     : Column(
@@ -864,14 +867,22 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
               values: servicios.map((s) => s.id).toList(),
               labels: servicios.map((s) => s.nombre ?? '').toList(),
               selectedValue: _model.servicioNuevoValue ?? solicitud.servicioId,
-              onChanged: (value) => safeSetState(() {
-                _model.servicioNuevoValue = value;
-                _model.profesionalNuevoValue = null;
-                _model.servicioNuevoNombre = servicios
-                    .where((s) => s.id == value)
-                    .map((s) => s.nombre)
-                    .firstOrNull;
-              }),
+              onChanged: (value) {
+                if (value == (_model.servicioNuevoValue ?? solicitud.servicioId)) {
+                  return;
+                }
+                final servicio =
+                    servicios.where((s) => s.id == value).firstOrNull;
+                if (servicio == null) return;
+                safeSetState(() {
+                  _model.servicioNuevoValue = servicio.id;
+                  _model.servicioNuevoNombre = servicio.nombre;
+                  _model.profesionalNuevoValue = null;
+                  _servicioSeleccionado =
+                      (id: servicio.id, precio: servicio.precio);
+                  _model.nombreTextController7?.text = servicio.precio.toString();
+                });
+              },
               hint: 'Seleccionar servicio...',
             );
           },
@@ -933,8 +944,10 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
 
   Widget _buildPrecioField(
       BuildContext context, VwSolicitudesServiciosCompletaRow solicitud) {
-    _model.nombreTextController7 ??=
-        TextEditingController(text: solicitud.precioBase?.toString() ?? '');
+    _model.nombreTextController7 ??= TextEditingController(
+        text: (_servicioSeleccionado?.precio ?? solicitud.precioBase)
+                ?.toString() ??
+            '');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1416,20 +1429,11 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           profesionalCambio &&
           solicitud.profesionalId != null &&
           context.mounted) {
-        final contacto = solicitud.proveedorTelefono ?? '';
-        await showDialog<void>(
+        await showMapSafeDialog<void>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Avisar al proveedor anterior'),
-            content: SelectableText(
-              '${solicitud.proveedorNombreCompleto ?? 'Proveedor anterior'}\n$contacto\n'
-              'Comunica el cambio manualmente por WhatsApp.',
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Entendido')),
-            ],
+          builder: (_) => AvisoProveedorAnteriorDialog(
+            nombre: solicitud.proveedorNombreCompleto,
+            telefono: solicitud.proveedorTelefono,
           ),
         );
       }

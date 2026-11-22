@@ -106,6 +106,7 @@ class _FinalizarServicio2WidgetState extends State<FinalizarServicio2Widget> {
     if (!mounted) return false;
     final seleccion = await mostrarSelectorDeProfesional(
       context,
+      ciudadId: solicitud.ciudadId,
       servicioId: solicitud.servicioId,
       servicioNombre: solicitud.servicioNombre,
     );

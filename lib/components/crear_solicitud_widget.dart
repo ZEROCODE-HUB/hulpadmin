@@ -44,6 +44,7 @@ class CrearSolicitudWidget extends StatefulWidget {
 class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   late CrearSolicitudModel _model;
   String? _tipoAsignacion;
+  bool _tipoAsignacionSugeridoPorHistorial = false;
   final _finanzasKey = GlobalKey<SolicitudFinanzasFormState>();
   final _buscadorClienteKey = GlobalKey<BuscadorClienteDireccionesState>();
   int _tabSeleccionado = 0;
@@ -95,14 +96,18 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     return _model.profesionalesPorServicio.putIfAbsent(
       SupaFlow.sprint4Habilitado ? '$servicioId:$ciudadId' : servicioId,
       () async {
+        if (SupaFlow.sprint4Habilitado) {
+          return consultarProfesionalesElegibles(
+            ciudadId: ciudadId,
+            servicioId: servicioId,
+          );
+        }
         final profesionales = await consultarProfesionales(
           estado: 'activo',
           verificado: 'verificado',
           servicioId: servicioId,
         );
-        final disponibles = SupaFlow.sprint4Habilitado
-            ? await consultarProveedoresAsignacion(ciudadId, servicioId)
-            : await consultarIdsProfesionalesDisponibles(
+        final disponibles = await consultarIdsProfesionalesDisponibles(
           profesionales.map((profesional) => profesional.profesionalId),
         );
         return profesionales
@@ -121,6 +126,10 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
   }
 
   void _limpiarSugerenciasDelHistorial() {
+    if (_tipoAsignacionSugeridoPorHistorial) {
+      _tipoAsignacion = null;
+      _tipoAsignacionSugeridoPorHistorial = false;
+    }
     _direccionSugeridaPorHistorial = false;
     if (!_horaEditadaManualmente && _horaSugeridaPorHistorial != null) {
       _horaSugeridaPorHistorial = null;
@@ -359,6 +368,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
       }
 
       final servicioId = referencia.servicioId;
+      final tipoGuardado = referencia.getField<String>('tipo_asignacion');
+      // Las solicitudes anteriores a Sprint 4 usan la misma regla de la
+      // migración: con profesional eran directas, y sin él eran abiertas.
+      final tipoHistorico = tiposAsignacionSprint4.containsKey(tipoGuardado)
+          ? tipoGuardado!
+          : (referencia.profesionalId?.isNotEmpty ?? false)
+              ? 'directa'
+              : 'abierta';
       final servicio = servicioId == null
           ? null
           : servicios.where((item) => item.id == servicioId).firstOrNull;
@@ -374,6 +391,14 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
               .firstOrNull;
 
       safeSetState(() {
+        if (_tipoAsignacion == null || _tipoAsignacionSugeridoPorHistorial) {
+          _tipoAsignacion = tipoHistorico;
+          _tipoAsignacionSugeridoPorHistorial = true;
+          if (_tipoAsignacion != 'directa' && _proveedorSugeridoPorHistorial) {
+            _model.proveedorSeleccionadoValue = null;
+            _proveedorSugeridoPorHistorial = false;
+          }
+        }
         if (_puedeReemplazarServicioConHistorial) {
           if (servicio == null) {
             if (_model.servicioSugeridoPorHistorial) {
@@ -473,7 +498,9 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
     String? proveedorId,
     String? servicioId,
   ) async {
-    if (proveedorId == null ||
+    final ciudadId = _model.ciudadSeleccValue;
+    if (_tipoAsignacion != 'directa' ||
+        proveedorId == null ||
         proveedorId.isEmpty ||
         servicioId == null ||
         servicioId.isEmpty ||
@@ -486,6 +513,8 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           _revisionHistorial != revision ||
           _model.usuarioSeleccionadoValue != clienteId ||
           _model.servicioSeleccValue != servicioId ||
+          _model.ciudadSeleccValue != ciudadId ||
+          _tipoAsignacion != 'directa' ||
           _proveedorEditadoManualmente ||
           !proveedores.any((p) => p.profesionalId == proveedorId)) {
         return;
@@ -1067,6 +1096,7 @@ class _CrearSolicitudWidgetState extends State<CrearSolicitudWidget> {
           ],
           onChanged: (tipo) => setState(() {
             _tipoAsignacion = tipo;
+            _tipoAsignacionSugeridoPorHistorial = false;
             if (tipo != 'directa') {
               _model.proveedorSeleccionadoValue = null;
               _proveedorSugeridoPorHistorial = false;

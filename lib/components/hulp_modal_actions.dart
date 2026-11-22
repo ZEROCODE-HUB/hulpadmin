@@ -115,12 +115,14 @@ class _HulpModalPrimaryButtonState extends State<_HulpModalPrimaryButton> {
 OutlinedButton hulpModalCloseButton({
   required String text,
   required VoidCallback? onPressed,
+  EdgeInsetsGeometry? padding,
 }) =>
     OutlinedButton(
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF3C3C3C),
         side: const BorderSide(color: Color(0xFFB8B2A8)),
         minimumSize: const Size(110, 48),
+        padding: padding,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: const TextStyle(fontSize: 16),
       ),
@@ -132,12 +134,14 @@ OutlinedButton hulpModalSecondaryButton({
   required BuildContext context,
   required String text,
   required VoidCallback? onPressed,
+  EdgeInsetsGeometry? padding,
 }) =>
     OutlinedButton(
       style: OutlinedButton.styleFrom(
         foregroundColor: FlutterFlowTheme.of(context).primary,
         side: BorderSide(color: FlutterFlowTheme.of(context).primary),
         minimumSize: const Size(190, 48),
+        padding: padding,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
@@ -150,12 +154,14 @@ FilledButton hulpModalPrimaryButton({
   String? text,
   Widget? child,
   required VoidCallback? onPressed,
+  EdgeInsetsGeometry? padding,
 }) =>
     FilledButton(
       style: FilledButton.styleFrom(
         backgroundColor: FlutterFlowTheme.of(context).primary,
         foregroundColor: Colors.white,
         minimumSize: const Size(190, 48),
+        padding: padding,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),

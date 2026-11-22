@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/material.dart';
@@ -8,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hulp_admin/backend/supabase/supabase.dart';
-import 'package:hulp_admin/environment_values.dart';
 import 'package:hulp_admin/flutter_flow/flutter_flow_data_table.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_data_table.dart';
 
@@ -112,27 +109,6 @@ void main() {
 
   testWidgets('resalta al proveedor pendiente y muestra completos sus detalles',
       (tester) async {
-    final mensajero = tester.binding.defaultBinaryMessenger;
-    var usarTest = true;
-    mensajero.setMockMessageHandler('flutter/assets', (mensaje) async {
-      if (utf8.decode(mensaje!.buffer.asUint8List()) ==
-          FFDevEnvironmentValues.environmentValuesPath) {
-        return ByteData.sublistView(Uint8List.fromList(utf8.encode(jsonEncode({
-          'supabaseUrl': usarTest ? 'https://ptafsiwlhxomgqmdmidf.supabase.co' : '',
-        }))));
-      }
-      return mensajero.delegate.send('flutter/assets', mensaje);
-    });
-    rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
-    addTearDown(() async {
-      usarTest = false;
-      rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
-      await FFDevEnvironmentValues().initialize();
-      mensajero.setMockMessageHandler('flutter/assets', null);
-      rootBundle.evict(FFDevEnvironmentValues.environmentValuesPath);
-    });
-    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
-
     tester.view.physicalSize = const Size(1880, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
