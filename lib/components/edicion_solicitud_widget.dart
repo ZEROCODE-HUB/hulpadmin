@@ -1,5 +1,6 @@
 import '/flutter_flow/solicitud_status_helpers.dart';
 import 'encabezado_solicitud_widget.dart';
+import 'texto_copiable.dart';
 import 'notas_cliente_widget.dart';
 import 'solicitud_finanzas_form.dart';
 import 'solicitud_historial_widget.dart';
@@ -1257,7 +1258,7 @@ class _EdicionSolicitudWidgetState extends State<EdicionSolicitudWidget> {
           ),
           const SizedBox(width: 8.0),
           Expanded(
-            child: Text(
+            child: TextoCopiable(
               value,
               style: FlutterFlowTheme.of(context).bodySmall,
             ),

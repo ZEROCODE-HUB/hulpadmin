@@ -149,6 +149,14 @@ export async function manejarSolicitud(req: Request): Promise<Response> {
         })),
       });
     }
+    if (body.accion === 'activar_admin' || body.accion === 'iniciar_admin') {
+      if (!isAdmin) return reply({ message: 'Sin permiso' }, 403);
+      if (!esUuid(body.id)) return reply({ message: 'Identificador inválido' }, 400);
+      const operacion = body.accion === 'activar_admin'
+        ? 'solicitud_activar_admin_v1'
+        : 'solicitud_iniciar_admin_v1';
+      return reply(await rpc(operacion, { p_actor: actor, p_id: body.id }));
+    }
     if (body.accion === 'historial_estado' || body.accion === 'finalizar_admin') {
       if (!esUuid(body.id)) return reply({ message: 'Identificador inválido' }, 400);
       if (body.accion === 'historial_estado') {

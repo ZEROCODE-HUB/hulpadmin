@@ -113,11 +113,15 @@ void main() {
   String? tipoAsignacionHistorica = 'directa';
   double precioServicioHistorico = 15000;
   var permitirCambioEstado = false;
+  var fallarActivacion = false;
+  var peticionesActivacion = 0;
+  String? ultimaAccionAdmin;
   var probarCierreSinProveedor = false;
   String? ciudadCierre;
   var consultasElegibilidadCierre = 0;
   String? estadoGuardado;
   double? precioBaseSolicitud = 100000;
+  String? textoCopiado;
   late ByteData fontBytes;
   setUpAll(() async {
     final config =
@@ -141,6 +145,16 @@ void main() {
         if (request.url.path.endsWith('/functions/v1/solicitudes-finanzas')) {
           expect(request.method.toUpperCase(), 'POST');
           final accion = jsonDecode(request.body)['accion'];
+          if (accion == 'activar_admin' || accion == 'iniciar_admin') {
+            expect(jsonDecode(request.body)['id'], 'solicitud-1');
+            ultimaAccionAdmin = accion as String;
+            peticionesActivacion++;
+            return http.Response(
+              fallarActivacion ? '{"message":"No se pudo activar"}' : 'true',
+              fallarActivacion ? 409 : 200,
+              headers: {'content-type': 'application/json'},
+            );
+          }
           if (accion == 'proveedores_sprint4' && probarCierreSinProveedor) {
             consultasElegibilidadCierre++;
             expect(jsonDecode(request.body), {
@@ -379,7 +393,21 @@ void main() {
   tearDownAll(() => Supabase.instance.dispose());
 
   setUp(() {
+    textoCopiado = null;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          textoCopiado = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      },
+    );
     permitirCambioEstado = false;
+    fallarActivacion = false;
+    peticionesActivacion = 0;
+    ultimaAccionAdmin = null;
     probarCierreSinProveedor = false;
     consultasElegibilidadCierre = 0;
     estadoGuardado = null;
@@ -417,6 +445,18 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 50)));
       await tester.pump(const Duration(milliseconds: 100));
     }
+  }
+
+  Future<void> verificarCopia(
+      WidgetTester tester, Finder campo, String esperado) async {
+    textoCopiado = null;
+    await tester.ensureVisible(campo);
+    await tester.tap(campo);
+    await tester.pumpAndSettle();
+    expect(textoCopiado, esperado);
+    expect(find.text('Copiado al portapapeles'), findsOneWidget);
+    ScaffoldMessenger.of(tester.element(campo)).hideCurrentSnackBar();
+    await tester.pumpAndSettle();
   }
 
   Future<void> cargar(
@@ -512,6 +552,21 @@ void main() {
       expect(tester.widget<TextField>(descripcion).controller!.text,
           'Descripción conservada');
       expect(find.text('Información actual de contacto'), findsOneWidget);
+      await tester.ensureVisible(find.text('Información actual de contacto'));
+      await tester.tap(find.text('Información actual de contacto'));
+      await tester.pumpAndSettle();
+      final contacto = find.ancestor(
+        of: find.text('Información actual de contacto'),
+        matching: find.byType(ExpansionTile),
+      );
+      await verificarCopia(
+        tester,
+        find.descendant(
+          of: contacto,
+          matching: find.text(_solicitud['cliente_nombre_completo'] as String),
+        ),
+        _solicitud['cliente_nombre_completo'] as String,
+      );
       expect(
           find.byWidgetPredicate(
               (w) => w is SelectableText && w.data == 'Nota del cliente'),
@@ -587,6 +642,69 @@ void main() {
     expect(find.text('Solicitud creada'), findsOneWidget);
     expect(peticionesHistorial, 2);
   });
+
+  testWidgets('Activo llama al backend y conserva el menú si falla',
+      (tester) async {
+    fallarActivacion = true;
+    var guardados = 0;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: DropdownSolicitudEstadoWidget(
+          estadoActual: 'entrantes',
+          index: 0,
+          solicitudId: 'solicitud-1',
+          actionnavegacion: () async {
+            guardados++;
+          },
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final activo = find.text('Activo');
+    expect(activo, findsOneWidget);
+    await tester.tap(activo);
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(peticionesActivacion, 1);
+    expect(guardados, 0);
+    expect(
+      find.text('No se pudo marcar la solicitud como Activo.'),
+      findsOneWidget,
+    );
+
+    fallarActivacion = false;
+    await tester.tap(activo);
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(peticionesActivacion, 2);
+    expect(ultimaAccionAdmin, 'activar_admin');
+    expect(guardados, 1);
+  });
+
+  for (final estado in ['entrantes', 'aceptadas', 'en camino']) {
+    testWidgets('En curso llama al backend desde $estado', (tester) async {
+      var guardados = 0;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: DropdownSolicitudEstadoWidget(
+            estadoActual: estado,
+            index: 0,
+            solicitudId: 'solicitud-1',
+            actionnavegacion: () async {
+              guardados++;
+            },
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('En curso'));
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+      expect(ultimaAccionAdmin, 'iniciar_admin');
+      expect(peticionesActivacion, 1);
+      expect(guardados, 1);
+    });
+  }
 
   testWidgets('selector separa estado plegable del scroll al reconstruirse',
       (tester) async {
@@ -1177,6 +1295,11 @@ void main() {
       expect(find.text('Precio lista × 72 %'), findsOneWidget);
       expect(find.text('Pago − adelanto'), findsOneWidget);
       expect(find.text(r'$17.358,60'), findsOneWidget);
+      await verificarCopia(
+        tester,
+        find.text(r'$17.358,60'),
+        r'$17.358,60',
+      );
       expect(find.text(r'$7.200,00'), findsOneWidget);
       expect(find.text('Saldo a transferir'), findsAtLeastNWidgets(2));
       expect(find.text('28 %'), findsOneWidget);
@@ -1194,6 +1317,11 @@ void main() {
       await tester.tap(materialsDisclosure);
       await tester.pumpAndSettle();
       expect(find.text('Cintas para grifos'), findsOneWidget);
+      await verificarCopia(
+        tester,
+        find.text('Cintas para grifos'),
+        'Cintas para grifos',
+      );
       expect(find.text('Grifos para reemplazo'), findsOneWidget);
       expect(find.textContaining(r'Material · 2 × $1.500'), findsOneWidget);
       expect(find.textContaining(r'Material · 3 × $1.000'), findsOneWidget);
@@ -1261,6 +1389,11 @@ void main() {
           findsNothing,
         );
         expect(find.text('Editar solicitud'), findsOneWidget);
+        await verificarCopia(
+          tester,
+          find.text(_solicitud['ubicacion'] as String),
+          _solicitud['ubicacion'] as String,
+        );
       } else {
         expect(find.byType(TextFormField), findsWidgets);
       }
