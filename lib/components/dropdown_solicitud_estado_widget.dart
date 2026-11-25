@@ -36,6 +36,7 @@ class DropdownSolicitudEstadoWidget extends StatefulWidget {
 class _DropdownSolicitudEstadoWidgetState
     extends State<DropdownSolicitudEstadoWidget> {
   late DropdownSolicitudEstadoModel _model;
+  bool _cambiandoEstado = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -56,6 +57,32 @@ class _DropdownSolicitudEstadoWidgetState
     _model.maybeDispose();
 
     super.dispose();
+  }
+
+  Future<void> _cambiarEstadoDesdeAdmin(String estado) async {
+    final id = widget.solicitudId;
+    if (_cambiandoEstado || id == null) return;
+
+    setState(() => _cambiandoEstado = true);
+    try {
+      await SupaFlow.client.functions.invoke('solicitudes-finanzas', body: {
+        'accion': estado == 'en camino' ? 'activar_admin' : 'iniciar_admin',
+        'id': id,
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No se pudo marcar la solicitud como ${solicitudStatusLabel(estado)}.',
+          ),
+        ),
+      );
+      return;
+    } finally {
+      if (mounted) setState(() => _cambiandoEstado = false);
+    }
+    if (mounted) await widget.actionnavegacion?.call();
   }
 
   @override
@@ -130,9 +157,20 @@ class _DropdownSolicitudEstadoWidgetState
           ),
           Builder(
             builder: (context) {
+              final estadoActual =
+                  estadoSolicitudParaFiltro(widget.estadoActual);
               final listaOpciones = usaEstadosSprint3
-                    ? const ['finalizadas', 'canceladas', 'reagendadas']
-                    : _model.opciones.toList();
+                  ? [
+                      if (const {'entrantes', 'aceptadas'}.contains(estadoActual))
+                        'en camino',
+                      if (const {'entrantes', 'aceptadas', 'en camino'}
+                          .contains(estadoActual))
+                        'en proceso',
+                      'finalizadas',
+                      'canceladas',
+                      'reagendadas',
+                    ]
+                  : _model.opciones.toList();
 
               return Column(
                 mainAxisSize: MainAxisSize.max,
@@ -140,9 +178,9 @@ class _DropdownSolicitudEstadoWidgetState
                     List.generate(listaOpciones.length, (listaOpcionesIndex) {
                   final listaOpcionesItem = listaOpciones[listaOpcionesIndex];
                   return Visibility(
-                    visible: (estadoSolicitudParaFiltro(widget.estadoActual) != listaOpcionesItem) &&
-                        ((listaOpcionesItem != 'iniciadas') &&
-                            (listaOpcionesItem != 'en camino')),
+                    visible: estadoActual != listaOpcionesItem &&
+                        listaOpcionesItem != 'iniciadas' &&
+                        (usaEstadosSprint3 || listaOpcionesItem != 'en camino'),
                     child: Builder(
                       builder: (context) => Padding(
                         padding:
@@ -153,6 +191,13 @@ class _DropdownSolicitudEstadoWidgetState
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
+                            if (_cambiandoEstado) return;
+                            if (listaOpcionesItem == 'en camino' ||
+                                (usaEstadosSprint3 &&
+                                    listaOpcionesItem == 'en proceso')) {
+                              await _cambiarEstadoDesdeAdmin(listaOpcionesItem);
+                              return;
+                            }
                             final solicitudId = widget.solicitudId;
                             final userId = widget.userid;
                             final onGuardado = widget.actionnavegacion;

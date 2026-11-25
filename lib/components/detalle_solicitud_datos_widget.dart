@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/chat_usuario_proveedor_widget.dart';
 import '/components/enlace_mapa_widget.dart';
+import '/components/texto_copiable.dart';
 import '/flutter_flow/cliente_nombre_helpers.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -130,7 +131,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
         children: [
           _encabezadoTarjeta(context, 'Servicio', Icons.handyman_outlined),
           const SizedBox(height: 10),
-          Text(
+          TextoCopiable(
             _valor(solicitud.servicioNombre,
                 alternativa: 'Servicio sin especificar'),
             style: tema.titleLarge.copyWith(fontWeight: FontWeight.w700),
@@ -144,7 +145,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
                 color: const Color(0xFFF0EFEC),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(subcategoria,
+              child: TextoCopiable(subcategoria,
                   style: tema.bodySmall.copyWith(fontWeight: FontWeight.w600)),
             ),
           ],
@@ -188,7 +189,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
           _encabezadoTarjeta(context, titulo, icono),
           const SizedBox(height: 12),
           if (sinContacto)
-            Text(nombre, style: Theme.of(context).textTheme.bodyMedium)
+            TextoCopiable(nombre, style: Theme.of(context).textTheme.bodyMedium)
           else ...[
             _lineaContacto(
               context,
@@ -226,7 +227,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
           Icon(icono, size: 18, color: const Color(0xFF0B6244)),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: TextoCopiable(
               texto,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: destacado ? FontWeight.w600 : FontWeight.normal,
@@ -252,7 +253,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
         children: [
           _encabezadoTarjeta(context, titulo, icono),
           const SizedBox(height: 10),
-          Text(
+          TextoCopiable(
             texto == null || texto.isEmpty ? vacio : texto,
             style: Theme.of(context).textTheme.bodyLarge,
             softWrap: true,
@@ -360,7 +361,7 @@ class DetalleSolicitudDatosWidget extends StatelessWidget {
           Icon(icono, size: 22, color: const Color(0xFF0B6244)),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(texto,
+            child: TextoCopiable(texto,
                 style: Theme.of(context).textTheme.bodyLarge, softWrap: true),
           ),
         ],

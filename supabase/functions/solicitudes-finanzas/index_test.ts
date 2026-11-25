@@ -9,6 +9,41 @@ Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'credencial-ficticia-de-prueba');
 const actor = '11111111-1111-4111-8111-111111111111';
 const response = (v: unknown, status = 200) => new Response(JSON.stringify(v), { status, headers: { 'Content-Type': 'application/json' } });
 
+for (const [accion, operacion] of [
+  ['activar_admin', 'solicitud_activar_admin_v1'],
+  ['iniciar_admin', 'solicitud_iniciar_admin_v1'],
+]) Deno.test(`solo Admin puede ejecutar ${accion}`, async () => {
+  const original = globalThis.fetch;
+  const solicitud = '22222222-2222-4222-8222-222222222222';
+  let rol = 'proveedor';
+  let cambios = 0;
+  globalThis.fetch = (input, init) => {
+    const recurso = new URL(String(input)).pathname.split('/').at(-1);
+    if (recurso === 'user') return Promise.resolve(response({ id: actor }));
+    if (recurso === 'usuarios') return Promise.resolve(response({ rol }));
+    assertEquals(recurso, operacion);
+    assertEquals(JSON.parse(String(init?.body)), { p_actor: actor, p_id: solicitud });
+    cambios++;
+    return Promise.resolve(response(true));
+  };
+  const activar = (id: string) => manejarSolicitud(new Request('http://local', {
+    method: 'POST', headers: { Authorization: 'Bearer sesion' },
+    body: JSON.stringify({ accion, id }),
+  }));
+  try {
+    assertEquals((await activar(solicitud)).status, 403);
+    rol = 'administrador';
+    assertEquals((await activar('inválida')).status, 400);
+    assertEquals(cambios, 0);
+    const result = await activar(solicitud);
+    assertEquals(result.status, 200);
+    assertEquals(await result.json(), true);
+    assertEquals(cambios, 1);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 Deno.test('historial combinado consulta ambas fuentes para un administrador', async () => {
   const original = globalThis.fetch;
   const solicitud = '22222222-2222-4222-8222-222222222222';

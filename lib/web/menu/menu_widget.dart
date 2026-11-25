@@ -548,7 +548,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
                   child: Text(
-                    menuExpandido ? 'v1.1.0 · 2026-11-24' : 'v1.1.0',
+                    menuExpandido ? 'v1.0.19 · 2026-11-18' : 'v1.0.19',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(
                             fontStyle: FlutterFlowTheme.of(context)

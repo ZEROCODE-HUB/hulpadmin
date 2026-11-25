@@ -39,7 +39,15 @@ class ActividadSolicitud {
 const _operaciones = {
   'aceptar': (TipoActividadSolicitud.aceptada, 'Solicitud aceptada'),
   'en_camino': (TipoActividadSolicitud.enCamino, 'En camino'),
+  'activar_admin': (
+    TipoActividadSolicitud.enCamino,
+    'Solicitud marcada como Activo',
+  ),
   'empece': (TipoActividadSolicitud.iniciada, 'Servicio iniciado'),
+  'iniciar_admin': (
+    TipoActividadSolicitud.iniciada,
+    'Solicitud marcada como En curso',
+  ),
   'termine': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
   'finalizar_admin': (TipoActividadSolicitud.finalizada, 'Servicio finalizado'),
   'publicar_oferta': (TipoActividadSolicitud.asignacion, 'Asignación actualizada'),

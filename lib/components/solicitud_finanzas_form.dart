@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/components/modal_con_encabezado_fijo.dart';
+import '/components/texto_copiable.dart';
 
 final _soloNumeroFormatter = TextInputFormatter.withFunction(
   (oldValue, newValue) =>
@@ -429,7 +430,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
                       labelText: field.value,
                       filled: true,
                       border: const OutlineInputBorder()),
-                  child: Text(
+                  child: TextoCopiable(
                       _formatearResultado(field.key, _resultados[field.key]),
                       style: theme.bodyMedium))),
       ]),
@@ -974,7 +975,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
               children: [
                 Text(titulo, style: theme.bodyMedium),
                 const SizedBox(height: 4),
-                Text(
+                TextoCopiable(
                   _formatearDinero(valor, decimalesFijos: true),
                   style: theme.titleLarge.copyWith(
                     color: theme.primary,
@@ -1118,7 +1119,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
               ),
               const SizedBox(width: 8),
               Flexible(
-                child: Text(
+                child: TextoCopiable(
                   _formatearDinero(_resultados['saldo_transferir']),
                   textAlign: TextAlign.end,
                   style: theme.titleMedium.copyWith(
@@ -1212,7 +1213,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
+                TextoCopiable(
                   _formatearDinero(_resultados['materiales_total']),
                   style: theme.bodyMedium.copyWith(
                     fontWeight: FontWeight.w700,
@@ -1283,7 +1284,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              TextoCopiable(
                 descripcion == null || descripcion.isEmpty
                     ? 'Adicional sin descripción'
                     : descripcion,
@@ -1295,7 +1296,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(
+                  TextoCopiable(
                     '$tipo · $cantidad × $precioUnitario',
                     style: theme.bodySmall.copyWith(
                       color: theme.secondaryText,
@@ -1340,7 +1341,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
               ),
               const SizedBox(width: 10),
               Flexible(
-                child: Text(
+                child: TextoCopiable(
                   valor,
                   textAlign: TextAlign.end,
                   style: theme.bodyMedium.copyWith(
@@ -1515,7 +1516,7 @@ class SolicitudFinanzasFormState extends State<SolicitudFinanzasForm> {
             calculado: accion == null,
             destacado: destacado,
           ).copyWith(suffixIcon: accion),
-          child: Text(
+          child: TextoCopiable(
             porcentaje
                 ? _formatearPorcentaje(value)
                 : _formatearDinero(value),
