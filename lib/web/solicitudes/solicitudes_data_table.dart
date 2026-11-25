@@ -53,7 +53,7 @@ class SolicitudesDataTable extends StatelessWidget {
     final cancelacion = item.getField<String>('proveedor_cancelacion');
     final fecha = item.getField<DateTime>('cancelacion_proveedor_en');
     final tipoVisible = tiposAsignacionSprint4[tipo];
-    final canceloProveedor = pendiente && cancelacion != null && !tieneProveedor;
+    final canceloProveedor = _proveedorCanceloSolicitud(item, nombre);
     final detalle = canceloProveedor
         ? 'Canceló $cancelacion${fecha == null ? '' : ' · ${dateTimeFormat('d/M HH:mm', fecha.toUtc().subtract(const Duration(hours: 5)))}'}'
         : revision ?? (!pendiente && perfilPendiente ? 'Perfil por enviar' : null);
@@ -88,6 +88,18 @@ class SolicitudesDataTable extends StatelessWidget {
     );
   }
 
+  bool _proveedorCanceloSolicitud(
+    VwSolicitudesServiciosCompletaRow item,
+    String? nombreProveedor,
+  ) {
+    final proveedorCancelacion = item.getField<String>('proveedor_cancelacion');
+    final tieneProveedor =
+        nombreProveedor != null && nombreProveedor.isNotEmpty;
+    return item.estadoSolicitud == 'entrantes' &&
+        proveedorCancelacion != null &&
+        !tieneProveedor;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScrollbarTheme(
@@ -100,6 +112,15 @@ class SolicitudesDataTable extends StatelessWidget {
           columnsBuilder: (onSortChanged) => _buildColumns(context),
           dataRowBuilder: (item, index, selected, onSelectChanged) =>
               _buildRow(context, item, index),
+          cellBackgroundColorBuilder: (item, rowIndex, columnIndex) {
+            if (columnIndex != 9) return null;
+            return _proveedorCanceloSolicitud(
+              item,
+              item.proveedorNombreCompleto?.trim(),
+            )
+                ? const Color(0xFFFAEBE1)
+                : const Color(0xFFE9F4EF);
+          },
           paginated: true,
           selectable: false,
           hidePaginator: false,
@@ -137,16 +158,38 @@ class SolicitudesDataTable extends StatelessWidget {
       _col('Servicio', headerStyle),
       _col('Proveedor', headerStyle, fixedWidth: 220.0),
       _col('Precio', headerStyle),
-      _col('Pago', headerStyle, fixedWidth: 160.0),
+      _col(
+        'Pago',
+        headerStyle.copyWith(color: Colors.white),
+        fixedWidth: 160.0,
+        headerBackgroundColor: const Color(0xFF2E6D52),
+      ),
       _col('Acciones', headerStyle, fixedWidth: 140.0),
     ];
   }
 
-  DataColumn2 _col(String label, TextStyle style, {double? fixedWidth}) {
+  DataColumn2 _col(
+    String label,
+    TextStyle style, {
+    double? fixedWidth,
+    Color? headerBackgroundColor,
+  }) {
     return DataColumn2(
       label: DefaultTextStyle.merge(
         softWrap: true,
-        child: Text(label, style: style),
+        child: headerBackgroundColor == null
+            ? Text(label, style: style)
+            : Container(
+                width: double.infinity,
+                height: 56.0,
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                decoration: BoxDecoration(
+                  color: headerBackgroundColor,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(label, style: style),
+              ),
       ),
       fixedWidth: fixedWidth,
     );
@@ -166,6 +209,7 @@ class SolicitudesDataTable extends StatelessWidget {
     final direccion = direccionSolicitudVisible(item.ubicacion, ciudad);
     final servicioNombre = item.servicioNombre?.trim();
     final proveedorNombre = item.proveedorNombreCompleto?.trim();
+    final proveedorCancelo = _proveedorCanceloSolicitud(item, proveedorNombre);
 
     // La columna mide 280 px y reserva 20 px para el espacio entre celdas.
     // La fila crece según el texto real, incluidos saltos y escala de fuente.
@@ -182,7 +226,9 @@ class SolicitudesDataTable extends StatelessWidget {
     return DataRow2(
       specificRowHeight: alturaFila,
       color: WidgetStateProperty.all(
-        FlutterFlowTheme.of(context).secondaryBackground,
+        proveedorCancelo
+            ? const Color(0xFFFAEBE1)
+            : FlutterFlowTheme.of(context).secondaryBackground,
       ),
       cells: [
         // Ticket
@@ -264,7 +310,10 @@ class SolicitudesDataTable extends StatelessWidget {
           ),
         )),
         // Estado del pago y acción directa para marcarlo recibido.
-        DataCell(_buildPaymentCell(context, item, bodyStyle)),
+        DataCell(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: _buildPaymentCell(context, item, bodyStyle),
+        )),
         // Acciones
         DataCell(Row(
           mainAxisSize: MainAxisSize.max,
@@ -326,7 +375,10 @@ class SolicitudesDataTable extends StatelessWidget {
     final paymentReceived = isPaymentReceived(status);
 
     if (!paymentReceived && !isPaymentPending(status)) {
-      return _textoCelda(paymentStatusLabel(status), style: bodyStyle);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: _textoCelda(paymentStatusLabel(status), style: bodyStyle),
+      );
     }
 
     final isUpdating =
@@ -345,47 +397,50 @@ class SolicitudesDataTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.0),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 24.0,
-                height: 24.0,
-                decoration: BoxDecoration(
-                  color: paymentReceived
-                      ? const Color(0xFF2E6D52)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4.0),
-                  border: Border.all(
+          child: SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 24.0,
+                  height: 24.0,
+                  decoration: BoxDecoration(
                     color: paymentReceived
                         ? const Color(0xFF2E6D52)
-                        : const Color(0xFF8B8B8B),
-                    width: 1.5,
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(4.0),
+                    border: Border.all(
+                      color: paymentReceived
+                          ? const Color(0xFF2E6D52)
+                          : const Color(0xFF8B8B8B),
+                      width: 1.5,
+                    ),
                   ),
+                  child: isUpdating
+                      ? const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                        )
+                      : paymentReceived
+                          ? const Icon(Icons.check,
+                              color: Colors.white, size: 18.0)
+                          : null,
                 ),
-                child: isUpdating
-                    ? const Padding(
-                        padding: EdgeInsets.all(4.0),
-                        child: CircularProgressIndicator(strokeWidth: 2.0),
-                      )
-                    : paymentReceived
-                        ? const Icon(Icons.check,
-                            color: Colors.white, size: 18.0)
-                        : null,
-              ),
-              const SizedBox(width: 8.0),
-              Flexible(
-                  child: _textoCelda(
-                isUpdating ? 'Guardando...' : paymentStatusLabel(status),
-                style: bodyStyle.copyWith(
-                  color: paymentReceived
-                      ? const Color(0xFF2E6D52)
-                      : const Color(0xFF6F6F6F),
-                  fontWeight:
-                      paymentReceived ? FontWeight.w700 : FontWeight.w500,
-                ),
-              )),
-            ],
+                const SizedBox(width: 8.0),
+                Flexible(
+                    child: _textoCelda(
+                  isUpdating ? 'Guardando...' : paymentStatusLabel(status),
+                  style: bodyStyle.copyWith(
+                    color: paymentReceived
+                        ? const Color(0xFF2E6D52)
+                        : const Color(0xFF6F6F6F),
+                    fontWeight:
+                        paymentReceived ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                )),
+              ],
+            ),
           ),
         ),
       ),

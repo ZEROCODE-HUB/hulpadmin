@@ -128,6 +128,7 @@ class FlutterFlowDataTable<T> extends StatefulWidget {
     this.onPageChanged,
     this.onSortChanged,
     this.onRowsPerPageChanged,
+    this.cellBackgroundColorBuilder,
     this.paginated = true,
     this.selectable = false,
     this.hidePaginator = false,
@@ -166,6 +167,8 @@ class FlutterFlowDataTable<T> extends StatefulWidget {
   final Function(int)? onPageChanged;
   final Function(int, bool)? onSortChanged;
   final Function(int)? onRowsPerPageChanged;
+  final Color? Function(T item, int rowIndex, int columnIndex)?
+      cellBackgroundColorBuilder;
   // Functionality options
   final bool paginated;
   final bool selectable;
@@ -224,6 +227,8 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
           _CeldaAlturaContenido(
             onAltura: (valor) =>
                 _registrarAltura(revision, index, columna, valor),
+            backgroundColor:
+                widget.cellBackgroundColorBuilder?.call(item, index, columna),
             child: fila.cells[columna].child,
           ),
           placeholder: fila.cells[columna].placeholder,
@@ -479,25 +484,42 @@ class _FlutterFlowDataTableState<T> extends State<FlutterFlowDataTable<T>> {
 
 /// Mide la celda con su ancho real y sin limitar la altura del contenido.
 class _CeldaAlturaContenido extends SingleChildRenderObjectWidget {
-  const _CeldaAlturaContenido({required this.onAltura, required super.child});
+  const _CeldaAlturaContenido({
+    required this.onAltura,
+    required this.backgroundColor,
+    required super.child,
+  });
 
   final ValueChanged<double> onAltura;
+  final Color? backgroundColor;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderCeldaAlturaContenido(onAltura);
+      _RenderCeldaAlturaContenido(onAltura, backgroundColor);
 
   @override
   void updateRenderObject(BuildContext context,
       covariant _RenderCeldaAlturaContenido renderObject) {
     renderObject.onAltura = onAltura;
+    renderObject.backgroundColor = backgroundColor;
   }
 }
 
 class _RenderCeldaAlturaContenido extends RenderProxyBox {
-  _RenderCeldaAlturaContenido(this.onAltura);
+  _RenderCeldaAlturaContenido(this.onAltura, Color? backgroundColor)
+      : _backgroundColor = backgroundColor;
 
   ValueChanged<double> onAltura;
+  Color? _backgroundColor;
+
+  Color? get backgroundColor => _backgroundColor;
+
+  set backgroundColor(Color? value) {
+    if (_backgroundColor == value) return;
+    _backgroundColor = value;
+    markNeedsLayout();
+    markNeedsPaint();
+  }
 
   @override
   void performLayout() {
@@ -511,7 +533,65 @@ class _RenderCeldaAlturaContenido extends RenderProxyBox {
           minWidth: constraints.minWidth, maxWidth: constraints.maxWidth),
       parentUsesSize: true,
     );
-    size = constraints.constrain(contenido.size);
-    onAltura(contenido.size.height);
+    final alturaContenido = contenido.size.height;
+    if (backgroundColor == null) {
+      size = constraints.constrain(contenido.size);
+    } else {
+      final ancho = constraints.hasBoundedWidth
+          ? constraints.maxWidth
+          : contenido.size.width;
+      final alto = constraints.hasBoundedHeight
+          ? constraints.maxHeight
+          : contenido.size.height;
+      size = constraints.constrain(Size(ancho, alto));
+    }
+    onAltura(alturaContenido);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final surfaceColor = backgroundColor;
+    if (surfaceColor != null) {
+      context.canvas.drawRect(
+        offset & size,
+        Paint()..color = surfaceColor,
+      );
+    }
+
+    final contenido = child;
+    if (contenido == null) return;
+
+    context.paintChild(contenido, offset + _contenidoPaintOffset);
+  }
+
+  Offset get _contenidoPaintOffset {
+    final contenido = child;
+    if (backgroundColor == null || contenido == null) return Offset.zero;
+    final top = ((size.height - contenido.size.height) / 2.0)
+        .clamp(0.0, size.height)
+        .toDouble();
+    return Offset(0.0, top);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final contenido = child;
+    if (contenido == null) return false;
+    return result.addWithPaintOffset(
+      offset: _contenidoPaintOffset,
+      position: position,
+      hitTest: (result, transformed) =>
+          contenido.hitTest(result, position: transformed),
+    );
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    transform.translateByDouble(
+      _contenidoPaintOffset.dx,
+      _contenidoPaintOffset.dy,
+      0.0,
+      1.0,
+    );
   }
 }
