@@ -1,8 +1,7 @@
 import '/components/modal_con_encabezado_fijo.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/components/responsive_layout_rows.dart';
+import '/components/hulp_modal_actions.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -81,15 +80,18 @@ class _Notificacion2WidgetState extends State<Notificacion2Widget> {
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
-                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
                       fontSize: 22.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w600,
-                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                     ),
               ),
             ),
+            fijarPie: true,
             cuerpo: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,46 +155,24 @@ class _Notificacion2WidgetState extends State<Notificacion2Widget> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
-                  child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
-                    child: FFButtonWidget(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await widget.action?.call();
-                      },
-                      text: valueOrDefault<String>(
-                        widget!.boton,
-                        'Aceptar',
+                Padding(
+                  key: modalFixedFooterKey,
+                  padding: EdgeInsets.zero,
+                  child: hulpModalActionRow(
+                    context: context,
+                    actions: [
+                      hulpModalPrimaryButton(
+                        context: context,
+                        text: valueOrDefault<String>(
+                          widget!.boton,
+                          'Aceptar',
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await widget.action?.call();
+                        },
                       ),
-                      options: FFButtonOptions(
-                        height: 48.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: FlutterFlowTheme.of(context).primary,
-                        textStyle:
-                            FlutterFlowTheme.of(context).titleSmall.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.w500,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],

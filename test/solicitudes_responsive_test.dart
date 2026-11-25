@@ -10,15 +10,25 @@ import 'package:google_fonts/src/google_fonts_base.dart' as fonts;
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:hulp_admin/app_state.dart';
+import 'package:hulp_admin/environment_values.dart';
+import 'package:hulp_admin/components/selector_ubicacion_widget.dart';
+import 'package:hulp_admin/flutter_flow/flutter_flow_widgets.dart';
+import 'package:hulp_admin/flutter_flow/ubicacion_helpers.dart';
 import 'package:hulp_admin/components/crear_solicitud_widget.dart';
+import 'package:hulp_admin/components/searchable_dropdown_widget.dart';
+import 'package:hulp_admin/components/fecha_hora_solicitud_widget.dart';
 import 'package:hulp_admin/components/detalle_solicitud_widget.dart';
+import 'package:hulp_admin/components/detalle_solicitud_datos_widget.dart';
 import 'package:hulp_admin/components/edicion_solicitud_widget.dart';
+import 'package:hulp_admin/components/finalizar_servicio2_widget.dart';
+import 'package:hulp_admin/components/solicitud_finanzas_form.dart';
 import 'package:hulp_admin/components/hulp_date_range_picker_widget.dart';
 import 'package:hulp_admin/components/solicitud_status_badge_widget.dart';
 import 'package:hulp_admin/components/dropdown_solicitud_estado_widget.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_data_table.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_filter_bar.dart';
 import 'package:hulp_admin/web/solicitudes/solicitudes_widget.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -34,11 +44,15 @@ const _solicitud = {
   'cliente_nombre_completo': 'Cliente con nombres y apellidos largos',
   'solicitud_ciudad': 'Bogotá',
   'ubicacion': 'Calle 123, apartamento 456, torre 7',
+  'notas_cliente': 'Nota del cliente',
   'precio_solicitud': 100000.0,
   'precio_total': 100000.0,
   'fecha': '2026-10-26',
   'hora': '10:00:00',
 };
+
+const _direccionHistorica =
+    'Palmira\nCalle 12 # 34-56\nTorre 3, apartamento 402';
 
 // Realtime stays disconnected; the HTTP fixture supplies the initial stream data.
 class _CanalSinRed implements WebSocketChannel {
@@ -87,6 +101,23 @@ class _FuentesPrueba implements AssetManifest {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  var fallarSolicitudes = false;
+  var usarMapa = false;
+  var solicitudVersionada = false;
+  var datosFinanzasDetalle = false;
+  var fallarHistorial = false;
+  var peticionesHistorial = 0;
+  var usarHistorialCliente = false;
+  var proveedorHistoricoDisponible = true;
+  var servicioHistoricoDisponible = true;
+  String? tipoAsignacionHistorica = 'directa';
+  double precioServicioHistorico = 15000;
+  var permitirCambioEstado = false;
+  var probarCierreSinProveedor = false;
+  String? ciudadCierre;
+  var consultasElegibilidadCierre = 0;
+  String? estadoGuardado;
+  double? precioBaseSolicitud = 100000;
   late ByteData fontBytes;
   setUpAll(() async {
     final config =
@@ -107,14 +138,238 @@ void main() {
       anonKey: 'test-key',
       debug: false,
       httpClient: MockClient((request) async {
+        if (request.url.path.endsWith('/functions/v1/solicitudes-finanzas')) {
+          expect(request.method.toUpperCase(), 'POST');
+          final accion = jsonDecode(request.body)['accion'];
+          if (accion == 'proveedores_sprint4' && probarCierreSinProveedor) {
+            consultasElegibilidadCierre++;
+            expect(jsonDecode(request.body), {
+              'accion': 'proveedores_sprint4',
+              'ciudad_id': 'ciudad-cierre',
+              'servicio_id': 'servicio-cierre',
+            });
+            return http.Response('[{"id":"proveedor-elegible"}]', 200,
+                headers: {'content-type': 'application/json'});
+          }
+          if (accion == 'proveedores_sprint4' && usarHistorialCliente) {
+            return http.Response('[{"id":"proveedor-1","nombre":"Laura Méndez"}]',
+                200, headers: {'content-type': 'application/json'});
+          }
+          if (accion == 'historial_admin') {
+            expect(jsonDecode(request.body)['id'], 'solicitud-1');
+            peticionesHistorial++;
+            if (fallarHistorial) {
+              return http.Response('{"message":"Historial no disponible"}', 503,
+                  headers: {'content-type': 'application/json'});
+            }
+            return http.Response(
+              jsonEncode({
+                'creacion': {
+                  'fecha': '2026-11-08T20:05:00Z',
+                  'tipo': 'externo'
+                },
+                'eventos': [
+                  {
+                    'id': 'evento-admin',
+                    'accion': 'finalizar_admin',
+                    'fecha': '2026-11-09T06:00:00Z',
+                    'autor': {'rol': 'administrador', 'nombre': 'Admin Test'},
+                  },
+                  {
+                    'id': 'evento-1',
+                    'accion': 'aceptar',
+                    'fecha': '2026-11-09T04:42:00Z',
+                    'autor': {'rol': 'proveedor', 'nombre': 'Laura Méndez'},
+                  },
+                ],
+                'revisiones': [
+                  for (final (revision, precio) in [(1, 68900), (2, 120000)])
+                    {
+                      'revision': revision,
+                      'fecha': '2026-11-09T05:24:00Z',
+                      'entradas': {
+                        'datos': {'precio_base': precio},
+                        'items': [],
+                      },
+                      'resultados': {},
+                      'motivo': 'Cotización tras visita técnica',
+                    },
+                ],
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }
+          if (accion == 'leer') {
+            return http.Response(
+                jsonEncode({
+                  'solicitud': {
+                    'finanzas_revision': 2,
+                    'precio_base': datosFinanzasDetalle ? 10000 : 119900,
+                    'precio': datosFinanzasDetalle ? 10000 : 109900,
+                    'motivo_precio_pagado': '',
+                    'adelanto_proveedor': datosFinanzasDetalle ? 2000 : 0,
+                    'adelanto_motivo':
+                        datosFinanzasDetalle ? 'Para su pasaje' : '',
+                    'notas_cliente': 'Nota del cliente',
+                    if (datosFinanzasDetalle) ...{
+                      'materiales_total': 6000,
+                      'pago_proveedor': 7200,
+                      'saldo_transferir': 5200,
+                      'comision_hulp_iva': 3332,
+                      'comision_neta_hulp': 2800,
+                      'iva_valor': 532,
+                      'comision_efectiva': 28,
+                      'ajuste_iva_valor': 532,
+                      'wompi_valor': 826.6,
+                      'total_cliente': 17358.6,
+                      'aplica_wompi': true,
+                      'aplica_ajuste_iva': true,
+                      'requiere_fe': false,
+                    },
+                  },
+                  'items': datosFinanzasDetalle
+                      ? [
+                          {
+                            'descripcion': 'Cintas para grifos',
+                            'tipo_item': 'material',
+                            'cantidad': 2,
+                            'precio_unitario': 1500,
+                            'recibo_item_id': 'recibo-1',
+                          },
+                          {
+                            'descripcion': 'Grifos para reemplazo',
+                            'tipo_item': 'material',
+                            'cantidad': 3,
+                            'precio_unitario': 1000,
+                          },
+                        ]
+                      : [],
+                }),
+                200,
+                headers: {'content-type': 'application/json'});
+          }
+          expect(accion, 'preview');
+          return http.Response(
+              jsonEncode({
+                'materiales_total': 0,
+                'pago_proveedor': 86328,
+                'saldo_transferir': 86328,
+                'total_cliente': 119900,
+              }),
+              200,
+              headers: {'content-type': 'application/json'});
+        }
+        if (permitirCambioEstado &&
+            request.method == 'PATCH' &&
+            request.url.path.endsWith('/solicitudes_servicio')) {
+          expect(request.url.queryParameters['id'], 'eq.solicitud-1');
+          estadoGuardado = jsonDecode(request.body)['estado'] as String;
+          return http.Response('', 204, request: request);
+        }
         expect(request.method,
             'GET'); // Rendering must never change payments or requests.
-        final Object data =
-            request.url.path.endsWith('/vw_solicitudes_servicios_completa')
-                ? (request.url.queryParameters['limit'] == '1'
-                    ? _solicitud
-                    : [_solicitud])
-                : [];
+        if (fallarSolicitudes &&
+            (request.url.path.endsWith('/solicitudes_servicio') ||
+                request.url.path
+                    .endsWith('/vw_solicitudes_servicios_completa'))) {
+          return http.Response('{"message":"Servicio no disponible"}', 503,
+              headers: {'content-type': 'application/json'});
+        }
+        final solicitud = {
+          ..._solicitud,
+          if (estadoGuardado != null) 'estado_solicitud': estadoGuardado,
+          'precio_base': precioBaseSolicitud,
+          if (solicitudVersionada) 'finanzas_version': 1,
+        };
+        if (probarCierreSinProveedor) {
+          final datos = switch (request.url.pathSegments.last) {
+            'solicitudes_servicio' => [
+                {
+                  'id': 'solicitud-1',
+                  'servicio_id': 'servicio-cierre',
+                  'ciudad_id': ciudadCierre,
+                },
+              ],
+            'vw_profesionales_completo' => [
+                {
+                  'profesional_id': 'proveedor-elegible',
+                  'nombre_completo': 'Proveedor elegible',
+                },
+                {
+                  'profesional_id': 'proveedor-otra-ciudad',
+                  'nombre_completo': 'Proveedor de otra ciudad',
+                },
+              ],
+            _ => [],
+          };
+          if (request.url.pathSegments.last == 'vw_profesionales_completo') {
+            expect(request.url.queryParameters['servicio_id'],
+                'eq.servicio-cierre');
+            expect(request.url.queryParameters['estado'], 'eq.activo');
+            expect(request.url.queryParameters['verificado'], 'eq.verificado');
+          }
+          return http.Response(jsonEncode(datos), 200,
+              request: request, headers: {'content-type': 'application/json'});
+        }
+        if (usarHistorialCliente) {
+          final List<Map<String, Object?>>? datos =
+              switch (request.url.pathSegments.last) {
+            'usuarios' => [
+                {'id': 'cliente-1', 'nombres': 'Cliente', 'rol': 'usuario'},
+              ],
+            'servicios' => [
+                if (servicioHistoricoDisponible)
+                  {
+                    'id': 'servicio-1',
+                    'nombre': 'Limpieza de prueba',
+                    'precio': precioServicioHistorico,
+                  },
+              ],
+            'ciudades' => [
+                {'id': 'ciudad-1', 'nombre': 'Palmira', 'activo': true},
+                {'id': 'ciudad-2', 'nombre': 'Cali', 'activo': true},
+              ],
+            'vw_profesionales_completo' => [
+                if (proveedorHistoricoDisponible)
+                  {
+                    'profesional_id': 'proveedor-1',
+                    'nombre_completo': 'Laura Méndez',
+                  },
+              ],
+            'vw_solicitudes_servicios_completa' => [
+                {
+                  ...solicitud,
+                  'servicio_id': 'servicio-1',
+                  'servicio_nombre': 'Limpieza de prueba',
+                  'tipo_asignacion': tipoAsignacionHistorica,
+                  'solicitud_ciudad': 'Palmira',
+                  'hora': '14:35:00',
+                  'ubicacion': servicioHistoricoDisponible
+                      ? 'Calle 12 # 34-56'
+                      : _direccionHistorica,
+                  'latitud': 3.54,
+                  'longitud': -76.30,
+                  'profesional_id': 'proveedor-1',
+                  'proveedor_nombre_completo': 'Laura Méndez',
+                },
+              ],
+            _ => null,
+          };
+          if (datos != null) {
+            return http.Response(jsonEncode(datos), 200,
+                request: request,
+                headers: {'content-type': 'application/json'});
+          }
+        }
+        final Object data = switch (request.url.pathSegments.last) {
+          'vw_solicitudes_servicios_completa' =>
+            request.url.queryParameters['limit'] == '1' ? solicitud : [solicitud],
+          'servicios' => [
+              {'id': 'servicio-2', 'nombre': 'Servicio nuevo', 'precio': 42000},
+            ],
+          _ => [],
+        };
         return http.Response(jsonEncode(data), 200,
             request: request, headers: {'content-type': 'application/json'});
       }),
@@ -124,14 +379,45 @@ void main() {
   tearDownAll(() => Supabase.instance.dispose());
 
   setUp(() {
+    permitirCambioEstado = false;
+    probarCierreSinProveedor = false;
+    consultasElegibilidadCierre = 0;
+    estadoGuardado = null;
+    solicitudVersionada = false;
+    datosFinanzasDetalle = false;
+    precioBaseSolicitud = 100000;
+    fallarSolicitudes = false;
+    fallarHistorial = false;
+    peticionesHistorial = 0;
+    usarHistorialCliente = false;
+    proveedorHistoricoDisponible = true;
+    servicioHistoricoDisponible = true;
+    tipoAsignacionHistorica = 'directa';
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMessageHandler('flutter/assets', (message) {
       final name = utf8.decode(message!.buffer.asUint8List());
+      if (name == 'assets/environment_values/environment_test.json') {
+        final configuration = jsonEncode({
+          'supabaseUrl': 'https://solicitudes.test',
+          'supabaseAnonKey': 'test-key',
+          'googleMapsApiKey': usarMapa ? 'clave-ficticia' : '',
+        });
+        return Future.value(ByteData.sublistView(
+            Uint8List.fromList(utf8.encode(configuration))));
+      }
       if (name.startsWith('test_fonts/')) return Future.value(fontBytes);
       return messenger.delegate.send('flutter/assets', message);
     });
   });
+
+  Future<void> completarPeticiones(WidgetTester tester) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
 
   Future<void> cargar(
       WidgetTester tester, Widget child, double width, double height,
@@ -150,12 +436,556 @@ void main() {
         home: child,
       ),
     ));
-    for (var i = 0; i < 3; i++) {
+    await completarPeticiones(tester);
+  }
+
+  Future<void> abrirTabFinanzasDetalle(
+    WidgetTester tester,
+    double width,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await cargar(
+      tester,
+      const Scaffold(
+        body: DetalleSolicitudWidget(solicitudId: 'solicitud-1'),
+      ),
+      width,
+      950,
+    );
+
+    final tabFinanzas = find.widgetWithText(TextButton, 'Desglose financiero');
+    await tester.ensureVisible(tabFinanzas);
+    await tester.tap(tabFinanzas);
+    await tester.pumpAndSettle();
+  }
+
+  for (final versionada in [false, true]) {
+    testWidgets(
+        'editar conserva datos al cambiar pestañas; versión 1: $versionada',
+        (tester) async {
+      solicitudVersionada = versionada;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      await cargar(
+          tester,
+          const Scaffold(
+              body: EdicionSolicitudWidget(solicitudId: 'solicitud-1')),
+          1200,
+          950);
+      final datos = find.widgetWithText(TextButton, 'Datos');
+      final finanzas = find.widgetWithText(TextButton, 'Desglose financiero');
+      final historial = find.widgetWithText(TextButton, 'Historial');
+      final descripcion = find.byWidgetPredicate((w) =>
+          w is TextField &&
+          w.decoration?.hintText == 'Describe la solicitud...');
+      await tester.ensureVisible(descripcion);
+      await tester.enterText(descripcion, 'Descripción conservada');
+      await tester.tap(finanzas);
+      await tester.pumpAndSettle();
+      expect(find.byType(FechaHoraSolicitudWidget), findsNothing);
+      if (versionada) {
+        final precio =
+            find.byKey(const ValueKey('finanzas-entrada-Precio pagado'));
+        expect(tester.widget<TextFormField>(precio).controller!.text, '109900',
+            reason: tester
+                .widgetList<Text>(find.byType(Text))
+                .map((w) => w.data)
+                .join(' | '));
+        await tester.enterText(precio, '105000');
+      } else {
+        expect(find.text('Precios Adicionales'), findsOneWidget);
+      }
+      await tester.tap(historial);
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+      expect(find.text('Actividad de la solicitud'), findsOneWidget);
+      expect(find.text('Solicitud aceptada'), findsOneWidget);
+      expect(find.text('Servicio finalizado'), findsOneWidget);
+      expect(find.text('Web Admin · Admin Test'), findsOneWidget);
+      expect(find.text('Precio lista actualizado'), findsOneWidget);
+      expect(peticionesHistorial, 1);
+      await tester.tap(datos);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(descripcion).controller!.text,
+          'Descripción conservada');
+      expect(find.text('Información actual de contacto'), findsOneWidget);
+      expect(
+          find.byWidgetPredicate(
+              (w) => w is SelectableText && w.data == 'Nota del cliente'),
+          findsOneWidget);
+      await tester.tap(finanzas);
+      await tester.pumpAndSettle();
+      if (versionada) {
+        expect(
+            tester
+                .widget<TextFormField>(find
+                    .byKey(const ValueKey('finanzas-entrada-Precio pagado')))
+                .controller!
+                .text,
+            '105000');
+      }
+      final guardar = find.widgetWithText(FFButtonWidget, 'Guardar cambios');
+      expect(
+          find.ancestor(
+              of: guardar, matching: find.byType(SingleChildScrollView)),
+          findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
+  }
+
+  testWidgets(
+      'detalles carga Historial al abrir, reintenta y filtra en memoria',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    fallarHistorial = true;
+    await cargar(
+      tester,
+      const Scaffold(body: DetalleSolicitudWidget(solicitudId: 'solicitud-1')),
+      1200,
+      540,
+    );
+    expect(peticionesHistorial, 0);
+    await tester.tap(find.text('Historial'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('No se pudo cargar el historial.'), findsOneWidget);
+
+    fallarHistorial = false;
+    await tester.tap(find.text('Reintentar'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('9 de noviembre de 2026'), findsOneWidget);
+    expect(find.text('Cerrar').hitTestable(), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('11:42 p. m.'),
+      100,
+      scrollable: find.descendant(
+        of: find.byType(ListView),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    expect(find.text('8 de noviembre de 2026'), findsOneWidget);
+    expect(find.text('App de proveedora · Laura Méndez'), findsOneWidget);
+    expect(find.text('Cerrar').hitTestable(), findsOneWidget);
+
+    await tester.tap(find.text('Cambios'));
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitud aceptada'), findsNothing);
+    expect(find.text('Precio lista actualizado'), findsOneWidget);
+    expect(find.text('\$68.900 → \$120.000'), findsOneWidget);
+
+    await tester.tap(find.text('Operación'));
+    await tester.pumpAndSettle();
+    expect(find.text('Precio lista actualizado'), findsNothing);
+    expect(find.text('Solicitud creada'), findsOneWidget);
+    expect(peticionesHistorial, 2);
+  });
+
+  testWidgets('selector separa estado plegable del scroll al reconstruirse',
+      (tester) async {
+    usarMapa = true;
+    rootBundle.evict('assets/environment_values/environment_test.json');
+    await tester.runAsync(() => FFDevEnvironmentValues().initialize());
+    addTearDown(() async {
+      usarMapa = false;
+      rootBundle.evict('assets/environment_values/environment_test.json');
+      await tester.runAsync(() => FFDevEnvironmentValues().initialize());
+    });
+    final bucket = PageStorageBucket();
+    Future<void> montarSelector(int revision) async {
+      await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+              body: PageStorage(
+        bucket: bucket,
+        child: SingleChildScrollView(
+          key: const PageStorageKey('crear-solicitud-datos'),
+          child: Builder(builder: (context) {
+            // Valor que guarda el scroll, nunca un estado abierto/cerrado.
+            bucket.writeState(context, 0.0);
+            return SelectorUbicacionWidget(
+              key: ValueKey('direccion_$revision'),
+              onCambio: (_) {},
+            );
+          }),
+        ),
+      ))));
+      await tester.pumpAndSettle();
+    }
+
+    await montarSelector(0);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('O pegar un enlace de Maps o unas coordenadas'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Pegar'), findsOneWidget);
+    await montarSelector(1);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('O pegar un enlace de Maps o unas coordenadas'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('crear mantiene Profesional visible y alineado al cambiar el tipo',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    usarHistorialCliente = true;
+    precioServicioHistorico = 0;
+    addTearDown(() {
+      usarHistorialCliente = false;
+      precioServicioHistorico = 15000;
+    });
+    await cargar(
+        tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+
+    final tipo = find.byType(DropdownButton<String>);
+    final servicio = find.text('Servicio *');
+    final ciudad = find.text('Ciudad *');
+    final posicionServicio = tester.getTopLeft(servicio);
+    final posicionCiudad = tester.getTopLeft(ciudad);
+    Finder profesional(String hint) => find.byWidgetPredicate(
+        (widget) => widget is SearchableDropdown && widget.hint == hint);
+
+    Future<void> elegir(String texto) async {
+      await tester.tap(tipo);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(texto).last);
+      await tester.pumpAndSettle();
+    }
+
+    final proveedorVacio = profesional('Seleccionar profesional...');
+    expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNull);
+    await elegir('Asignación directa');
+    expect(find.text('Profesional *'), findsOneWidget);
+    expect(
+      tester.widget<SearchableDropdown>(
+        profesional('Selecciona servicio y ciudad'),
+      ).onChanged,
+      isNull,
+    );
+    expect(tester.getTopLeft(servicio), posicionServicio);
+    expect(tester.getTopLeft(ciudad), posicionCiudad);
+
+    await tester.tap(find.text('Seleccione el servicio'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limpieza de prueba'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Seleccione la ciudad'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Palmira'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNotNull);
+    await tester.tap(proveedorVacio);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Laura Méndez'));
+    await tester.pumpAndSettle();
+    expect(find.text('Laura Méndez'), findsOneWidget);
+
+    for (final modalidad in ['Asignación abierta', 'Guardar sin asignar']) {
+      await elegir(modalidad);
+      expect(find.text('Profesional'), findsOneWidget);
+      expect(tester.widget<SearchableDropdown>(proveedorVacio).onChanged, isNull);
+      expect(find.text('Laura Méndez'), findsNothing);
+      expect(tester.getTopLeft(servicio), posicionServicio);
+      expect(tester.getTopLeft(ciudad), posicionCiudad);
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('crear conserva datos y finanzas al cambiar de pestaña',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await cargar(
+        tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+    final datos = find.widgetWithText(TextButton, 'Datos');
+    final finanzas = find.widgetWithText(TextButton, 'Desglose financiero');
+    final historial = find.widgetWithText(TextButton, 'Historial');
+    expect(tester.widget<TextButton>(historial).onPressed, isNull);
+    final descripcion = find.byWidgetPredicate((w) =>
+        w is TextField && w.decoration?.hintText == 'Describe la solicitud...');
+    await tester.ensureVisible(descripcion);
+    await tester.enterText(descripcion, 'Conservar esta descripción');
+    await tester.tap(finanzas);
+    await tester.pumpAndSettle();
+    expect(find.byType(FechaHoraSolicitudWidget), findsNothing);
+    final precio = find.byKey(const ValueKey('finanzas-entrada-Precio pagado'));
+    await tester.enterText(precio, '109900');
+    await tester.tap(datos);
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(descripcion).controller!.text,
+        'Conservar esta descripción');
+    expect(find.byType(FechaHoraSolicitudWidget), findsOneWidget);
+    await tester.tap(finanzas);
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextFormField>(precio).controller!.text, '109900');
+    final guardar = find.widgetWithText(FFButtonWidget, 'Crear solicitud');
+    expect(
+        find.ancestor(
+            of: guardar, matching: find.byType(SingleChildScrollView)),
+        findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  for (final conservarHoraManual in [false, true]) {
+    testWidgets(
+        'Usar solicitud aplica el historial desde un modal protegido (hora manual: $conservarHoraManual)',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      usarHistorialCliente = true;
+      proveedorHistoricoDisponible = !conservarHoraManual;
+      if (conservarHoraManual) tipoAsignacionHistorica = null;
+      await cargar(
+          tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+      if (conservarHoraManual) {
+        final campoHora = find.descendant(
+          of: find.byType(FechaHoraSolicitudWidget),
+          matching: find.byType(TextField),
+        );
+        await tester.ensureVisible(campoHora);
+        await tester.enterText(campoHora, '9:20am');
+      }
+      final buscador = find.byKey(const ValueKey('abrir_buscador_clientes'));
+      await tester.ensureVisible(buscador);
+      await tester.tap(buscador);
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('cliente_cliente-1')));
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de solicitudes'), findsOneWidget);
+      for (final texto in [
+        'Hora',
+        'Dirección',
+        'Proveedor',
+        '14:35',
+        'Calle 12 # 34-56',
+        'Laura Méndez',
+      ]) {
+        expect(
+            find.descendant(
+                of: find.byType(Dialog), matching: find.text(texto)),
+            findsOneWidget);
+      }
+      expect(
+        find.descendant(
+          of: find.byType(PointerInterceptor),
+          matching: find.byType(ModalBarrier),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Limpieza de prueba'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Usar solicitud'));
+      await completarPeticiones(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Historial de solicitudes'), findsNothing);
+      expect(find.byType(PointerInterceptor), findsNothing);
+      expect(find.text('Limpieza de prueba'), findsOneWidget);
+      expect(find.text('Palmira'), findsOneWidget);
+      expect(tester.widget<DropdownButton<String>>(
+          find.byType(DropdownButton<String>)).value, 'directa');
+      expect(
+          find.text(conservarHoraManual
+              ? 'No hay profesionales disponibles'
+              : 'Laura Méndez'),
+          findsOneWidget);
+      expect(find.text('Calle 12 # 34-56'), findsOneWidget);
+      expect(
+          find.text(conservarHoraManual ? '9:20am' : '2:35pm'), findsOneWidget);
+      final fechaHora = tester.widget<FechaHoraSolicitudWidget>(
+          find.byType(FechaHoraSolicitudWidget));
+      expect(fechaHora.initialDate, isNull);
+      expect(
+          tester
+              .widget<SelectorUbicacionWidget>(
+                  find.byType(SelectorUbicacionWidget))
+              .coordenadasIniciales,
+          const Coordenadas(3.54, -76.30));
+
+      if (!conservarHoraManual) {
+        final ciudad = find.text('Palmira');
+        await tester.ensureVisible(ciudad);
+        await tester.tap(ciudad);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Cali'));
+        await tester.pumpAndSettle();
+        expect(find.text('Calle 12 # 34-56'), findsNothing);
+        expect(
+            tester
+                .widget<SelectorUbicacionWidget>(
+                    find.byType(SelectorUbicacionWidget))
+                .coordenadasIniciales,
+            isNull);
+      }
+    });
+  }
+
+  for (final conCiudad in [true, false]) {
+    testWidgets('finalizar filtra profesionales por ciudad y servicio ($conCiudad)',
+        (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      probarCierreSinProveedor = true;
+      ciudadCierre = conCiudad ? 'ciudad-cierre' : null;
+      await cargar(
+        tester,
+        const Scaffold(
+          body: FinalizarServicio2Widget(servicioId: 'solicitud-1'),
+        ),
+        conCiudad ? 1200 : 420,
+        950,
+      );
+      final finalizar = find.text('Finalizar servicio sin metodos de pago');
+      await tester.ensureVisible(finalizar);
+      await tester.tap(finalizar);
+      await completarPeticiones(tester);
+      await tester.pump(const Duration(milliseconds: 350));
+      await completarPeticiones(tester);
+
+      expect(find.text('Asignar profesional'), findsOneWidget);
+      expect(consultasElegibilidadCierre, conCiudad ? 1 : 0);
+      expect(find.text('Proveedor elegible'),
+          conCiudad ? findsOneWidget : findsNothing);
+      expect(find.text('Proveedor de otra ciudad'), findsNothing);
+      expect(find.text('Finalizar sin profesional'), findsOneWidget);
+
+      if (conCiudad) {
+        await tester.tap(find.text('Proveedor elegible'));
+        await tester.pump();
+      }
+      final cancelar = find.widgetWithText(OutlinedButton, 'Cancelar');
+      final sinProfesional =
+          find.widgetWithText(OutlinedButton, 'Finalizar sin profesional');
+      final asignar = find.widgetWithText(FilledButton, 'Asignar y finalizar');
+      final centro = tester.getCenter(cancelar);
+      final centroSinProfesional = tester.getCenter(sinProfesional);
+      final centroAsignar = tester.getCenter(asignar);
+      expect(centroSinProfesional.dy, closeTo(centro.dy, 1));
+      expect(centroAsignar.dy, closeTo(centro.dy, 1));
+      expect(centroSinProfesional.dx, greaterThan(centro.dx));
+      expect(centroAsignar.dx, greaterThan(centroSinProfesional.dx));
+
+      await tester.tap(cancelar);
+      await tester.pumpAndSettle();
+    });
+  }
+
+  testWidgets('editar usa el precio del catálogo al cambiar el servicio',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    solicitudVersionada = true;
+    await cargar(
+      tester,
+      const Scaffold(
+        body: EdicionSolicitudWidget(solicitudId: 'solicitud-1'),
+      ),
+      1200,
+      950,
+    );
+    await tester.tap(find.text('Seleccionar servicio...'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Servicio nuevo'));
+    await completarPeticiones(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Desglose financiero'));
+    await tester.pumpAndSettle();
+
+    final finanzas = tester.state<SolicitudFinanzasFormState>(
+      find.byType(SolicitudFinanzasForm),
+    );
+    expect(finanzas.revision, 2);
+    expect(finanzas.entradas['precio_base'], 42000);
+    expect(finanzas.entradas['precio'], 42000);
+    expect(finanzas.entradas['motivo_precio_pagado'], isEmpty);
+  });
+
+  testWidgets('muestra toda la dirección del historial sin enfocar el campo',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    usarHistorialCliente = true;
+    servicioHistoricoDisponible = false;
+    tipoAsignacionHistorica = 'abierta';
+    await cargar(
+        tester, const Scaffold(body: CrearSolicitudWidget()), 1200, 950);
+    await tester.tap(find.byKey(const ValueKey('abrir_buscador_clientes')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cliente_cliente-1')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limpieza de prueba'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usar solicitud'));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+
+    final tipo = tester.widget<DropdownButton<String>>(
+        find.byType(DropdownButton<String>));
+    expect(tipo.value, 'abierta');
+    final direccion = find.byWidgetPredicate((widget) =>
+        widget is EditableText &&
+        widget.controller.text == _direccionHistorica);
+    expect(direccion, findsOneWidget);
+    final editable = tester.widget<EditableText>(direccion);
+    expect(editable.focusNode.hasFocus, isFalse);
+    expect(editable.minLines, 2);
+    expect(editable.maxLines, isNull);
+    final render = tester.state<EditableTextState>(direccion).renderEditable;
+    final inicio = render.getLocalRectForCaret(const TextPosition(offset: 0));
+    final finalDireccion = render
+        .getLocalRectForCaret(TextPosition(offset: _direccionHistorica.length));
+    expect(finalDireccion.top, greaterThan(inicio.top));
+    expect(finalDireccion.bottom, lessThanOrEqualTo(render.size.height));
+  });
+
+  testWidgets('un fallo de carga muestra Reintentar y luego recupera la tabla',
+      (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    fallarSolicitudes = true;
+    await cargar(tester, const SolicitudesWidget(), 1366, 900);
+    expect(find.text('No se pudieron cargar las solicitudes.'), findsOneWidget);
+    expect(find.text('Reintentar'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    fallarSolicitudes = false;
+    await tester.tap(find.text('Reintentar'));
+    for (var i = 0; i < 5; i++) {
       await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 50)));
       await tester.pump(const Duration(milliseconds: 100));
     }
-  }
+    expect(find.text('Reintentar'), findsNothing);
+    expect(find.byType(SolicitudesDataTable), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
 
   for (final (width, height, scale, keyboard) in [
     (320.0, 640.0, 1.0, 0.0),
@@ -173,7 +1003,7 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
       await cargar(tester, const SolicitudesWidget(), width, height,
           scale: scale, keyboard: keyboard);
-      expect(find.text('Filtrar por:'), findsOneWidget);
+      expect(find.text('Filtrar:'), findsOneWidget);
       expect(find.text('Nuevo'), findsOneWidget);
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -650));
       await tester.pumpAndSettle();
@@ -214,6 +1044,34 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('el cambio de estado actualiza la tabla en la misma pantalla',
+      (tester) async {
+    permitirCambioEstado = true;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    await cargar(tester, const SolicitudesWidget(), 1600, 900);
+
+    final pantalla = tester.state(find.byType(SolicitudesWidget));
+    final tabla = find.byType(SolicitudesDataTable);
+    final tablaOriginal = tester.element(tabla);
+    await tester.tap(find.byType(SolicitudStatusBadgeWidget).first);
+    await tester.pumpAndSettle();
+
+    final menu = find.byType(DropdownSolicitudEstadoWidget);
+    await tester.tap(find.descendant(of: menu, matching: find.text('Cancelado')));
+    await completarPeticiones(tester);
+    await tester.pumpAndSettle();
+
+    expect(estadoGuardado, 'canceladas');
+    expect(menu, findsNothing);
+    expect(tester.state(find.byType(SolicitudesWidget)), same(pantalla));
+    expect(tester.element(tabla), same(tablaOriginal));
+    expect(find.descendant(of: tabla, matching: find.text('Cancelado')),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final (width, selected) in [
     (700.0, false),
     (900.0, false),
@@ -235,16 +1093,18 @@ void main() {
             padding: const EdgeInsets.all(12),
             child: SolicitudesFilterBar(
               estadoOptions: const ['entrantes'],
-              categoriaOptions: const ['Plomería'],
+              servicioOptions: const ['Servicio de mantenimiento'],
+              ciudadOptions: const ['Bogotá D.C.'],
               dropDownValue1: selected ? 'entrantes' : null,
-              dropDownValue2: selected ? 'Plomería' : null,
+              dropDownValue2:
+                  selected ? 'Servicio de mantenimiento' : null,
+              dropDownValue3: selected ? 'Bogotá D.C.' : null,
               dateStart: selected ? DateTime(2026, 10, 1) : null,
               dateEnd: selected ? DateTime(2026, 10, 31) : null,
               resultCount: 31,
               onEstadoChanged: (_) {},
-              onCategoriaChanged: (_) {},
-              onEstadoReset: () {},
-              onCategoriaReset: () {},
+              onServicioChanged: (_) {},
+              onCiudadChanged: (_) {},
               onDateRangeSelected: (_, __) {},
               onDateReset: () {},
             ),
@@ -252,34 +1112,134 @@ void main() {
           width,
           900);
       final controls = find.byType(DropdownButton<String>);
-      expect(controls, findsNWidgets(2));
+      expect(controls, findsNWidgets(3));
       final estado = tester.getRect(controls.at(0));
-      final categoria = tester.getRect(controls.at(1));
-      expect(estado.center.dy, closeTo(categoria.center.dy, 1));
+      final servicio = tester.getRect(controls.at(1));
+      final ciudad = tester.getRect(controls.at(2));
+      expect(estado.center.dy, closeTo(servicio.center.dy, 1));
+      final counter = tester
+          .getRect(find.textContaining('solicitudes', findRichText: true));
       if (width < 750) {
-        expect(tester.getCenter(find.text('Filtrar por:')).dx,
-            closeTo(width / 2, 1));
+        expect(counter.bottom, lessThan(estado.top));
+        expect(
+            tester.getRect(find.text('Filtrar:')).bottom, lessThan(estado.top));
         expect(estado.width, greaterThan(250));
       } else {
-        expect(estado.width, lessThanOrEqualTo(200));
-        expect(categoria.width, lessThanOrEqualTo(200));
+        expect(estado.width, lessThanOrEqualTo(260));
+        expect(servicio.width, lessThanOrEqualTo(260));
+        expect(ciudad.center.dy, closeTo(estado.center.dy, 1));
         expect(tester.getCenter(find.byIcon(Icons.calendar_today_rounded)).dy,
             closeTo(estado.center.dy, 1));
-        final counter = tester.getRect(
-            find.textContaining('Numero de solicitudes:', findRichText: true));
-        if (width >= 1600) {
-          expect(counter.left, greaterThan(categoria.right));
-          expect(tester.getCenter(find.text('Filtrar por:')).dy,
+        if (width >= 720) {
+          expect(counter.center.dy, closeTo(estado.center.dy, 1));
+          expect(tester.getRect(find.text('Filtrar:')).center.dy,
               closeTo(estado.center.dy, 1));
-        } else if (width < 1200) {
-          expect(counter.bottom, lessThan(estado.top));
-          expect(tester.getRect(find.text('Filtrar por:')).bottom,
-              lessThan(estado.top));
+        }
+        if (width >= 1600) {
+          expect(counter.left, greaterThan(servicio.right));
         }
       }
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
+    });
+  }
+
+  for (final width in [320.0, 760.0, 1200.0]) {
+    testWidgets(
+        'detalle financiero agrupa importes y despliega materiales a $width px',
+        (tester) async {
+      solicitudVersionada = true;
+      datosFinanzasDetalle = true;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      await cargar(
+        tester,
+        const Scaffold(
+          body: DetalleSolicitudWidget(solicitudId: 'solicitud-1'),
+        ),
+        width,
+        950,
+      );
+
+      final tabFinanzas =
+          find.widgetWithText(TextButton, 'Desglose financiero');
+      await tester.ensureVisible(tabFinanzas);
+      await tester.tap(tabFinanzas);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Resumen financiero'), findsNothing);
+      expect(
+        find.text('Pagado + materiales + Wompi + ajuste'),
+        findsOneWidget,
+      );
+      expect(find.text('Precio lista × 72 %'), findsOneWidget);
+      expect(find.text('Pago − adelanto'), findsOneWidget);
+      expect(find.text(r'$17.358,60'), findsOneWidget);
+      expect(find.text(r'$7.200,00'), findsOneWidget);
+      expect(find.text('Saldo a transferir'), findsAtLeastNWidgets(2));
+      expect(find.text('28 %'), findsOneWidget);
+      expect(find.text(r'$826,60'), findsOneWidget);
+      expect(find.text('Valores del servicio'), findsOneWidget);
+      expect(find.text('Pago al proveedor'), findsOneWidget);
+      expect(find.text('Comisión e impuestos'), findsOneWidget);
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.byType(Checkbox), findsNothing);
+      expect(find.text('Cintas para grifos'), findsNothing);
+
+      final materialsDisclosure =
+          find.byTooltip('Ver materiales y adicionales');
+      await tester.ensureVisible(materialsDisclosure);
+      await tester.tap(materialsDisclosure);
+      await tester.pumpAndSettle();
+      expect(find.text('Cintas para grifos'), findsOneWidget);
+      expect(find.text('Grifos para reemplazo'), findsOneWidget);
+      expect(find.textContaining(r'Material · 2 × $1.500'), findsOneWidget);
+      expect(find.textContaining(r'Material · 3 × $1.000'), findsOneWidget);
+      expect(find.text('Desde chat'), findsOneWidget);
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
+      final hideMaterials = find.byTooltip('Ocultar materiales y adicionales');
+      await tester.ensureVisible(hideMaterials);
+      await tester.tap(hideMaterials);
+      await tester.pumpAndSettle();
+      expect(find.text('Cintas para grifos'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  for (final width in [320.0, 760.0, 1200.0]) {
+    testWidgets('detalle sin desglose muestra el precio base a $width px',
+        (tester) async {
+      solicitudVersionada = false;
+      precioBaseSolicitud = 42500;
+      await abrirTabFinanzasDetalle(tester, width);
+
+      expect(find.text('Sin desglose financiero'), findsOneWidget);
+      expect(
+        find.text('Esta solicitud conserva el Precio lista del servicio.'),
+        findsOneWidget,
+      );
+      expect(find.text('Precio base · Precio lista'), findsOneWidget);
+      expect(find.text(r'$42.500'), findsOneWidget);
+      expect(find.text('Precio base no disponible'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('detalle sin precio base no muestra cero a $width px',
+        (tester) async {
+      solicitudVersionada = false;
+      precioBaseSolicitud = null;
+      await abrirTabFinanzasDetalle(tester, width);
+
+      expect(find.text('Precio base · Precio lista'), findsOneWidget);
+      expect(find.text('Precio base no disponible'), findsOneWidget);
+      expect(find.text(r'$0'), findsNothing);
+      expect(find.text(r'$ 0'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   }
 
@@ -293,13 +1253,45 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetViewInsets);
       await cargar(tester, Scaffold(body: form), 320, 640);
-      expect(find.byType(TextFormField), findsWidgets);
-      if (name == 'editar' || name == 'detalles') {
-        final icon = find
-            .byIcon(name == 'editar'
-                ? Icons.keyboard_arrow_down
-                : Icons.keyboard_arrow_down_sharp)
-            .first;
+      if (name == 'detalles') {
+        final datos = find.byType(DetalleSolicitudDatosWidget);
+        expect(datos, findsOneWidget);
+        expect(
+          find.descendant(of: datos, matching: find.byType(TextFormField)),
+          findsNothing,
+        );
+        expect(find.text('Editar solicitud'), findsOneWidget);
+      } else {
+        expect(find.byType(TextFormField), findsWidgets);
+      }
+      if (name == 'crear') {
+        final calendario = find.byType(FechaHoraSolicitudWidget);
+        final hoy = DateUtils.dateOnly(DateTime.now());
+        expect(
+          DateUtils.dateOnly(
+              tester.widget<FechaHoraSolicitudWidget>(calendario).firstDate!),
+          hoy,
+        );
+        final anterior = find.descendant(
+            of: calendario,
+            matching: find.byWidgetPredicate(
+                (w) => w is IconButton && w.tooltip == 'Mes anterior'));
+        expect(tester.widget<IconButton>(anterior).onPressed, isNull);
+        if (hoy.day > 1) {
+          final ayer = find.descendant(
+              of: calendario, matching: find.text('${hoy.day - 1}'));
+          final botonAyer =
+              find.ancestor(of: ayer, matching: find.byType(InkWell));
+          expect(tester.widget<InkWell>(botonAyer).onTap, isNull);
+        }
+        final diaHoy =
+            find.descendant(of: calendario, matching: find.text('${hoy.day}'));
+        final botonHoy =
+            find.ancestor(of: diaHoy, matching: find.byType(InkWell));
+        expect(tester.widget<InkWell>(botonHoy).onTap, isNotNull);
+      }
+      if (name == 'editar') {
+        final icon = find.byIcon(Icons.keyboard_arrow_down).first;
         final scroll = Scrollable.of(tester.element(icon)).position;
         await tester.tap(icon);
         await tester.pumpAndSettle();
@@ -312,6 +1304,9 @@ void main() {
         scroll.jumpTo(100);
         await tester.pumpAndSettle();
         expect(menu, findsNothing);
+      } else if (name == 'detalles') {
+        expect(find.byType(DropdownSolicitudEstadoWidget), findsNothing);
+        expect(find.text('Pendiente'), findsOneWidget);
       }
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

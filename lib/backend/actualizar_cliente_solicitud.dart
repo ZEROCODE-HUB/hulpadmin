@@ -13,15 +13,15 @@ class ActualizarClienteSolicitudException implements Exception {
 
 /// Actualiza el perfil del cliente a través de la Edge Function protegida.
 ///
-/// La URL se resuelve con la configuración activa de Supabase. En producción
-/// corresponde a `https://ptafsiwlhxomgqmdmidf.supabase.co/functions/v1/`
-/// seguida del nombre de la función, sin fijar el entorno en el código.
+/// La URL se resuelve con la configuración activa de Supabase, sin fijar el
+/// entorno en el código. El correo puede quedar vacío si el cliente aún no tiene uno.
 Future<void> actualizarClienteSolicitud({
   required String usuarioId,
   required String telefono,
   required String correoElectronico,
   required String direccion,
   required String ciudad,
+  bool soloContacto = false,
 }) async {
   try {
     final response = await SupaFlow.client.functions.invoke(
@@ -32,6 +32,7 @@ Future<void> actualizarClienteSolicitud({
         'correoElectronico': correoElectronico,
         'direccion': direccion,
         'ciudad': ciudad,
+        if (soloContacto) 'soloContacto': true,
       },
     );
 

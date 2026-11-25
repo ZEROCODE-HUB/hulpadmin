@@ -1,4 +1,5 @@
--- Preparado para Hulp/test (ptafsiwlhxomgqmdmidf). NO EJECUTADO.
+-- Aplicado en Hulp/test (ptafsiwlhxomgqmdmidf) el 2026-11-02 vía MCP.
+-- Versión remota: 20261102141742. No ejecutar nuevamente en esta rama.
 -- Una sola transacción: tabla, seguridad, backfill, FK, eliminación y vista.
 -- No usar en otros ambientes sin contrastar su esquema.
 begin;
@@ -305,7 +306,7 @@ begin
     'recibos_preservados', v_recibos
   );
 end;
-$function$
+$function$;
 
 
 -- Añadir columna al final: conserva orden, contratos y ACL de la vista existente.

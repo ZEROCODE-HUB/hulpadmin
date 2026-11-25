@@ -16,11 +16,13 @@ class EnlaceMapaWidget extends StatelessWidget {
     this.latitud,
     this.longitud,
     this.direccion,
+    this.mostrarCoordenadas = true,
   });
 
   final double? latitud;
   final double? longitud;
   final String? direccion;
+  final bool mostrarCoordenadas;
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +33,10 @@ class EnlaceMapaWidget extends StatelessWidget {
       longitud: longitud,
       direccion: direccion,
     );
-    if (url == null) return SizedBox.shrink();
+    if (url == null) return const SizedBox.shrink();
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 0.0),
       child: InkWell(
         onTap: () => launchURL(url),
         borderRadius: BorderRadius.circular(6.0),
@@ -61,12 +63,12 @@ class EnlaceMapaWidget extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
             ),
-            if (hayPunto) ...[
+            if (hayPunto && mostrarCoordenadas) ...[
               Text(
                 Coordenadas(latitud!, longitud!).formateadas,
                 style: tema.bodySmall.override(
                   font: GoogleFonts.inter(),
-                  color: Color(0xFF8A8A8A),
+                  color: const Color(0xFF8A8A8A),
                   fontSize: 12.0,
                   letterSpacing: 0.0,
                 ),

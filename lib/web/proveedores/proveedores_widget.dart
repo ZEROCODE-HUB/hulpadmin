@@ -9,11 +9,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'proveedores_model.dart';
@@ -112,18 +115,122 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
     super.dispose();
   }
 
+  Widget _buildBreadcrumb(BuildContext context) {
+    return Row(
+  mainAxisSize: MainAxisSize.max,
+  children: [
+    InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          DashboardWidget.routeName,
+          extra: <String, dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds: 0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme.of(
+                context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts.inter(
+                fontWeight:
+                    FontWeight.w500,
+                fontStyle:
+                    FontStyle.italic,
+              ),
+              color: Color(0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle:
+                  FontStyle.italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding: EdgeInsetsDirectional
+          .fromSTEB(8.0, 0.0, 4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          ProveedoresWidget.routeName,
+          extra: <String, dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds: 0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Proveedores',
+        style: FlutterFlowTheme.of(
+                context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts.inter(
+                fontWeight:
+                    FontWeight.w500,
+                fontStyle:
+                    FontStyle.italic,
+              ),
+              color: Color(0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle:
+                  FontStyle.italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final menuAbierto = context.watch<FFAppState>().MenuAbierto;
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final contentWidth = viewportWidth -
         (MenuWidget.esMovil(context) ? 0.0 : (menuAbierto ? 280.0 : 112.0));
-    final pagePadding = contentWidth < 600.0
-        ? 16.0
-        : (contentWidth < 1000.0 ? 24.0 : 40.0);
-    final searchSidePadding = contentWidth < 600.0 ? 16.0 : 40.0;
-    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 56.0)
-        .clamp(120.0, 394.0)
+    final pagePadding = AdminPageSpacing.contentHorizontal(context);
+    final searchSidePadding = AdminPageSpacing.headerHorizontal(context);
+    final searchFieldWidth = (contentWidth - searchSidePadding * 2 - 68.0)
+        .clamp(160.0, AdminHeaderSearchWidth.standardWidth)
         .toDouble();
 
     return GestureDetector(
@@ -166,9 +273,16 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                child: _buildBreadcrumb(context),
+                              ),
+                            ],
+                            const Spacer(),
                             Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
-                                  searchSidePadding, 0.0, 0.0, 0.0),
+                                  searchSidePadding, 0.0, 12.0, 0.0),
                               child: Container(
                                 width: searchFieldWidth,
                                 child: TextFormField(
@@ -185,7 +299,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                   ),
                                   autofocus: false,
                                   obscureText: false,
-                                  decoration: InputDecoration(
+                                  decoration: decorarInputHulp(context, InputDecoration(
                                     isDense: true,
                                     labelStyle: FlutterFlowTheme.of(context)
                                         .labelMedium
@@ -271,7 +385,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                     filled: true,
                                     fillColor: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
-                                  ),
+                                  )),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -302,7 +416,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, searchSidePadding, 12.0),
+                                  16.0, 12.0, searchSidePadding, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -313,41 +427,42 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                         ),
                       ),
                       Flexible(
-                        child: FutureBuilder<List<VwCategoriasProveedoresRow>>(
+                        child: FutureBuilder<
+                            List<List<VwCategoriasProveedoresRow>>>(
                           future: (_model.requestCompleter ??=
-                                  Completer<List<VwCategoriasProveedoresRow>>()
-                                    ..complete(VwCategoriasProveedoresTable()
-                                        .queryRows(
-                                      queryFn: (q) => q.ilike(
-                                        'categoria_nombre',
-                                        '%${_model.textController.text}%',
+                                  Completer<
+                                      List<List<VwCategoriasProveedoresRow>>>()
+                                    ..complete(Future.wait([
+                                      VwCategoriasProveedoresTable().queryRows(
+                                        queryFn: (q) => q.ilike(
+                                          'categoria_nombre',
+                                          '%${_model.textController.text}%',
+                                        ),
                                       ),
-                                    )))
+                                      VwCategoriasProveedoresTable().queryRows(
+                                        queryFn: (q) => q,
+                                      ),
+                                    ])))
                               .future,
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
-                                ),
+                              return const AdminPageLoadingSkeleton(
+                                filterCount: 2,
+                                columnCount: 7,
+                                rowCount: 6,
                               );
                             }
-                            List<VwCategoriasProveedoresRow>
-                                containerfiltroVwCategoriasProveedoresRowList =
-                                snapshot.data!;
+                            final containerfiltroVwCategoriasProveedoresRowList =
+                                snapshot.data![0];
+                            final containerVwCategoriasProveedoresRowList =
+                                snapshot.data![1];
 
                             return Container(
                               decoration: BoxDecoration(),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    pagePadding, 24.0, pagePadding, 0.0),
+                                    pagePadding, 16.0, pagePadding, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
@@ -356,108 +471,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  DashboardWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Inicio',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 4.0, 0.0),
-                                              child: Icon(
-                                                Icons.chevron_right,
-                                                color: Color(0xFF5E252B),
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  ProveedoresWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Proveedores',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                        if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                       ],
                                     ),
                                     Padding(
@@ -497,36 +511,8 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                     Expanded(
                                       child: Container(
                                         decoration: BoxDecoration(),
-                                        child: FutureBuilder<
-                                            List<VwCategoriasProveedoresRow>>(
-                                          future: VwCategoriasProveedoresTable()
-                                              .queryRows(
-                                            queryFn: (q) => q,
-                                          ),
-                                          builder: (context, snapshot) {
-                                            // Customize what your widget looks like when it's loading.
-                                            if (!snapshot.hasData) {
-                                              return Center(
-                                                child: SizedBox(
-                                                  width: 50.0,
-                                                  height: 50.0,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                            Color>(
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primary,
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                            List<VwCategoriasProveedoresRow>
-                                                containerVwCategoriasProveedoresRowList =
-                                                snapshot.data!;
-
+                                        child: Builder(
+                                          builder: (context) {
                                             return Container(
                                               decoration: BoxDecoration(),
                                               child: Padding(
@@ -635,7 +621,7 @@ class _ProveedoresWidgetState extends State<ProveedoresWidget> {
                                                                   .merge(
                                                             softWrap: true,
                                                             child: Text(
-                                                              'Proveedores totales registrados',
+                                                              'Proveedores verificados',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelLarge

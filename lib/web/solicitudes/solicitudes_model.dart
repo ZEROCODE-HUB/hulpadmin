@@ -39,9 +39,10 @@ class SolicitudesModel extends FlutterFlowModel<SolicitudesWidget> {
   // State field(s) for DropDownOrden widget.
   String? dropDownOrdenValue;
   FormFieldController<String>? dropDownOrdenValueController;
-  // State field(s) for filter dropdowns (estado / categoría).
+  // State fields for filter dropdowns (estado / servicio / ciudad).
   String? dropDownValue1;
   String? dropDownValue2;
+  String? dropDownValue3;
   DateTime? datePicked;
   DateTime? dateStart;
   DateTime? dateEnd;

@@ -1,7 +1,10 @@
+import '/backend/supabase/profesionales_query.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
+import '/components/hulp_modal_actions.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Lo que devuelve el selector.
@@ -28,6 +31,7 @@ class SeleccionProfesional {
 /// proveedor: al borrarlo, su `profesional_id` se pone a nulo.
 Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
   BuildContext context, {
+  required String? ciudadId,
   required String? servicioId,
   String? servicioNombre,
 }) {
@@ -40,6 +44,7 @@ Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
       alignment:
           AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
       child: SeleccionarProfesionalWidget(
+        ciudadId: ciudadId,
         servicioId: servicioId,
         servicioNombre: servicioNombre,
       ),
@@ -50,11 +55,12 @@ Future<SeleccionProfesional?> mostrarSelectorDeProfesional(
 class SeleccionarProfesionalWidget extends StatefulWidget {
   const SeleccionarProfesionalWidget({
     super.key,
+    required this.ciudadId,
     required this.servicioId,
     this.servicioNombre,
   });
 
-  /// Servicio del catálogo, para ofrecer solo a quien lo presta.
+  final String? ciudadId;
   final String? servicioId;
   final String? servicioNombre;
 
@@ -82,35 +88,21 @@ class _SeleccionarProfesionalWidgetState
     super.dispose();
   }
 
-  /// Solo proveedores **aprobados** que ofrezcan este servicio.
-  ///
-  /// Se consulta `vw_profesionales_completo` y no `vw_profesionales_servicios`
-  /// porque esta última no trae el estado, y sin él se acabaría asignando
-  /// trabajo a gente pendiente de aprobar o ya rechazada.
-  Future<List<VwProfesionalesCompletoRow>> _cargarProfesionales() {
-    return VwProfesionalesCompletoTable().queryRows(
-      queryFn: (q) => q
-          .eqOrNull('servicio_id', widget.servicioId)
-          .eqOrNull('verificado', 'verificado')
-          .order('nombres', ascending: true),
+  Future<List<VwProfesionalesCompletoRow>> _cargarProfesionales() async {
+    final profesionales = await consultarProfesionalesElegibles(
+      ciudadId: widget.ciudadId,
+      servicioId: widget.servicioId,
     );
+    return porProveedor(profesionales).toList()
+      ..sort((a, b) => (a.nombres ?? a.nombreCompleto ?? '')
+          .compareTo(b.nombres ?? b.nombreCompleto ?? ''));
   }
 
   List<VwProfesionalesCompletoRow> _filtrar(
       List<VwProfesionalesCompletoRow> filas) {
-    // Un proveedor podría venir repetido si tuviera el mismo servicio dado de
-    // alta dos veces; se deja uno por persona.
-    final vistos = <String>{};
-    final unicos = <VwProfesionalesCompletoRow>[];
-    for (final fila in filas) {
-      final id = fila.profesionalId;
-      if (id == null || id.isEmpty) continue;
-      if (vistos.add(id)) unicos.add(fila);
-    }
-
-    if (_busqueda.trim().isEmpty) return unicos;
     final aguja = _busqueda.trim().toLowerCase();
-    return unicos.where((fila) {
+    if (aguja.isEmpty) return filas;
+    return filas.where((fila) {
       final nombre = (fila.nombreCompleto ?? '').toLowerCase();
       final correo = (fila.correoElectronico ?? '').toLowerCase();
       return nombre.contains(aguja) || correo.contains(aguja);
@@ -120,6 +112,7 @@ class _SeleccionarProfesionalWidgetState
   @override
   Widget build(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
+    const paddingBoton = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
 
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
@@ -163,7 +156,7 @@ class _SeleccionarProfesionalWidgetState
                   child: TextFormField(
                     controller: _buscarController,
                     onChanged: (valor) => setState(() => _busqueda = valor),
-                    decoration: InputDecoration(
+                    decoration: decorarInputHulp(context, InputDecoration(
                       hintText: 'Buscar por nombre o correo',
                       prefixIcon: Icon(Icons.search, color: tema.secondaryText),
                       border: OutlineInputBorder(
@@ -180,7 +173,7 @@ class _SeleccionarProfesionalWidgetState
                       ),
                       contentPadding: EdgeInsetsDirectional.fromSTEB(
                           12.0, 12.0, 12.0, 12.0),
-                    ),
+                    )),
                     style: tema.bodyMedium.override(
                       font: GoogleFonts.inter(),
                       letterSpacing: 0.0,
@@ -224,10 +217,13 @@ class _SeleccionarProfesionalWidgetState
                           return _aviso(
                             tema,
                             Icons.person_off_outlined,
-                            _busqueda.trim().isEmpty
-                                ? 'Ningún proveedor aprobado ofrece este servicio. '
+                            (widget.ciudadId?.isEmpty ?? true) ||
+                                    (widget.servicioId?.isEmpty ?? true)
+                                ? 'La solicitud debe tener ciudad y servicio para asignar un profesional.'
+                                : _busqueda.trim().isEmpty
+                                ? 'No hay profesionales disponibles para este servicio en la ciudad de la solicitud. '
                                     'Puedes finalizar la solicitud sin asignar profesional.'
-                                : 'Ningún proveedor aprobado coincide con la búsqueda.',
+                                : 'Ningún profesional disponible coincide con la búsqueda.',
                           );
                         }
 
@@ -317,70 +313,39 @@ class _SeleccionarProfesionalWidgetState
                     ),
                   ),
                 ),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8.0,
-                  runSpacing: 8.0,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FFButtonWidget(
-                      onPressed: () => Navigator.pop(context),
-                      text: 'Cancelar',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.secondaryBackground,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.primaryText,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderSide: BorderSide(color: tema.alternate),
-                        borderRadius: BorderRadius.circular(20.0),
+                    Flexible(
+                      flex: 2,
+                      child: hulpModalCloseButton(
+                        text: 'Cancelar',
+                        onPressed: () => Navigator.pop(context),
+                        padding: paddingBoton,
                       ),
                     ),
-                    FFButtonWidget(
-                      onPressed: () => Navigator.pop(
-                          context, SeleccionProfesional.sinAsignar()),
-                      text: 'Finalizar sin profesional',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.secondaryBackground,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.primary,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderSide: BorderSide(color: tema.primary),
-                        borderRadius: BorderRadius.circular(20.0),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 4,
+                      child: hulpModalSecondaryButton(
+                        context: context,
+                        text: 'Finalizar sin profesional',
+                        onPressed: () => Navigator.pop(
+                            context, SeleccionProfesional.sinAsignar()),
+                        padding: paddingBoton,
                       ),
                     ),
-                    FFButtonWidget(
-                      // Deshabilitado mientras no haya nadie elegido: en
-                      // FFButtonWidget eso se hace con onPressed en nulo.
-                      onPressed: _elegido == null
-                          ? null
-                          : () => Navigator.pop(context,
-                              SeleccionProfesional.asignar(_elegido!)),
-                      text: 'Asignar y finalizar',
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        color: tema.primary,
-                        textStyle: tema.titleSmall.override(
-                          font: GoogleFonts.interTight(),
-                          color: tema.secondaryBackground,
-                          letterSpacing: 0.0,
-                        ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(20.0),
-                        disabledColor: tema.alternate,
-                        disabledTextColor: tema.secondaryText,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 4,
+                      child: hulpModalPrimaryButton(
+                        context: context,
+                        onPressed: _elegido == null
+                            ? null
+                            : () => Navigator.pop(context,
+                                SeleccionProfesional.asignar(_elegido!)),
+                        text: 'Asignar y finalizar',
+                        padding: paddingBoton,
                       ),
                     ),
                   ],

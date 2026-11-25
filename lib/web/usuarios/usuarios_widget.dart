@@ -1,6 +1,7 @@
 import '/components/texto_tabla_completo.dart';
 import '/backend/supabase/supabase.dart';
-import '/backend/actualizar_cliente_solicitud.dart';
+import '/components/editar_cliente_modal.dart';
+import '/flutter_flow/dialog_helpers.dart';
 import '/components/crear_usuario_widget.dart';
 import '/components/nombre_cliente_text.dart';
 import '/flutter_flow/cliente_nombre_helpers.dart';
@@ -14,14 +15,19 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show PostgresChangeEvent, RealtimeChannel, RealtimeSubscribeStatus;
 import 'usuarios_model.dart';
 export 'usuarios_model.dart';
 
@@ -36,306 +42,61 @@ class UsuariosWidget extends StatefulWidget {
 }
 
 class _UsuariosWidgetState extends State<UsuariosWidget> {
-  /// Ciudades activas para el desplegable de edicion.
-  List<String> _ciudades = [];
+  RealtimeChannel? _usuariosRealtimeChannel;
+  Timer? _usuariosRefreshTimer;
 
-  Future<void> _cargarCiudades() async {
-    try {
-      final filas = await CiudadesTable().queryRows(
-        queryFn: (q) =>
-            q.eqOrNull('activo', true).order('nombre', ascending: true),
-      );
-      if (!mounted) return;
-      safeSetState(() => _ciudades = filas.map((c) => c.nombre).toList());
-    } catch (e) {
-      print('No se pudieron cargar las ciudades: $e');
-    }
+  void _suscribirCambiosUsuarios() {
+    _usuariosRealtimeChannel = SupaFlow.client
+        .channel('admin-usuarios-${DateTime.now().microsecondsSinceEpoch}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'usuarios',
+          callback: (_) => _programarActualizacionUsuarios(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'solicitudes_servicio',
+          callback: (_) => _programarActualizacionUsuarios(),
+        )
+        .subscribe((status, _) {
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            _programarActualizacionUsuarios();
+          }
+        });
   }
 
-  /// Edita los datos de contacto y dirección del perfil, sin alterar la
-  /// identidad del cliente ni ninguna de sus solicitudes.
-  Future<void> _editarPerfilCliente(
-      VwListaUsuariosConServiciosRow usuario) async {
-    final usuarioId = usuario.id;
-    if (usuarioId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo identificar al cliente.')),
-      );
+  void _programarActualizacionUsuarios() {
+    _usuariosRefreshTimer?.cancel();
+    _usuariosRefreshTimer = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      safeSetState(() => _model.requestCompleter = null);
+    });
+  }
+
+  Future<void> _editarPerfilCliente(VwListaUsuariosConServiciosRow usuario) async {
+    final id = usuario.id;
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo identificar al cliente.')));
       return;
     }
-    final String clienteId = usuarioId;
-
-    if (_ciudades.isEmpty) {
-      await _cargarCiudades();
-      if (!mounted) return;
-    }
-
-    UsuariosRow? perfil;
     try {
-      final perfiles = await UsuariosTable().querySingleRow(
-        queryFn: (q) => q.eqOrNull('id', clienteId),
-      );
-      perfil = perfiles.firstOrNull;
-    } catch (error) {
+      final perfiles = await UsuariosTable().querySingleRow(queryFn: (q) => q.eqOrNull('id', id));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo cargar el perfil: $error')),
-      );
-      return;
+      final perfil = perfiles.firstOrNull;
+      if (perfil == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cliente no encontrado.')));
+        return;
+      }
+      final cambiado = await showMapSafeDialog<bool>(context: context, barrierDismissible: false,
+        builder: (_) => EditarClienteModal(perfil: perfil));
+      if (mounted && cambiado == true) {
+        safeSetState(() => _model.requestCompleter = null);
+      }
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo cargar el perfil.')));
     }
-
-    final perfilCliente = perfil;
-    if (!mounted) return;
-    if (perfilCliente == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cliente no encontrado.')),
-      );
-      return;
-    }
-
-    final telefonoController =
-        TextEditingController(text: perfilCliente.telefono ?? '');
-    final correoController =
-        TextEditingController(text: perfilCliente.correoElectronico ?? '');
-    final direccionController =
-        TextEditingController(text: perfilCliente.direccion ?? '');
-    final formKey = GlobalKey<FormState>();
-    final ciudadActual = (perfilCliente.ciudad?.trim().isNotEmpty ?? false)
-        ? perfilCliente.ciudad!.trim()
-        : null;
-    String? ciudadSeleccionada =
-        _ciudades.contains(ciudadActual) ? ciudadActual : null;
-    final opcionesCiudad = _ciudades.toSet().toList()
-      ..sort();
-    final nombre = nombreClienteDePerfil(
-      perfilCliente.nombres,
-      perfilCliente.apellidos,
-    );
-    final origen =
-        perfilCliente.usuarioExterno == true ? 'Externo' : 'Aplicativo';
-    String? errorFormulario;
-    bool guardando = false;
-
-    final guardado = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, actualizarDialogo) => AlertDialog(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Editar perfil del cliente'),
-              const SizedBox(height: 8.0),
-              NombreClienteText(
-                nombre: nombre,
-                style: Theme.of(dialogContext).textTheme.bodyMedium,
-              ),
-              Text(
-                'Origen: $origen',
-                style: Theme.of(dialogContext).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          insetPadding:
-              EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          content: SizedBox(
-            width: MediaQuery.sizeOf(dialogContext).width < 704.0
-                ? MediaQuery.sizeOf(dialogContext).width - 112.0
-                : 640.0,
-            child: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Contacto',
-                      style: Theme.of(dialogContext).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 12.0),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final campos = [
-                          TextFormField(
-                            controller: telefonoController,
-                            keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              labelText: 'Teléfono',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          TextFormField(
-                            controller: correoController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Correo electrónico',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              final correo = value?.trim() ?? '';
-                              if (correo.isEmpty ||
-                                  !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                                      .hasMatch(correo)) {
-                                return 'Ingresa un correo electrónico válido.';
-                              }
-                              return null;
-                            },
-                          ),
-                        ];
-
-                        if (constraints.maxWidth < 520.0) {
-                          return Column(
-                            children: [
-                              campos[0],
-                              const SizedBox(height: 12.0),
-                              campos[1],
-                            ],
-                          );
-                        }
-
-                        return Row(
-                          children: [
-                            Expanded(child: campos[0]),
-                            const SizedBox(width: 12.0),
-                            Expanded(child: campos[1]),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24.0),
-                    Text(
-                      'Dirección',
-                      style: Theme.of(dialogContext).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 12.0),
-                    TextFormField(
-                      controller: direccionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Dirección',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12.0),
-                    DropdownButtonFormField<String>(
-                      value: ciudadSeleccionada,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Ciudad',
-                        border: OutlineInputBorder(),
-                      ),
-                      hint: const Text('Selecciona una ciudad'),
-                      items: opcionesCiudad
-                          .map(
-                            (ciudad) => DropdownMenuItem(
-                              value: ciudad,
-                              child: Text(ciudad),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: guardando
-                          ? null
-                          : (ciudad) => actualizarDialogo(
-                                () => ciudadSeleccionada = ciudad,
-                              ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Selecciona una ciudad.'
-                          : null,
-                    ),
-                    if (ciudadActual != null && ciudadSeleccionada == null) ...[
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'La ciudad actual ya no está activa. Selecciona una ciudad activa.',
-                        style: TextStyle(
-                          color: FlutterFlowTheme.of(dialogContext).error,
-                        ),
-                      ),
-                    ],
-                    if (errorFormulario != null) ...[
-                      const SizedBox(height: 12.0),
-                      Text(
-                        errorFormulario!,
-                        style: TextStyle(
-                          color: FlutterFlowTheme.of(dialogContext).error,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: guardando
-                  ? null
-                  : () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: guardando
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-
-                      actualizarDialogo(() {
-                        guardando = true;
-                        errorFormulario = null;
-                      });
-                      try {
-                        await actualizarClienteSolicitud(
-                          usuarioId: clienteId,
-                          telefono: telefonoController.text.trim(),
-                          correoElectronico: correoController.text.trim(),
-                          direccion: direccionController.text.trim(),
-                          ciudad: ciudadSeleccionada!,
-                        );
-                        if (!dialogContext.mounted) return;
-                        Navigator.of(dialogContext).pop(true);
-                      } on ActualizarClienteSolicitudException catch (error) {
-                        if (!dialogContext.mounted) return;
-                        actualizarDialogo(() {
-                          guardando = false;
-                          errorFormulario = error.message;
-                        });
-                      } catch (_) {
-                        if (!dialogContext.mounted) return;
-                        actualizarDialogo(() {
-                          guardando = false;
-                          errorFormulario =
-                              'No se pudieron guardar los cambios. Inténtalo de nuevo.';
-                        });
-                      }
-                    },
-              child: guardando
-                  ? const SizedBox(
-                      height: 18.0,
-                      width: 18.0,
-                      child: CircularProgressIndicator(strokeWidth: 2.0),
-                    )
-                  : const Text('Guardar cambios'),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    telefonoController.dispose();
-    correoController.dispose();
-    direccionController.dispose();
-
-    if (guardado != true || !mounted) return;
-    safeSetState(() => _model.requestCompleter = null);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Perfil actualizado',
-          style: TextStyle(
-            color: FlutterFlowTheme.of(context).primaryBackground,
-          ),
-        ),
-        backgroundColor: FlutterFlowTheme.of(context).primary,
-      ),
-    );
   }
 
   late UsuariosModel _model;
@@ -474,9 +235,9 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => UsuariosModel());
-    _cargarCiudades();
 
     _model.dropDownValue ??= 'Recientes';
+    _suscribirCambiosUsuarios();
 
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
@@ -491,18 +252,153 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
 
   @override
   void dispose() {
+    _usuariosRefreshTimer?.cancel();
+    final channel = _usuariosRealtimeChannel;
+    if (channel != null) {
+      unawaited(
+        SupaFlow.client
+            .removeChannel(channel)
+            .then<void>((_) {})
+            .catchError((_) {}),
+      );
+    }
     _model.dispose();
 
     super.dispose();
   }
 
+  Widget _buildBreadcrumb(BuildContext context) {
+    return Row(
+  mainAxisSize: MainAxisSize.max,
+  children: [
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.goNamed(
+          DashboardWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0,
+                  4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          UsuariosWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Usuarios',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    final anchoContenido = MediaQuery.sizeOf(context).width -
-        (MenuWidget.esMovil(context)
-            ? 0.0
-            : (FFAppState().MenuAbierto ? 280.0 : 112.0));
-    final paddingHorizontal = anchoContenido < 900.0 ? 16.0 : 40.0;
+    final paddingHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     final isShortViewport = MediaQuery.sizeOf(context).height < 500.0;
 
     return GestureDetector(
@@ -545,15 +441,24 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                child: _buildBreadcrumb(context),
+                              ),
+                            ],
                             Expanded(
                               child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  paddingHorizontal, 0.0, 12.0, 0.0),
+                                  headerHorizontal, 0.0, 12.0, 0.0),
                               child: Align(
-                                alignment: AlignmentDirectional.centerStart,
+                                alignment: AlignmentDirectional.centerEnd,
                                 child: ConstrainedBox(
                                   constraints:
-                                      BoxConstraints(maxWidth: 394.0),
+                                      BoxConstraints(
+                                        maxWidth:
+                                            AdminHeaderSearchWidth.standardWidth,
+                                      ),
                                   child: TextFormField(
                                   controller: _model.textController,
                                   focusNode: _model.textFieldFocusNode,
@@ -568,7 +473,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                   ),
                                   autofocus: false,
                                   obscureText: false,
-                                  decoration: InputDecoration(
+                                  decoration: decorarInputHulp(context, InputDecoration(
                                     isDense: true,
                                     labelStyle: FlutterFlowTheme.of(context)
                                         .labelMedium
@@ -654,7 +559,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                     filled: true,
                                     fillColor: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
-                                  ),
+                                  )),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -687,7 +592,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 12.0, paddingHorizontal, 12.0),
+                                  16.0, 12.0, headerHorizontal, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -718,16 +623,10 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
-                                ),
+                              return const AdminPageLoadingSkeleton(
+                                filterCount: 2,
+                                columnCount: 7,
+                                rowCount: 6,
                               );
                             }
                             List<VwListaUsuariosConServiciosRow>
@@ -748,18 +647,10 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
+                                    return const AdminPageLoadingSkeleton(
+                                      filterCount: 2,
+                                      columnCount: 7,
+                                      rowCount: 6,
                                     );
                                   }
                                   List<VwListaUsuariosConServiciosRow>
@@ -771,7 +662,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           paddingHorizontal,
-                                          isShortViewport ? 8.0 : 24.0,
+                                          16.0,
                                           paddingHorizontal,
                                           0.0),
                                       child: Column(
@@ -782,130 +673,7 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.goNamed(
-                                                        DashboardWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Inicio',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
-                                                                4.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.chevron_right,
-                                                      color: Color(0xFF5E252B),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        UsuariosWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Usuarios',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                              if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                             ],
                                           ),
                                           Padding(
@@ -1707,22 +1475,9 @@ class _UsuariosWidgetState extends State<UsuariosWidget> {
                                                                 // Customize what your widget looks like when it's loading.
                                                                 if (!snapshot
                                                                     .hasData) {
-                                                                  return Center(
-                                                                    child:
-                                                                        SizedBox(
-                                                                      width:
-                                                                          50.0,
-                                                                      height:
-                                                                          50.0,
-                                                                      child:
-                                                                          CircularProgressIndicator(
-                                                                        valueColor:
-                                                                            AlwaysStoppedAnimation<Color>(
-                                                                          FlutterFlowTheme.of(context)
-                                                                              .primary,
-                                                                        ),
-                                                                      ),
-                                                                    ),
+                                                                  return const AdminSkeletonBlock(
+                                                                    width: 72,
+                                                                    height: 16,
                                                                   );
                                                                 }
                                                                 List<UsuariosRow>

@@ -36,6 +36,8 @@ Future<dynamic> createTransaction(
   String integrityKey, // ignorado: la firma se hace en el servidor
   bool isProduction, {
   required String personalDataAuthToken,
+  int? revisionFinanciera,
+  int? montoCotizado,
 }) async {
   try {
     if (publicKey.trim().isEmpty || !publicKey.startsWith('pub_')) {
@@ -75,6 +77,8 @@ Future<dynamic> createTransaction(
 
     final creacion = await llamarWompi({
       'accion': 'crear_cobro',
+      if (revisionFinanciera != null) 'finanzas_revision': revisionFinanciera,
+      if (montoCotizado != null) 'monto_cotizado_centavos': montoCotizado,
       'solicitud_id': solicitudId,
       'acceptance_token': acceptanceToken.trim(),
       'accept_personal_auth': personalDataAuthToken.trim(),

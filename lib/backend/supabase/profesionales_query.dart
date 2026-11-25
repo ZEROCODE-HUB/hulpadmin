@@ -1,5 +1,51 @@
 import '/backend/supabase/supabase.dart';
 
+const tiposAsignacionSprint4 = {
+  'abierta': 'Asignación abierta',
+  'directa': 'Asignación directa',
+  'sin_asignar': 'Guardar sin asignar',
+};
+
+Future<Set<String>> consultarProveedoresAsignacion(
+    String? ciudadId, String? servicioId) async {
+  if (ciudadId == null || servicioId == null) return {};
+  final respuesta = await SupaFlow.client.functions.invoke(
+    'solicitudes-finanzas',
+    body: {
+      'accion': 'proveedores_sprint4',
+      'ciudad_id': ciudadId,
+      'servicio_id': servicioId,
+    },
+  );
+  return (respuesta.data as List)
+      .map((fila) => (fila as Map)['id'] as String)
+      .toSet();
+}
+
+Future<List<VwProfesionalesCompletoRow>> consultarProfesionalesElegibles({
+  required String? ciudadId,
+  required String? servicioId,
+}) async {
+  if (ciudadId == null ||
+      ciudadId.isEmpty ||
+      servicioId == null ||
+      servicioId.isEmpty) {
+    return [];
+  }
+
+  final ids = await consultarProveedoresAsignacion(ciudadId, servicioId);
+  if (ids.isEmpty) return [];
+
+  final profesionales = await consultarProfesionales(
+    estado: 'activo',
+    verificado: 'verificado',
+    servicioId: servicioId,
+  );
+  return profesionales
+      .where((profesional) => ids.contains(profesional.profesionalId))
+      .toList(growable: false);
+}
+
 /// Consultas de proveedores sobre `vw_profesionales_completo`.
 ///
 /// La vista devuelve **una fila por servicio ofrecido**, no una por proveedor:
@@ -101,6 +147,35 @@ List<VwProfesionalesCompletoRow> porProveedor(
   return filas
       .where((fila) => vistos.add(fila.profesionalId ?? ''))
       .toList(growable: false);
+}
+
+/// Consulta qué perfiles siguen disponibles para recibir solicitudes.
+/// La vista de profesionales no expone `usuarios.disponibilidad`.
+Future<Set<String>> consultarIdsProfesionalesDisponibles(
+  Iterable<String?> profesionalIds,
+) async {
+  final ids = profesionalIds
+      .whereType<String>()
+      .where((id) => id.isNotEmpty)
+      .toSet()
+      .toList(growable: false);
+  if (ids.isEmpty) return <String>{};
+
+  final filas = await SupaFlow.client
+      .from('usuarios')
+      .select('id')
+      .inFilter('id', ids)
+      .eq('disponibilidad', true);
+
+  return filas.map((fila) => fila['id'] as String).toSet();
+}
+
+/// Revalida el estado justo antes de guardar una nueva asignación.
+Future<bool> profesionalPuedeRecibirSolicitudes(String? profesionalId) async {
+  if (profesionalId == null || profesionalId.isEmpty) return false;
+  final idsDisponibles =
+      await consultarIdsProfesionalesDisponibles([profesionalId]);
+  return idsDisponibles.contains(profesionalId);
 }
 
 /// Nombres de categoría presentes en el resultado, ordenados alfabéticamente.

@@ -3,6 +3,8 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'ciudades_model.dart';
@@ -172,6 +174,8 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
   @override
   Widget build(BuildContext context) {
     final tema = FlutterFlowTheme.of(context);
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -203,8 +207,8 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
                           border: Border.all(
                               color: const Color(0xFFD9C19C), width: 0.5),
                         ),
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            40.0, 0.0, 40.0, 0.0),
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                            headerHorizontal, 0.0, headerHorizontal, 0.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -232,14 +236,12 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
                         child: Builder(
                           builder: (context) {
                             if (_model.cargando) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        tema.primary),
-                                  ),
+                              return Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                    pageHorizontal, 16, pageHorizontal, 24),
+                                child: const AdminResultsLoadingSkeleton(
+                                  asCards: true,
+                                  rowCount: 7,
                                 ),
                               );
                             }
@@ -252,8 +254,8 @@ class _CiudadesWidgetState extends State<CiudadesWidget> {
                             }
 
                             return ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(
-                                  40.0, 24.0, 40.0, 24.0),
+                              padding: EdgeInsets.fromLTRB(
+                                  pageHorizontal, 16.0, pageHorizontal, 24.0),
                               itemCount: _model.ciudades.length,
                               separatorBuilder: (_, __) =>
                                   const SizedBox(height: 8.0),

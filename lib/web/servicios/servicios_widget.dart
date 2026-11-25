@@ -9,17 +9,22 @@ import '/components/responsive_layout_rows.dart';
 import '/app_state.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
+import '/flutter_flow/dialog_helpers.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:provider/provider.dart';
 import 'servicios_model.dart';
 export 'servicios_model.dart';
@@ -45,6 +50,77 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
   late ServiciosModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<void> _confirmarEliminacionServicio(String? servicioId) async {
+    if (servicioId == null) return;
+
+    String? mensaje;
+    var eliminado = false;
+    await showCenteredDialog(
+      context,
+      NotificacioneliminarWidget(
+        titulo: 'Eliminar servicio',
+        texto: '¿Seguro de borrar este servicio?',
+        succes: false,
+        action: () async {
+          try {
+            await ServiciosTable().delete(
+              matchingRows: (rows) => rows.eq('id', servicioId),
+            );
+            eliminado = true;
+            mensaje = 'Servicio eliminado exitosamente';
+          } on PostgrestException catch (error) {
+            mensaje = switch (error.code) {
+              '23503'
+                  when error.message
+                      .contains('solicitudes_servicio_servicio_id_fkey') =>
+                'No puedes eliminar este servicio porque tiene solicitudes vinculadas.',
+              '23503' =>
+                'No puedes eliminar este servicio porque tiene registros vinculados.',
+              _ => 'No se pudo eliminar el servicio. Inténtalo de nuevo.',
+            };
+          }
+        },
+      ),
+    );
+
+    if (!mounted || mensaje == null) return;
+    await showCenteredDialog(
+      context,
+      Notificacion2Widget(
+        titulo: 'Servicio',
+        texto: mensaje,
+        boton: 'Aceptar',
+        succes: eliminado,
+        action: eliminado
+            ? () async {
+                context.pushNamed(
+                  ServiciosWidget.routeName,
+                  queryParameters: {
+                    'subcategoria': serializeParam(
+                      widget.subcategoria,
+                      ParamType.SupabaseRow,
+                    ),
+                    'categoria':
+                        serializeParam(widget.categoria, ParamType.SupabaseRow),
+                  }.withoutNulls,
+                );
+              }
+            : null,
+      ),
+    );
+  }
+
+  void _actualizarServiciosTrasEditar() {
+    if (!mounted) return;
+    setState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Servicio editado exitosamente')),
+    );
+  }
 
   Widget _buildServiceFilters(List<VwResumenServiciosRow> rows) {
     final textStyle = FlutterFlowTheme.of(context).bodyMedium.override(
@@ -150,6 +226,238 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
     super.dispose();
   }
 
+  Widget _buildBreadcrumb(BuildContext context) {
+    return ResponsiveToolbarRow(
+  breakpoint: 980,
+  children: [
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor:
+              Colors.transparent,
+          onTap: () async {
+            context.pushNamed(
+              DashboardWidget.routeName,
+              extra: <String, dynamic>{
+                '__transition_info__':
+                    TransitionInfo(
+                  hasTransition: true,
+                  transitionType:
+                      PageTransitionType
+                          .fade,
+                  duration: Duration(
+                      milliseconds: 0),
+                ),
+              },
+            );
+          },
+          child: Text(
+            'Inicio',
+            style: FlutterFlowTheme.of(
+                    context)
+                .bodyMedium
+                .override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FontWeight.w500,
+                    fontStyle:
+                        FontStyle.italic,
+                  ),
+                  color: Color(0xFF5E252B),
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FontWeight.w500,
+                  fontStyle:
+                      FontStyle.italic,
+                ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0, 4.0, 0.0),
+          child: Icon(
+            Icons.chevron_right,
+            color: Color(0xFF5E252B),
+            size: 24.0,
+          ),
+        ),
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor:
+              Colors.transparent,
+          onTap: () async {
+            context.pushNamed(
+              CategoriasWidget.routeName,
+              extra: <String, dynamic>{
+                '__transition_info__':
+                    TransitionInfo(
+                  hasTransition: true,
+                  transitionType:
+                      PageTransitionType
+                          .fade,
+                  duration: Duration(
+                      milliseconds: 0),
+                ),
+              },
+            );
+          },
+          child: Text(
+            'Categorías',
+            style: FlutterFlowTheme.of(
+                    context)
+                .bodyMedium
+                .override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FontWeight.w500,
+                    fontStyle:
+                        FontStyle.italic,
+                  ),
+                  color: Color(0xFF5E252B),
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FontWeight.w500,
+                  fontStyle:
+                      FontStyle.italic,
+                ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0, 4.0, 0.0),
+          child: Icon(
+            Icons.chevron_right,
+            color: Color(0xFF5E252B),
+            size: 24.0,
+          ),
+        ),
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor:
+              Colors.transparent,
+          onTap: () async {
+            context.pushNamed(
+              SubcategoriaWidget.routeName,
+              queryParameters: {
+                'categoria': serializeParam(
+                  widget!.categoria,
+                  ParamType.SupabaseRow,
+                ),
+              }.withoutNulls,
+              extra: <String, dynamic>{
+                '__transition_info__':
+                    TransitionInfo(
+                  hasTransition: true,
+                  transitionType:
+                      PageTransitionType
+                          .fade,
+                  duration: Duration(
+                      milliseconds: 0),
+                ),
+              },
+            );
+          },
+          child: Text(
+            valueOrDefault<String>(
+              widget!.subcategoria?.nombre,
+              'Subcategoría',
+            ),
+            style: FlutterFlowTheme.of(
+                    context)
+                .bodyMedium
+                .override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FontWeight.w500,
+                    fontStyle:
+                        FontStyle.italic,
+                  ),
+                  color: Color(0xFF5E252B),
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FontWeight.w500,
+                  fontStyle:
+                      FontStyle.italic,
+                ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0, 4.0, 0.0),
+          child: Icon(
+            Icons.chevron_right,
+            color: Color(0xFF5E252B),
+            size: 24.0,
+          ),
+        ),
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor:
+              Colors.transparent,
+          onTap: () async {
+            context.pushNamed(
+              ServiciosWidget.routeName,
+              queryParameters: {
+                'subcategoria':
+                    serializeParam(
+                  widget!.subcategoria,
+                  ParamType.SupabaseRow,
+                ),
+                'categoria': serializeParam(
+                  widget!.categoria,
+                  ParamType.SupabaseRow,
+                ),
+              }.withoutNulls,
+              extra: <String, dynamic>{
+                '__transition_info__':
+                    TransitionInfo(
+                  hasTransition: true,
+                  transitionType:
+                      PageTransitionType
+                          .fade,
+                  duration: Duration(
+                      milliseconds: 0),
+                ),
+              },
+            );
+          },
+          child: Text(
+            'Servicios',
+            style: FlutterFlowTheme.of(
+                    context)
+                .bodyMedium
+                .override(
+                  font: GoogleFonts.inter(
+                    fontWeight:
+                        FontWeight.w500,
+                    fontStyle:
+                        FontStyle.italic,
+                  ),
+                  color: Color(0xFF5E252B),
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                  fontWeight:
+                      FontWeight.w500,
+                  fontStyle:
+                      FontStyle.italic,
+                ),
+          ),
+        ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -158,10 +466,10 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
         (MenuWidget.esMovil(context)
             ? 0.0
             : (FFAppState().MenuAbierto ? 280.0 : 112.0));
-    final contentPadding = contentWidth < 900.0 ? 16.0 : 40.0;
-    final searchPadding = contentWidth < 600.0 ? 16.0 : 40.0;
-    final searchWidth = (contentWidth - searchPadding * 2 - 56.0)
-        .clamp(160.0, 394.0)
+    final contentPadding = AdminPageSpacing.contentHorizontal(context);
+    final searchPadding = AdminPageSpacing.headerHorizontal(context);
+    final searchWidth = (contentWidth - searchPadding * 2 - 68.0)
+        .clamp(160.0, AdminHeaderSearchWidth.standardWidth)
         .toDouble();
     return GestureDetector(
       onTap: () {
@@ -203,9 +511,16 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                child: _buildBreadcrumb(context),
+                              ),
+                            ],
+                            const Spacer(),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  searchPadding, 0.0, 0.0, 0.0),
+                                  searchPadding, 0.0, 12.0, 0.0),
                               child: Container(
                                 width: searchWidth,
                                 child: TextFormField(
@@ -222,7 +537,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                   ),
                                   autofocus: false,
                                   obscureText: false,
-                                  decoration: InputDecoration(
+                                  decoration: decorarInputHulp(context, InputDecoration(
                                     isDense: true,
                                     labelStyle: FlutterFlowTheme.of(context)
                                         .labelMedium
@@ -308,7 +623,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                     filled: true,
                                     fillColor: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
-                                  ),
+                                  )),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -339,7 +654,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 12.0, searchPadding, 12.0),
+                                            16.0, 12.0, searchPadding, 12.0),
                               child: Icon(
                                 Icons.notifications_none,
                                 color: FlutterFlowTheme.of(context).accent3,
@@ -388,238 +703,11 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                               decoration: BoxDecoration(),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    contentPadding, 24.0, contentPadding, 0.0),
+                                    contentPadding, 16.0, contentPadding, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    ResponsiveToolbarRow(
-                                      breakpoint: 980,
-                                      children: [
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  DashboardWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Inicio',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 4.0, 0.0),
-                                              child: Icon(
-                                                Icons.chevron_right,
-                                                color: Color(0xFF5E252B),
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  CategoriasWidget.routeName,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Categorías',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 4.0, 0.0),
-                                              child: Icon(
-                                                Icons.chevron_right,
-                                                color: Color(0xFF5E252B),
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  SubcategoriaWidget.routeName,
-                                                  queryParameters: {
-                                                    'categoria': serializeParam(
-                                                      widget!.categoria,
-                                                      ParamType.SupabaseRow,
-                                                    ),
-                                                  }.withoutNulls,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                valueOrDefault<String>(
-                                                  widget!.subcategoria?.nombre,
-                                                  'Subcategoría',
-                                                ),
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 4.0, 0.0),
-                                              child: Icon(
-                                                Icons.chevron_right,
-                                                color: Color(0xFF5E252B),
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                            InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.pushNamed(
-                                                  ServiciosWidget.routeName,
-                                                  queryParameters: {
-                                                    'subcategoria':
-                                                        serializeParam(
-                                                      widget!.subcategoria,
-                                                      ParamType.SupabaseRow,
-                                                    ),
-                                                    'categoria': serializeParam(
-                                                      widget!.categoria,
-                                                      ParamType.SupabaseRow,
-                                                    ),
-                                                  }.withoutNulls,
-                                                  extra: <String, dynamic>{
-                                                    '__transition_info__':
-                                                        TransitionInfo(
-                                                      hasTransition: true,
-                                                      transitionType:
-                                                          PageTransitionType
-                                                              .fade,
-                                                      duration: Duration(
-                                                          milliseconds: 0),
-                                                    ),
-                                                  },
-                                                );
-                                              },
-                                              child: Text(
-                                                'Servicios',
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                      color: Color(0xFF5E252B),
-                                                      fontSize: 16.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                    ),
-                                              ),
-                                            ),
-                                      ],
-                                    ),
+                                    if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 16.0, 0.0, 0.0),
@@ -1308,6 +1396,7 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                               servicioId: subcategoriasItem.id!,
                                                                               categria: widget!.categoria!,
                                                                               subcategria: widget!.subcategoria!,
+                                                                              onGuardado: _actualizarServiciosTrasEditar,
                                                                             ),
                                                                           ),
                                                                         );
@@ -1341,86 +1430,10 @@ class _ServiciosWidgetState extends State<ServiciosWidget> {
                                                                   highlightColor:
                                                                       Colors
                                                                           .transparent,
-                                                                  onTap:
-                                                                      () async {
-                                                                    await showDialog(
-                                                                      context:
-                                                                          context,
-                                                                      builder:
-                                                                          (dialogContext) {
-                                                                        return Dialog(
-                                                                          elevation:
-                                                                              0,
-                                                                          insetPadding:
-                                                                              const EdgeInsets.all(16.0),
-                                                                          backgroundColor:
-                                                                              Colors.transparent,
-                                                                          alignment:
-                                                                              AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                          child:
-                                                                              GestureDetector(
-                                                                            onTap:
-                                                                                () {
-                                                                              FocusScope.of(dialogContext).unfocus();
-                                                                              FocusManager.instance.primaryFocus?.unfocus();
-                                                                            },
-                                                                            child:
-                                                                                NotificacioneliminarWidget(
-                                                                              titulo: 'Eliminar servicio',
-                                                                              texto: '¿Seguro de borrar este servicio?',
-                                                                              succes: false,
-                                                                              action: () async {
-                                                                                await ServiciosTable().delete(
-                                                                                  matchingRows: (rows) => rows.eqOrNull(
-                                                                                    'id',
-                                                                                    subcategoriasItem.id,
-                                                                                  ),
-                                                                                );
-                                                                                await showDialog(
-                                                                                  context: context,
-                                                                                  builder: (dialogContext) {
-                                                                                    return Dialog(
-                                                                                      elevation: 0,
-                                                                                      insetPadding: const EdgeInsets.all(16.0),
-                                                                                      backgroundColor: Colors.transparent,
-                                                                                      alignment: AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
-                                                                                      child: GestureDetector(
-                                                                                        onTap: () {
-                                                                                          FocusScope.of(dialogContext).unfocus();
-                                                                                          FocusManager.instance.primaryFocus?.unfocus();
-                                                                                        },
-                                                                                        child: Notificacion2Widget(
-                                                                                          titulo: 'Servicio',
-                                                                                          texto: 'Servicio eliminado exitosamente',
-                                                                                          boton: 'Aceptar',
-                                                                                          succes: true,
-                                                                                          action: () async {
-                                                                                            context.pushNamed(
-                                                                                              ServiciosWidget.routeName,
-                                                                                              queryParameters: {
-                                                                                                'subcategoria': serializeParam(
-                                                                                                  widget!.subcategoria,
-                                                                                                  ParamType.SupabaseRow,
-                                                                                                ),
-                                                                                                'categoria': serializeParam(
-                                                                                                  widget!.categoria,
-                                                                                                  ParamType.SupabaseRow,
-                                                                                                ),
-                                                                                              }.withoutNulls,
-                                                                                            );
-                                                                                          },
-                                                                                        ),
-                                                                                      ),
-                                                                                    );
-                                                                                  },
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    );
-                                                                  },
+                                                                  onTap: () =>
+                                                                      _confirmarEliminacionServicio(
+                                                                    subcategoriasItem.id,
+                                                                  ),
                                                                   child: Container(
                                                                     width: 35.0,
                                                                     height: 35.0,

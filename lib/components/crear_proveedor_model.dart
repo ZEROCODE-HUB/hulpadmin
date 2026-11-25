@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/components/hulp_numeric_input.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -37,6 +38,7 @@ class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
   ///  Local state fields for this component.
 
   List<String> serviciosid = [];
+  bool mostrarErrorServicios = false;
   void addToServiciosid(String item) => serviciosid.add(item);
   void removeFromServiciosid(String item) => serviciosid.remove(item);
   void removeAtIndexFromServiciosid(int index) => serviciosid.removeAt(index);
@@ -121,8 +123,7 @@ class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
     if (val == null || val.isEmpty) {
       return 'Digite su telefono ed rquerido';
     }
-
-    return null;
+    return HulpNumericInput.validateInteger(val, fieldName: 'el teléfono');
   }
 
   // State field(s) for entidad widget.
@@ -140,8 +141,7 @@ class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
     if (val == null || val.isEmpty) {
       return 'Ingresa el número de cuenta';
     }
-
-    return null;
+    return HulpNumericInput.validateInteger(val, fieldName: 'el número de cuenta');
   }
 
   // State field(s) for rutnit widget.
@@ -152,8 +152,7 @@ class CrearProveedorModel extends FlutterFlowModel<CrearProveedorWidget> {
     if (val == null || val.isEmpty) {
       return 'Ingresa el RUT / NIT';
     }
-
-    return null;
+    return HulpNumericInput.validateTaxId(val, fieldName: 'RUT / NIT');
   }
 
   // State field(s) for correo1 widget.

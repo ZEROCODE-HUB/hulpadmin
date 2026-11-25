@@ -24,7 +24,7 @@ class ProveedoresModel extends FlutterFlowModel<ProveedoresWidget> {
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
   String? Function(BuildContext, String?)? textControllerValidator;
-  Completer<List<VwCategoriasProveedoresRow>>? requestCompleter;
+  Completer<List<List<VwCategoriasProveedoresRow>>>? requestCompleter;
   // State field(s) for DropDown widget.
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;

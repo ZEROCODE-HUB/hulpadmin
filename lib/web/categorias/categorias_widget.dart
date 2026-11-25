@@ -13,11 +13,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'categorias_model.dart';
@@ -37,6 +40,13 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
   late CategoriasModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _actualizarListado() {
+    safeSetState(() {
+      _model.requestCompleter = null;
+      _model.containerSupabaseStream = null;
+    });
+  }
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -251,6 +261,135 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
     super.dispose();
   }
 
+  Widget _buildLoadingHeaderBar(BuildContext context) => AdminPageHeaderBar(
+        routeTitle: 'Categorías',
+        searchHint: 'Buscar categoría',
+        controller: _model.textController,
+        focusNode: _model.textFieldFocusNode,
+        onChanged: (_) => EasyDebounce.debounce(
+          '_model.textController',
+          const Duration(milliseconds: 2000),
+          () async {
+            safeSetState(() => _model.requestCompleter = null);
+            await _model.waitForRequestCompleted();
+          },
+        ),
+      );
+
+  Widget _buildBreadcrumb(BuildContext context) {
+    return Row(
+  mainAxisSize: MainAxisSize.max,
+  children: [
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          DashboardWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0,
+                  4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+            CategoriasWidget
+                .routeName);
+      },
+      child: Text(
+        'Categorías',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -259,11 +398,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
         (MenuWidget.esMovil(context)
             ? 0.0
             : (FFAppState().MenuAbierto ? 280.0 : 112.0));
-    final contentPadding = contentWidth < 900.0 ? 16.0 : 40.0;
-    final searchPadding = contentWidth < 600.0 ? 16.0 : 40.0;
+    final contentPadding = AdminPageSpacing.contentHorizontal(context);
+    final searchPadding = AdminPageSpacing.headerHorizontal(context);
     final searchWidth =
-        (contentWidth - searchPadding * 2 - 56.0)
-            .clamp(160.0, 394.0)
+        (contentWidth - searchPadding * 2 - 68.0)
+            .clamp(160.0, AdminHeaderSearchWidth.standardWidth)
             .toDouble();
     return GestureDetector(
       onTap: () {
@@ -297,16 +436,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                FlutterFlowTheme.of(context).primary,
-                              ),
-                            ),
-                          ),
+                        return AdminPageLoadingSkeleton(
+                          topBar: _buildLoadingHeaderBar(context),
+                          filterCount: 1,
+                          columnCount: 5,
+                          rowCount: 5,
                         );
                       }
                       List<VwResumenCategoriasRow>
@@ -327,16 +461,11 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
-                                    ),
-                                  ),
-                                ),
+                              return AdminPageLoadingSkeleton(
+                                topBar: _buildLoadingHeaderBar(context),
+                                filterCount: 1,
+                                columnCount: 5,
+                                rowCount: 5,
                               );
                             }
                             List<VwResumenCategoriasRow>
@@ -363,10 +492,17 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
+                                        if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                            child: _buildBreadcrumb(context),
+                                          ),
+                                        ],
+                                        const Spacer(),
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  searchPadding, 0.0, 0.0, 0.0),
+                                                  searchPadding, 0.0, 12.0, 0.0),
                                           child: Container(
                                             width: searchWidth,
                                             child: TextFormField(
@@ -386,7 +522,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                               ),
                                               autofocus: false,
                                               obscureText: false,
-                                              decoration: InputDecoration(
+                                              decoration: decorarInputHulp(context, InputDecoration(
                                                 isDense: true,
                                                 labelStyle:
                                                     FlutterFlowTheme.of(context)
@@ -499,7 +635,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                 fillColor:
                                                     FlutterFlowTheme.of(context)
                                                         .secondaryBackground,
-                                              ),
+                                              )),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -540,7 +676,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 12.0, searchPadding, 12.0),
+                                                  16.0, 12.0, searchPadding, 12.0),
                                           child: Icon(
                                             Icons.notifications_none,
                                             color: FlutterFlowTheme.of(context)
@@ -554,7 +690,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                   Flexible(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          contentPadding, 24.0, contentPadding, 0.0),
+                                          contentPadding, 16.0, contentPadding, 0.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
@@ -563,116 +699,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        DashboardWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Inicio',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
-                                                                4.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.chevron_right,
-                                                      color: Color(0xFF5E252B),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                          CategoriasWidget
-                                                              .routeName);
-                                                    },
-                                                    child: Text(
-                                                      'Categorías',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                              if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                             ],
                                           ),
                                           Padding(
@@ -1363,6 +1390,7 @@ class _CategoriasWidgetState extends State<CategoriasWidget> {
                                                                                 },
                                                                                 child: EditarCategoriaWidget(
                                                                                   categoriarow: categoriasItem,
+                                                                                  onGuardado: _actualizarListado,
                                                                                 ),
                                                                               ),
                                                                             );

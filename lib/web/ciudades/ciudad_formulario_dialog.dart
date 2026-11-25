@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
+import '/components/hulp_modal_actions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
@@ -119,10 +121,14 @@ class _CiudadFormularioDialogState extends State<CiudadFormularioDialog> {
                   controller: _nombre,
                   autofocus: true,
                   enabled: !_guardando,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    hintText: 'Bogotá D.C.',
-                    border: OutlineInputBorder(),
+                  decoration: decorarInputHulp(
+                    context,
+                    const InputDecoration(
+                      labelText: 'Nombre',
+                      hintText: 'Bogotá D.C.',
+                      border: OutlineInputBorder(),
+                    ),
+                    etiqueta: 'Ciudad',
                   ),
                 ),
                 const SizedBox(height: 6.0),
@@ -144,15 +150,16 @@ class _CiudadFormularioDialogState extends State<CiudadFormularioDialog> {
           ),
         ),
         actions: [
-          TextButton(
+          hulpModalCloseButton(
+            text: 'Cancelar',
             onPressed: _guardando || _cerrando
                 ? null
                 : () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
           ),
-          FilledButton(
+          hulpModalPrimaryButton(
+            context: context,
+            text: _guardando ? 'Guardando...' : 'Guardar',
             onPressed: _guardando || _cerrando ? null : _guardar,
-            child: Text(_guardando ? 'Guardando...' : 'Guardar'),
           ),
         ],
       ),

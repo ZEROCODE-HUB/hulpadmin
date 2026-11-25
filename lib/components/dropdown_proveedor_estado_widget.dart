@@ -159,6 +159,7 @@ class _DropdownProveedorEstadoWidgetState
                 hoverColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onTap: () async {
+                  final onGuardado = widget.actionnavegacion;
                   await UsuariosTable().update(
                     data: {
                       'verificado': widget!.estadoActual == 'sin documentos'
@@ -170,7 +171,8 @@ class _DropdownProveedorEstadoWidgetState
                       widget!.proveedorId,
                     ),
                   );
-                  await widget.actionnavegacion?.call();
+                  safeSetState(() => _model.showState = false);
+                  await onGuardado?.call();
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.max,

@@ -1,3 +1,4 @@
+import '/flutter_flow/validacion_precio_servicio.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/notificacion2_widget.dart';
@@ -80,13 +81,7 @@ class CrearServicioModel extends FlutterFlowModel<CrearServicioWidget> {
   TextEditingController? preciobaseTextController;
   String? Function(BuildContext, String?)? preciobaseTextControllerValidator;
   String? _preciobaseTextControllerValidator(
-      BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
-      return 'Ingresa el precio base';
-    }
-
-    return null;
-  }
+      BuildContext context, String? val) => validarPrecioNuevoServicio(val);
 
   // State field(s) for descripcion widget.
   FocusNode? descripcionFocusNode1;

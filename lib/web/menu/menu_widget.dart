@@ -19,6 +19,14 @@ class MenuWidget extends StatefulWidget {
   static bool esMovil(BuildContext context) =>
       MediaQuery.sizeOf(context).width < kBreakpointMedium;
 
+  /// Keeps the breadcrumb in the content on narrow screens to avoid crowding
+  /// the search field and notification icon in the top bar.
+  static bool breadcrumbEnBarraSuperior(BuildContext context) {
+    final anchoContenido = MediaQuery.sizeOf(context).width -
+        (esMovil(context) ? 0.0 : (FFAppState().MenuAbierto ? 280.0 : 112.0));
+    return anchoContenido >= 1000.0;
+  }
+
   static PreferredSizeWidget? barraMovil(BuildContext context) {
     if (!esMovil(context)) return null;
     return AppBar(
@@ -82,6 +90,20 @@ class _MenuWidgetState extends State<MenuWidget> {
       return const SizedBox.shrink();
     }
     final menuExpandido = widget.movil || FFAppState().MenuAbierto;
+    final avatarUsuario = Container(
+      width: 40.0,
+      height: 40.0,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(shape: BoxShape.circle),
+      child: Image.network(
+        valueOrDefault<String>(
+          FFAppState().user.fotoUrl,
+          'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+        ),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+      ),
+    );
 
     return Container(
       width: valueOrDefault<double>(
@@ -103,131 +125,114 @@ class _MenuWidgetState extends State<MenuWidget> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.network(
-                          'https://zexegravzidwloxeimxx.supabase.co/storage/v1/object/public/fotoservocops/servicios/Logo-3.png',
-                          width: valueOrDefault<double>(
-                            menuExpandido ? 120.0 : 60.0,
-                            60.0,
-                          ),
-                          height: valueOrDefault<double>(
-                            menuExpandido ? 60.0 : 28.0,
-                            28.0,
-                          ),
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const SizedBox.shrink(),
-                        ),
-                        if (!menuExpandido)
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                4.0, 0.0, 0.0, 0.0),
-                            child: InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                FFAppState().MenuAbierto = true;
-                                safeSetState(() {});
-                              },
-                              child: Icon(
-                                Icons.chevron_right,
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                size: 24.0,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    if (menuExpandido)
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          if (widget.movil) {
-                            Scaffold.of(context).closeDrawer();
-                          } else {
-                            FFAppState().MenuAbierto = false;
-                            safeSetState(() {});
-                          }
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          size: 24.0,
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 60.0,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.network(
+                        'https://zexegravzidwloxeimxx.supabase.co/storage/v1/object/public/fotoservocops/servicios/Logo-3.png',
+                        width: menuExpandido ? 120.0 : 48.0,
+                        height: menuExpandido ? 60.0 : 28.0,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
                       ),
-                  ],
-                ),
-                Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
-                  child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 40.0,
-                          height: 40.0,
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                          ),
-                          child: Image.network(
-                            valueOrDefault<String>(
-                              FFAppState().user.fotoUrl,
-                              'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-                            ),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const SizedBox.shrink(),
-                          ),
-                        ),
-                        if (menuExpandido)
-                          Flexible(
-                            child: Text(
-                              FFAppState().user.nombres,
-                              style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: menuExpandido
+                            ? InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  if (widget.movil) {
+                                    Scaffold.of(context).closeDrawer();
+                                  } else {
+                                    FFAppState().MenuAbierto = false;
+                                    safeSetState(() {});
+                                  }
+                                },
+                                child: Icon(
+                                  Icons.close,
                                   color: FlutterFlowTheme.of(context)
                                       .secondaryBackground,
-                                  fontSize: 20.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
+                                  size: 24.0,
                                 ),
-                            ),
-                          ),
-                      ].divide(SizedBox(width: 12.0)),
-                    ),
+                              )
+                            : InkWell(
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                onTap: () async {
+                                  FFAppState().MenuAbierto = true;
+                                  safeSetState(() {});
+                                },
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  size: 20.0,
+                                ),
+                              ),
+                      ),
+                    ],
                   ),
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 12.0),
+                  child: menuExpandido
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                avatarUsuario,
+                                const SizedBox(width: 10.0),
+                                Expanded(
+                                  child: Text(
+                                    FFAppState().user.nombres,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          font: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryBackground,
+                                          fontSize: 16.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                top: 12.0,
+                              ),
+                              child: Container(
+                                height: 1.0,
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground
+                                    .withOpacity(0.24),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Center(child: avatarUsuario),
                 ),
                 Align(
                   alignment: AlignmentDirectional(0.0, 0.0),
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                        EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -306,7 +311,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                             imagen:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/to1bcnobshpm/talento_hulp.png',
                             action: () async {
-                              if (!widget.movil && Navigator.of(context).canPop()) {
+                              if (!widget.movil &&
+                                  Navigator.of(context).canPop()) {
                                 context.pop();
                               }
                               context.pushNamed(
@@ -387,7 +393,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             model: _model.menuSeleccionModel6,
                             updateCallback: () => safeSetState(() {}),
                             child: MenuSeleccionWidget(
-                            movil: widget.movil,
+                              movil: widget.movil,
                               textseleccion: 'Usuarios',
                               imagen:
                                   'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/hulp-web-92cm9v/assets/4ytkvlil6egm/account_circle.png',
@@ -503,7 +509,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                                 ),
                               ),
                               if (menuExpandido)
-                                Flexible(child: Text(
+                                Flexible(
+                                    child: Text(
                                   'Cerrar sesión',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -541,9 +548,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
                   child: Text(
-                    menuExpandido
-                        ? 'v1.0.18 · 2026-11-01'
-                        : 'v1.0.18',
+                    menuExpandido ? 'v1.0.19 · 2026-11-18' : 'v1.0.19',
                     style: FlutterFlowTheme.of(context).bodySmall.override(
                           font: GoogleFonts.inter(
                             fontStyle: FlutterFlowTheme.of(context)
@@ -570,8 +575,11 @@ class _MenuWidgetState extends State<MenuWidget> {
 
   Widget _contenidoDesplazable(Widget child) {
     if (widget.movil) return child;
-    return LayoutBuilder(builder: (context, size) => SingleChildScrollView(
-      child: ConstrainedBox(constraints: BoxConstraints(minHeight: size.maxHeight), child: child),
-    ));
+    return LayoutBuilder(
+        builder: (context, size) => SingleChildScrollView(
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: size.maxHeight),
+                  child: child),
+            ));
   }
 }

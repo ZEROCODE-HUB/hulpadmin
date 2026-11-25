@@ -106,4 +106,63 @@ void main() {
     expect(ediciones, 1);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('resalta al proveedor pendiente y muestra completos sus detalles',
+      (tester) async {
+    tester.view.physicalSize = const Size(1880, 850);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller =
+        FlutterFlowDataTableController<VwSolicitudesServiciosCompletaRow>();
+    addTearDown(controller.dispose);
+    const pendiente = 'María Alejandra de los Ángeles Hernández Villamizar';
+    const revision = 'Servicio pendiente de aceptación. Contactar al proveedor '
+        'para confirmar la asignación antes del servicio.';
+    const confirmado = 'Camilo Ruiz';
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SolicitudesDataTable(
+          data: [
+            VwSolicitudesServiciosCompletaRow({
+              'ticket': 1159,
+              'estado_solicitud': 'entrantes',
+              'tipo_asignacion': 'directa',
+              'proveedor_nombre_completo': pendiente,
+              'revision_asignacion': revision,
+              'ubicacion': 'Calle 2',
+            }),
+            VwSolicitudesServiciosCompletaRow({
+              'ticket': 1158,
+              'estado_solicitud': 'aceptadas',
+              'tipo_asignacion': 'abierta',
+              'proveedor_nombre_completo': confirmado,
+            }),
+          ],
+          controller: controller,
+          onStatusTap: (_, __, ___) {},
+          onDelete: (_) {},
+          onViewDetails: (_) {},
+          onEdit: (_) {},
+          onMarkPaymentReceived: (_) {},
+          updatingPaymentIds: const {},
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Text>(find.text(pendiente)).style!.color,
+        const Color(0xFF747474));
+    expect(tester.widget<Text>(find.text(confirmado)).style!.color,
+        isNot(const Color(0xFF747474)));
+    expect(find.text('Asignación directa'), findsOneWidget);
+    for (final texto in [pendiente, revision]) {
+      final parrafo = tester.renderObject<RenderParagraph>(find.text(texto));
+      expect(parrafo.maxLines, isNull);
+      expect(parrafo.didExceedMaxLines, isFalse);
+    }
+    expect(tester.getBottomLeft(find.text(revision)).dy,
+        lessThan(tester.getTopLeft(find.text(confirmado)).dy));
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -15,11 +15,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'registro_proveedores_model.dart';
@@ -40,6 +43,10 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
   late RegistroProveedoresModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _actualizarProveedores() {
+    safeSetState(_model.invalidarConsultas);
+  }
 
   @override
   void initState() {
@@ -64,8 +71,227 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
     super.dispose();
   }
 
+  Widget _buildLoadingHeaderBar(BuildContext context) => AdminPageHeaderBar(
+        routeTitle: 'Registro talento Hulp',
+        searchHint: 'Buscar proveedor',
+        controller: _model.textController,
+        focusNode: _model.textFieldFocusNode,
+        trailingPadding: AdminPageSpacing.headerHorizontal(context),
+        onChanged: (_) => EasyDebounce.debounce(
+          '_model.textController',
+          const Duration(milliseconds: 2000),
+          () async {
+            safeSetState(() => _model.requestCompleter = null);
+            await _model.waitForRequestCompleted();
+          },
+        ),
+        onFieldSubmitted: (_) async {
+          safeSetState(() => _model.requestCompleter = null);
+          await _model.waitForRequestCompleted();
+        },
+      );
+
+  void _seleccionarFiltroVerificado(String estado) {
+    if (_model.filtroVerificado == estado) return;
+    safeSetState(() {
+      _model.filtroVerificado = estado;
+      _model.dropDownValueController?.reset();
+      _model.dropDownValue = null;
+      _model.ciudadDropdownValueController?.reset();
+      _model.ciudadDropdownValue = null;
+      _model.invalidarConsultas();
+    });
+  }
+
+  Widget _buildEstadoFilterCounter({
+    required String label,
+    required String estado,
+    required Color color,
+  }) {
+    final seleccionado = _model.filtroVerificado == estado;
+    final conteo = _model.conteosPorVerificacion.putIfAbsent(
+      estado,
+      () => contarProveedores(verificado: estado),
+    );
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(8.0),
+      onTap: () => _seleccionarFiltroVerificado(estado),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        decoration: BoxDecoration(
+          color: seleccionado ? const Color(0xFFF0F5F3) : Colors.transparent,
+          border: Border.all(
+            color: seleccionado ? color : Colors.transparent,
+          ),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$label:',
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    font: GoogleFonts.inter(),
+                    fontSize: 16.0,
+                    color: color,
+                  ),
+            ),
+            FutureBuilder<int>(
+              future: conteo,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const AdminSkeletonBlock(width: 32, height: 18);
+                }
+                return Text(
+                  snapshot.data.toString(),
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                        color: color,
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                );
+              },
+            ),
+          ].divide(const SizedBox(width: 8.0)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumb(BuildContext context) {
+    return ResponsiveToolbarRow(
+  mainAxisSize: MainAxisSize.max,
+  children: [
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          DashboardWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0,
+                  4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF606060),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          RegistroProveedoresWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Registro talento Hulp',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -91,20 +317,18 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                 Expanded(
                   child: FutureBuilder<List<VwProfesionalesCompletoRow>>(
                     future: _model.listaCompletaRequest ??=
-                        consultarProfesionales(verificado: 'pendiente'),
+                        consultarProfesionales(
+                          verificado: _model.filtroVerificado,
+                        ),
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                FlutterFlowTheme.of(context).primary,
-                              ),
-                            ),
-                          ),
+                        return AdminPageLoadingSkeleton(
+                          topBar: _buildLoadingHeaderBar(context),
+                          filterCount: 2,
+                          summaryCount: 3,
+                          columnCount: 6,
+                          rowCount: 5,
                         );
                       }
                       List<VwProfesionalesCompletoRow>
@@ -131,21 +355,24 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
+                                  if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                                    Padding(
+                                      padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                      child: _buildBreadcrumb(context),
+                                    ),
+                                  ],
                                   Expanded(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
+                                        headerHorizontal,
                                         0.0,
-                                        16.0,
+                                        12.0,
                                         0.0,
                                       ),
                                       child: Align(
                                         alignment:
-                                            AlignmentDirectional.centerStart,
-                                        child: Container(
-                                          width: 394.0,
+                                            AlignmentDirectional.centerEnd,
+                                        child: AdminHeaderSearchWidth(
                                           child: TextFormField(
                                             controller: _model.textController,
                                             focusNode:
@@ -169,7 +396,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                             },
                                             autofocus: false,
                                             obscureText: false,
-                                            decoration: InputDecoration(
+                                            decoration: decorarInputHulp(context, InputDecoration(
                                               isDense: true,
                                               labelStyle:
                                                   FlutterFlowTheme.of(context)
@@ -275,7 +502,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                               fillColor:
                                                   FlutterFlowTheme.of(context)
                                                       .secondaryBackground,
-                                            ),
+                                            )),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -316,11 +543,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0,
+                                        16.0,
                                         12.0,
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
+                                        headerHorizontal,
                                         12.0),
                                     child: Icon(
                                       Icons.notifications_none,
@@ -338,25 +563,17 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                 future: (_model.requestCompleter ??= Completer<
                                         List<VwProfesionalesCompletoRow>>()
                                       ..complete(consultarProfesionales(
-                                        verificado: 'pendiente',
+                                        verificado: _model.filtroVerificado,
                                         busqueda: _model.textController.text,
                                       )))
                                     .future,
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
+                                    return AdminPageLoadingSkeleton(
+                                      filterCount: 2,
+                                      columnCount: 6,
+                                      rowCount: 5,
                                     );
                                   }
                                   List<VwProfesionalesCompletoRow>
@@ -367,13 +584,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                     decoration: BoxDecoration(),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
-                                        24.0,
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
+                                        pageHorizontal,
+                                        16.0,
+                                        pageHorizontal,
                                         0.0,
                                       ),
                                       child: Column(
@@ -384,130 +597,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              ResponsiveToolbarRow(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        DashboardWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Inicio',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
-                                                                4.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.chevron_right,
-                                                      color: Color(0xFF606060),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        RegistroProveedoresWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Registro talento Hulp',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                              if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                             ],
                                           ),
                                           Padding(
@@ -549,7 +639,7 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                 builder: (context) =>
                                                     FFButtonWidget(
                                                   onPressed: () async {
-                                                    await showDialog(
+                                                    final creado = await showDialog<bool>(
                                                       barrierDismissible: false,
                                                       context: context,
                                                       builder: (dialogContext) {
@@ -587,10 +677,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                         );
                                                       },
                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                    safeSetState(() => _model
-                                                        .invalidarConsultas());
+                                                    if (creado == true) {
+                                                      _actualizarProveedores();
+                                                    }
                                                   },
                                                   text: 'Agregar proveedor',
                                                   icon: Icon(
@@ -959,89 +1048,19 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                     spacing: 8.0,
                                                     runSpacing: 8.0,
                                                     children: [
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Text(
-                                                            'Pendientes:',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      16.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                          Text(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              containersinfiltroVwProfesionalesCompletoRowList
-                                                                  .where((e) =>
-                                                                      e.verificado ==
-                                                                      'pendiente')
-                                                                  .toList()
-                                                                  .unique((e) =>
-                                                                      e.profesionalId ??
-                                                                      '')
-                                                                  .length
-                                                                  .toString(),
-                                                              '0',
-                                                            ),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Color(
-                                                                      0xFF0D70E7),
-                                                                  fontSize:
-                                                                      20.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ].divide(SizedBox(
-                                                            width: 8.0)),
+                                                      _buildEstadoFilterCounter(
+                                                        label: 'Pendientes',
+                                                        estado: 'pendiente',
+                                                        color: const Color(
+                                                          0xFF0D70E7,
+                                                        ),
+                                                      ),
+                                                      _buildEstadoFilterCounter(
+                                                        label: 'Docs. faltantes',
+                                                        estado: 'sin documentos',
+                                                        color: const Color(
+                                                          0xFF6C757D,
+                                                        ),
                                                       ),
                                                       Row(
                                                         mainAxisSize:
@@ -1125,22 +1144,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                               // Customize what your widget looks like when it's loading.
                                                               if (!snapshot
                                                                   .hasData) {
-                                                                return Center(
-                                                                  child:
-                                                                      SizedBox(
-                                                                    width: 50.0,
-                                                                    height:
-                                                                        50.0,
-                                                                    child:
-                                                                        CircularProgressIndicator(
-                                                                      valueColor:
-                                                                          AlwaysStoppedAnimation<
-                                                                              Color>(
-                                                                        FlutterFlowTheme.of(context)
-                                                                            .primary,
-                                                                      ),
-                                                                    ),
-                                                                  ),
+                                                                return const AdminSkeletonBlock(
+                                                                  width: 32,
+                                                                  height: 18,
                                                                 );
                                                               }
                                                               final int
@@ -1232,22 +1238,9 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                               // Customize what your widget looks like when it's loading.
                                                               if (!snapshot
                                                                   .hasData) {
-                                                                return Center(
-                                                                  child:
-                                                                      SizedBox(
-                                                                    width: 50.0,
-                                                                    height:
-                                                                        50.0,
-                                                                    child:
-                                                                        CircularProgressIndicator(
-                                                                      valueColor:
-                                                                          AlwaysStoppedAnimation<
-                                                                              Color>(
-                                                                        FlutterFlowTheme.of(context)
-                                                                            .primary,
-                                                                      ),
-                                                                    ),
-                                                                  ),
+                                                                return const AdminSkeletonBlock(
+                                                                  width: 32,
+                                                                  height: 18,
                                                                 );
                                                               }
                                                               final int
@@ -1798,32 +1791,8 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                   proveedoresDatosItem
                                                                           .profesionalId ??
                                                                       '',
-                                                              actionnavegacion:
-                                                                  () async {
-                                                                if (Navigator.of(
-                                                                        context)
-                                                                    .canPop()) {
-                                                                  context.pop();
-                                                                }
-                                                                context
-                                                                    .pushNamed(
-                                                                  RegistroProveedoresWidget
-                                                                      .routeName,
-                                                                  extra: <String,
-                                                                      dynamic>{
-                                                                    '__transition_info__':
-                                                                        TransitionInfo(
-                                                                      hasTransition:
-                                                                          true,
-                                                                      transitionType:
-                                                                          PageTransitionType
-                                                                              .fade,
-                                                                      duration: Duration(
-                                                                          milliseconds:
-                                                                              0),
-                                                                    ),
-                                                                  },
-                                                                );
+                                                              actionnavegacion: () async {
+                                                                _actualizarProveedores();
                                                               },
                                                             ),
                                                           ),
@@ -1877,16 +1846,12 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                             child:
                                                                                 RechazarProveedorWidget(
                                                                               proveedorId: proveedoresDatosItem.profesionalId ?? '',
+                                                                              onGuardado: _actualizarProveedores,
                                                                             ),
                                                                           ),
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),
@@ -1936,16 +1901,12 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                             child:
                                                                                 AceptarProveedorWidget(
                                                                               idproveedor: proveedoresDatosItem.profesionalId ?? '',
+                                                                              onGuardado: _actualizarProveedores,
                                                                             ),
                                                                           ),
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),
@@ -2000,11 +1961,6 @@ class _RegistroProveedoresWidgetState extends State<RegistroProveedoresWidget> {
                                                                         );
                                                                       },
                                                                     );
-// La lista se arma con consultas puntuales, no con un stream en vivo:
-// hay que volver a pedirla despues de crear, aceptar o rechazar.
-                                                                    safeSetState(
-                                                                        () => _model
-                                                                            .invalidarConsultas());
                                                                   },
                                                                 ),
                                                               ),

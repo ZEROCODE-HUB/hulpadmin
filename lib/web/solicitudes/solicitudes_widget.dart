@@ -1,10 +1,12 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
+import '/components/resumen_finanzas_periodo.dart';
+import '/backend/exportar_solicitudes.dart';
 import '/backend/pagos_manuales.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/crear_solicitud_widget.dart';
 import '/components/detalle_solicitud_widget.dart';
 import '/components/dropdown_solicitud_estado_widget.dart';
 import '/components/edicion_solicitud_widget.dart';
-import '/components/hulp_loading_indicator.dart';
 import '/components/notificacion2_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -14,19 +16,33 @@ import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/dialog_helpers.dart';
 import '/flutter_flow/solicitud_payment_helpers.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import '/web/solicitudes/solicitudes_filter_bar.dart';
 import '/web/solicitudes/solicitudes_data_table.dart';
 import '/web/solicitudes/menu_estado_solicitud.dart';
+import '/web/solicitudes/solicitudes_loading_skeleton.dart';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'solicitudes_model.dart';
 export 'solicitudes_model.dart';
 
 class SolicitudesWidget extends StatefulWidget {
-  const SolicitudesWidget({super.key});
+  const SolicitudesWidget({
+    super.key,
+    this.estadoInicial,
+    this.fechaInicioInicial,
+    this.fechaFinInicial,
+  });
+
+  final String? estadoInicial;
+  final String? fechaInicioInicial;
+  final String? fechaFinInicial;
 
   static String routeName = 'Solicitudes';
   static String routePath = '/solicitudes';
@@ -36,11 +52,14 @@ class SolicitudesWidget extends StatefulWidget {
 }
 
 class _SolicitudesWidgetState extends State<SolicitudesWidget> {
+  static const _ticketDescendente = 'Ticket descendente';
+
   late SolicitudesModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   StreamSubscription<List<Map<String, dynamic>>>? _solicitudesTriggerSub;
   final Set<String> _paymentUpdatesInProgress = <String>{};
+  Object? _errorActualizacion;
 
   static String? _trimOrNull(String? s) {
     if (s == null) return null;
@@ -68,10 +87,18 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
+  static DateTime? _parseDateParameter(String? value) {
+    final parsed = DateTime.tryParse(value ?? '');
+    return parsed == null ? null : _dateOnly(parsed);
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SolicitudesModel());
+    _model.dropDownValue1 = widget.estadoInicial;
+    _model.dateStart = _parseDateParameter(widget.fechaInicioInicial);
+    _model.dateEnd = _parseDateParameter(widget.fechaFinInicial);
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
     _model.textFieldFocusNode!.addListener(() async {
@@ -80,14 +107,16 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
 
-    _solicitudesTriggerSub = SupaFlow.client
-        .from('solicitudes_servicio')
-        .stream(primaryKey: ['id']).listen((_) {
+    _solicitudesTriggerSub = SupaFlow.solicitudesStream().listen((_) {
       if (!mounted) return;
       safeSetState(() {
+        _errorActualizacion = null;
         _model.containerSupabaseStream = null;
         _model.requestCompleter = null;
       });
+    }, onError: (Object error, StackTrace stackTrace) {
+      if (!mounted) return;
+      safeSetState(() => _errorActualizacion = error);
     });
   }
 
@@ -105,9 +134,12 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     required List<VwSolicitudesServiciosCompletaRow> searchFiltered,
   }) {
     final estadoSel = _trimOrNull(_model.dropDownValue1);
-    final catSel = _trimOrNull(_model.dropDownValue2);
+    final servicioSel = _trimOrNull(_model.dropDownValue2);
+    final ciudadSel = _trimOrNull(_model.dropDownValue3);
     final estadoKey = estadoSel != null ? _normCompare(estadoSel) : null;
-    final catKey = catSel != null ? _normCompare(catSel) : null;
+    final servicioKey =
+        servicioSel != null ? _normCompare(servicioSel) : null;
+    final ciudadKey = ciudadSel != null ? _normCompare(ciudadSel) : null;
 
     final hasText = _model.textController.text.trim().isNotEmpty;
 
@@ -122,12 +154,17 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     }
     if (estadoKey != null) {
       result = result.where(
-        (e) => _normCompare(e.estadoSolicitud) == estadoKey,
+        (e) => _normCompare(estadoSolicitudParaFiltro(e.estadoSolicitud)) == estadoKey,
       );
     }
-    if (catKey != null) {
+    if (servicioKey != null) {
       result = result.where(
-        (e) => _normCompare(e.categoriaNombre) == catKey,
+        (e) => _normCompare(e.servicioNombre) == servicioKey,
+      );
+    }
+    if (ciudadKey != null) {
+      result = result.where(
+        (e) => _normCompare(e.solicitudCiudad) == ciudadKey,
       );
     }
 
@@ -143,7 +180,18 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
       }).toList();
     }
 
-    final desc = _model.dropDownOrdenValue != 'Antiguos primero';
+    final orden = _model.dropDownOrdenValue ?? _ticketDescendente;
+    if (orden == 'Ticket ascendente' || orden == _ticketDescendente) {
+      final ticketsDescendente = orden == _ticketDescendente;
+      final withTicket = list.where((e) => e.ticket != null).toList();
+      final sinTicket = list.where((e) => e.ticket == null).toList();
+      final sorted = withTicket
+          .sortedList(keyOf: (e) => e.ticket!, desc: ticketsDescendente)
+          .toList();
+      return [...sorted, ...sinTicket];
+    }
+
+    final desc = orden != 'Antiguos primero';
     final withFecha = list.where((e) => e.fecha != null).toList();
     final sinFecha = list.where((e) => e.fecha == null).toList();
     final sorted =
@@ -158,6 +206,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     mostrarMenuEstadoSolicitud(
       anchorContext: anchorContext,
       builder: (dialogContext) {
+        final menuRoute = ModalRoute.of(dialogContext);
+        final menuNavigator = Navigator.of(dialogContext);
         return Material(
           color: Colors.transparent,
           child: GestureDetector(
@@ -171,8 +221,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               solicitudId: item.solicitudId!,
               userid: item.clienteIdUsuario?.toString(),
               actionnavegacion: () async {
-                if (Navigator.of(context).canPop()) context.pop();
-                navigateWithFade(context, SolicitudesWidget.routeName);
+                if (menuNavigator.mounted && menuRoute?.isCurrent == true) {
+                  menuNavigator.pop();
+                }
+                _refrescarClientes();
               },
             ),
           ),
@@ -182,27 +234,55 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   }
 
   void _onDelete(BuildContext context, VwSolicitudesServiciosCompletaRow item) {
+    final solicitudId = item.solicitudId;
+    if (solicitudId == null) return;
+
     showCenteredDialog(
       context,
       Notificacion2Widget(
         titulo: 'Solicitudes',
-        texto: 'Estas seguro de eliminar la solicitud?',
+        texto: '¿Estás seguro de eliminar la solicitud?',
         boton: 'Aceptar',
         succes: false,
         action: () async {
-          await SolicitudesServicioTable().delete(
-            matchingRows: (rows) => rows.eqOrNull('id', item.solicitudId),
-          );
+          const restriccionesFinancieras = [
+            'recibos_solicitud_id_fkey',
+            'transacciones_solicitud_id_fkey',
+          ];
+          var exito = true;
+          var mensaje = 'Solicitud eliminada exitosamente';
+          try {
+            await SolicitudesServicioTable().delete(
+              matchingRows: (rows) => rows.eq('id', solicitudId),
+            );
+          } on PostgrestException catch (error) {
+            exito = false;
+            mensaje = switch (error.code) {
+              'PT409' => error.message,
+              '23503'
+                  when restriccionesFinancieras.any(error.message.contains) =>
+                'No puedes eliminar la solicitud porque tiene recibos o transacciones asociados.',
+              '23503' =>
+                'No puedes eliminar la solicitud porque tiene registros vinculados.',
+              _ => 'No se pudo eliminar la solicitud. Inténtalo de nuevo.',
+            };
+          } catch (_) {
+            exito = false;
+            mensaje = 'No se pudo eliminar la solicitud. Inténtalo de nuevo.';
+          }
+          if (!context.mounted) return;
           showCenteredDialog(
             context,
             Notificacion2Widget(
               titulo: 'Solicitudes',
-              texto: 'Solicitud eliminada exitosamente',
+              texto: mensaje,
               boton: 'Aceptar',
-              succes: true,
-              action: () async {
-                navigateWithFade(context, SolicitudesWidget.routeName);
-              },
+              succes: exito,
+              action: exito
+                  ? () async {
+                      navigateWithFade(context, SolicitudesWidget.routeName);
+                    }
+                  : null,
             ),
           );
         },
@@ -214,18 +294,28 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
       BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
     await showCenteredDialog(
       context,
-      DetalleSolicitudWidget(solicitudId: item.solicitudId!),
+      DetalleSolicitudWidget(
+        solicitudId: item.solicitudId!,
+        onEditar: () async {
+          Navigator.of(context).pop();
+          if (!context.mounted) return;
+          await _onEdit(context, item);
+        },
+      ),
     );
-    _refrescarClientes();
   }
 
   Future<void> _onEdit(
       BuildContext context, VwSolicitudesServiciosCompletaRow item) async {
+    var cambiado = false;
     await showCenteredDialog(
       context,
-      EdicionSolicitudWidget(solicitudId: item.solicitudId!),
+      EdicionSolicitudWidget(
+        solicitudId: item.solicitudId!,
+        onCambio: () => cambiado = true,
+      ),
     );
-    _refrescarClientes();
+    if (cambiado) _refrescarClientes();
   }
 
   void _refrescarClientes() {
@@ -323,7 +413,15 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 )))
           .future,
       builder: (context, searchSnap) {
-        if (!searchSnap.hasData) return const HulpLoadingIndicator();
+        if (_errorActualizacion != null || searchSnap.hasError) {
+          return _buildLoadError();
+        }
+        if (!searchSnap.hasData) {
+          return SolicitudesLoadingSkeleton(
+            showFinancials: SupaFlow.finanzasV1Habilitadas,
+            topBar: _buildHeaderBar(context),
+          );
+        }
         final searchRows = searchSnap.data!;
 
         return StreamBuilder<List<VwSolicitudesServiciosCompletaRow>>(
@@ -339,8 +437,12 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                   .map((item) => VwSolicitudesServiciosCompletaRow(item))
                   .toList()),
           builder: (context, streamSnap) {
+            if (streamSnap.hasError) return _buildLoadError();
             if (!streamSnap.hasData) {
-              return const HulpLoadingIndicator();
+              return SolicitudesLoadingSkeleton(
+                showFinancials: SupaFlow.finanzasV1Habilitadas,
+                topBar: _buildHeaderBar(context),
+              );
             }
             final allData = streamSnap.data!;
 
@@ -352,6 +454,36 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildLoadError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined,
+                color: FlutterFlowTheme.of(context).secondaryText, size: 36),
+            const SizedBox(height: 12),
+            const Text('No se pudieron cargar las solicitudes.',
+                textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                  backgroundColor: FlutterFlowTheme.of(context).primary),
+              onPressed: () => safeSetState(() {
+                _errorActualizacion = null;
+                _model.requestCompleter = null;
+                _model.containerSupabaseStream = null;
+              }),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -377,33 +509,35 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
 
     return LayoutBuilder(builder: (context, viewport) {
-      final horizontal = viewport.maxWidth < 700 ? 12.0 : 24.0;
+      final horizontal =
+          AdminPageSpacing.horizontalForWidth(viewport.maxWidth);
       return CustomScrollView(slivers: [
         SliverToBoxAdapter(child: _buildHeaderBar(context)),
         SliverPadding(
           padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 0),
           sliver: SliverList.list(children: [
-            _buildBreadcrumb(context),
-            _buildTitleRow(context),
+            if (!MenuWidget.breadcrumbEnBarraSuperior(context))
+              _buildBreadcrumb(context),
+            _buildTitleRow(context, solicitudesDatos),
             Padding(
               padding:
                   const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
               child: SolicitudesFilterBar(
                 estadoOptions: _getEstadoOptions(allData),
-                categoriaOptions: _getCategoriaOptions(allData),
+                servicioOptions: _getServicioOptions(allData),
+                ciudadOptions: _getCiudadOptions(allData),
                 dropDownValue1: _model.dropDownValue1,
                 dropDownValue2: _model.dropDownValue2,
+                dropDownValue3: _model.dropDownValue3,
                 dateStart: _model.dateStart,
                 dateEnd: _model.dateEnd,
                 resultCount: solicitudesDatos.length,
                 onEstadoChanged: (val) =>
                     safeSetState(() => _model.dropDownValue1 = val),
-                onCategoriaChanged: (val) =>
+                onServicioChanged: (val) =>
                     safeSetState(() => _model.dropDownValue2 = val),
-                onEstadoReset: () =>
-                    safeSetState(() => _model.dropDownValue1 = null),
-                onCategoriaReset: () =>
-                    safeSetState(() => _model.dropDownValue2 = null),
+                onCiudadChanged: (val) =>
+                    safeSetState(() => _model.dropDownValue3 = val),
                 onDateRangeSelected: (start, end) => safeSetState(() {
                   _model.dateStart = start;
                   _model.dateEnd = end;
@@ -418,6 +552,16 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
             ),
           ]),
         ),
+        if (SupaFlow.finanzasV1Habilitadas)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, 8),
+            sliver: SliverToBoxAdapter(
+                child: ResumenFinanzasPeriodo(
+                    key: ValueKey(
+                        '${_model.dateStart}:${_model.dateEnd}:${allData.map((r) => '${r.solicitudId}:${r.finanzasRevision}:${r.estadoPago}').join(',')}'),
+                    inicio: _model.dateStart,
+                    fin: _model.dateEnd)),
+          ),
         SliverPadding(
           padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, 8),
           sliver: SliverLayoutBuilder(builder: (context, constraints) {
@@ -449,10 +593,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         ocultosEnFiltro.any((x) => _normCompare(o) == _normCompare(x));
 
     var list = allData
-        .unique((e) => e.estadoSolicitud!)
-        .map((e) => e.estadoSolicitud)
+        .map((e) => estadoSolicitudParaFiltro(e.estadoSolicitud))
         .withoutNulls
         .where((o) => !esOculto(o))
+        .toSet()
         .toList();
     final cur = _trimOrNull(_model.dropDownValue1);
     if (cur != null &&
@@ -464,15 +608,31 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     return list;
   }
 
-  List<String> _getCategoriaOptions(
+  List<String> _getServicioOptions(
     List<VwSolicitudesServiciosCompletaRow> allData,
   ) {
     var list = allData
-        .unique((e) => e.categoriaNombre!)
-        .map((e) => e.categoriaNombre)
-        .withoutNulls
+        .map((e) => _trimOrNull(e.servicioNombre))
+        .whereType<String>()
+        .toSet()
         .toList();
     final cur = _trimOrNull(_model.dropDownValue2);
+    if (cur != null && !list.any((o) => _normCompare(o) == _normCompare(cur))) {
+      list = [...list, cur];
+    }
+    list.sort((a, b) => _normCompare(a).compareTo(_normCompare(b)));
+    return list;
+  }
+
+  List<String> _getCiudadOptions(
+    List<VwSolicitudesServiciosCompletaRow> allData,
+  ) {
+    var list = allData
+        .map((row) => _trimOrNull(row.solicitudCiudad))
+        .whereType<String>()
+        .toSet()
+        .toList();
+    final cur = _trimOrNull(_model.dropDownValue3);
     if (cur != null && !list.any((o) => _normCompare(o) == _normCompare(cur))) {
       list = [...list, cur];
     }
@@ -483,7 +643,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
   // -- Sub-widgets ------------------------------------------------------------
 
   Widget _buildHeaderBar(BuildContext context) {
-    final horizontal = MenuWidget.esMovil(context) ? 12.0 : 24.0;
+    final horizontal = AdminPageSpacing.headerHorizontal(context);
     return Container(
       width: MediaQuery.sizeOf(context).width * 1.0,
       height: 72.0,
@@ -495,11 +655,19 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Flexible(
+          if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+            Padding(
+              padding: EdgeInsetsDirectional.only(start: 24.0),
+              child: _buildBreadcrumb(context),
+            ),
+          ],
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
               child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(horizontal, 0.0, 12.0, 0.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 394.0),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    horizontal, 0.0, 12.0, 0.0),
+                child: AdminHeaderSearchWidth(
               child: TextFormField(
                 controller: _model.textController,
                 focusNode: _model.textFieldFocusNode,
@@ -513,7 +681,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 ),
                 autofocus: false,
                 obscureText: false,
-                decoration: InputDecoration(
+                decoration: decorarInputHulp(context, InputDecoration(
                   isDense: true,
                   hintText: 'Buscar solicitud',
                   hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
@@ -544,7 +712,7 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                   ),
                   filled: true,
                   fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                ),
+                )),
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(),
                       letterSpacing: 0.0,
@@ -553,10 +721,10 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 validator: _model.textControllerValidator.asValidator(context),
               ),
             ),
-          )),
+                ))),
           Padding(
             padding:
-                EdgeInsetsDirectional.fromSTEB(0.0, 12.0, horizontal, 12.0),
+                EdgeInsetsDirectional.fromSTEB(16.0, 12.0, horizontal, 12.0),
             child: Icon(
               Icons.notifications_none,
               color: FlutterFlowTheme.of(context).accent3,
@@ -602,7 +770,8 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
     );
   }
 
-  Widget _buildTitleRow(BuildContext context) {
+  Widget _buildTitleRow(BuildContext context,
+      List<VwSolicitudesServiciosCompletaRow> solicitudesDatos) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
       child: Wrap(
@@ -629,9 +798,14 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
               FlutterFlowDropDown<String>(
                 controller: _model.dropDownOrdenValueController ??=
                     FormFieldController<String>(
-                  _model.dropDownOrdenValue ??= 'Recientes primero',
+                  _model.dropDownOrdenValue ??= _ticketDescendente,
                 ),
-                options: ['Recientes primero', 'Antiguos primero'],
+                options: const [
+                  'Recientes primero',
+                  'Antiguos primero',
+                  'Ticket ascendente',
+                  _ticketDescendente,
+                ],
                 onChanged: (val) =>
                     safeSetState(() => _model.dropDownOrdenValue = val),
                 width: 200.0,
@@ -656,12 +830,31 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 isSearchable: false,
                 isMultiSelect: false,
               ),
+              if (SupaFlow.finanzasV1Habilitadas)
+                SizedBox(
+                  height: 40.0,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      try {
+                        await exportarSolicitudesExcel(solicitudesDatos);
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('No se pudo exportar: $error')),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('Excel'),
+                  ),
+                ),
               Builder(
                 builder: (context) => FFButtonWidget(
                   onPressed: () async {
                     await showCenteredDialog(context, CrearSolicitudWidget());
                   },
-                  text: 'Nuevo',
+                  text: '+ Nueva solicitud',
                   options: FFButtonOptions(
                     height: 40.0,
                     padding: const EdgeInsetsDirectional.fromSTEB(

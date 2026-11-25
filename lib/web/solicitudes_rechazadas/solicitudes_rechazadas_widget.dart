@@ -13,11 +13,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/web/menu/menu_widget.dart';
+import '/web/shared/admin_loading_skeleton.dart';
+import '/web/shared/admin_page_spacing.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'dart:async';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'solicitudes_rechazadas_model.dart';
@@ -39,6 +42,10 @@ class _SolicitudesRechazadasWidgetState
   late SolicitudesRechazadasModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _actualizarRechazadas() {
+    safeSetState(() => _model.requestCompleter = null);
+  }
 
   @override
   void initState() {
@@ -63,8 +70,203 @@ class _SolicitudesRechazadasWidgetState
     super.dispose();
   }
 
+  Widget _buildBreadcrumb(BuildContext context) {
+    return ResponsiveToolbarRow(
+  mainAxisSize: MainAxisSize.max,
+  children: [
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          DashboardWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Inicio',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0,
+                  4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          RegistroProveedoresWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Registro talento Hulp',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+    Padding(
+      padding:
+          EdgeInsetsDirectional
+              .fromSTEB(8.0, 0.0,
+                  4.0, 0.0),
+      child: Icon(
+        Icons.chevron_right,
+        color: Color(0xFF5E252B),
+        size: 24.0,
+      ),
+    ),
+    InkWell(
+      splashColor:
+          Colors.transparent,
+      focusColor:
+          Colors.transparent,
+      hoverColor:
+          Colors.transparent,
+      highlightColor:
+          Colors.transparent,
+      onTap: () async {
+        context.pushNamed(
+          SolicitudesRechazadasWidget
+              .routeName,
+          extra: <String,
+              dynamic>{
+            '__transition_info__':
+                TransitionInfo(
+              hasTransition: true,
+              transitionType:
+                  PageTransitionType
+                      .fade,
+              duration: Duration(
+                  milliseconds:
+                      0),
+            ),
+          },
+        );
+      },
+      child: Text(
+        'Solicitudes rechazadas',
+        style: FlutterFlowTheme
+                .of(context)
+            .bodyMedium
+            .override(
+              font: GoogleFonts
+                  .inter(
+                fontWeight:
+                    FontWeight
+                        .w500,
+                fontStyle:
+                    FontStyle
+                        .italic,
+              ),
+              color: Color(
+                  0xFF5E252B),
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight:
+                  FontWeight.w500,
+              fontStyle: FontStyle
+                  .italic,
+            ),
+      ),
+    ),
+  ],
+);
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    final pageHorizontal = AdminPageSpacing.contentHorizontal(context);
+    final headerHorizontal = AdminPageSpacing.headerHorizontal(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -149,23 +351,25 @@ class _SolicitudesRechazadasWidgetState
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
+                                        if (MenuWidget.breadcrumbEnBarraSuperior(context)) ...[
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional.only(start: 24.0),
+                                            child: _buildBreadcrumb(context),
+                                          ),
+                                        ],
                                         Expanded(
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                              MediaQuery.sizeOf(context).width <
-                                                      1024
-                                                  ? 16.0
-                                                  : 40.0,
+                                              headerHorizontal,
                                               0.0,
-                                              16.0,
+                                              12.0,
                                               0.0,
                                             ),
                                             child: Align(
                                               alignment: AlignmentDirectional
-                                                  .centerStart,
-                                              child: Container(
-                                                width: 394.0,
+                                                  .centerEnd,
+                                              child: AdminHeaderSearchWidth(
                                                 child: TextFormField(
                                                   controller:
                                                       _model.textController,
@@ -186,7 +390,7 @@ class _SolicitudesRechazadasWidgetState
                                                   ),
                                                   autofocus: false,
                                                   obscureText: false,
-                                                  decoration: InputDecoration(
+                                                  decoration: decorarInputHulp(context, InputDecoration(
                                                     isDense: true,
                                                     labelStyle: FlutterFlowTheme
                                                             .of(context)
@@ -305,7 +509,7 @@ class _SolicitudesRechazadasWidgetState
                                                     fillColor: FlutterFlowTheme
                                                             .of(context)
                                                         .secondaryBackground,
-                                                  ),
+                                                  )),
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -349,7 +553,7 @@ class _SolicitudesRechazadasWidgetState
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                            0.0,
+                                            16.0,
                                             12.0,
                                             MediaQuery.sizeOf(context).width <
                                                     1024
@@ -370,13 +574,9 @@ class _SolicitudesRechazadasWidgetState
                                   Flexible(
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
-                                        24.0,
-                                        MediaQuery.sizeOf(context).width < 1024
-                                            ? 16.0
-                                            : 40.0,
+                                        pageHorizontal,
+                                        16.0,
+                                        pageHorizontal,
                                         0.0,
                                       ),
                                       child: Column(
@@ -387,195 +587,7 @@ class _SolicitudesRechazadasWidgetState
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              ResponsiveToolbarRow(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        DashboardWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Inicio',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
-                                                                4.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.chevron_right,
-                                                      color: Color(0xFF5E252B),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        RegistroProveedoresWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Registro talento Hulp',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(8.0, 0.0,
-                                                                4.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.chevron_right,
-                                                      color: Color(0xFF5E252B),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        SolicitudesRechazadasWidget
-                                                            .routeName,
-                                                        extra: <String,
-                                                            dynamic>{
-                                                          '__transition_info__':
-                                                              TransitionInfo(
-                                                            hasTransition: true,
-                                                            transitionType:
-                                                                PageTransitionType
-                                                                    .fade,
-                                                            duration: Duration(
-                                                                milliseconds:
-                                                                    0),
-                                                          ),
-                                                        },
-                                                      );
-                                                    },
-                                                    child: Text(
-                                                      'Solicitudes rechazadas',
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                            ),
-                                                            color: Color(
-                                                                0xFF5E252B),
-                                                            fontSize: 16.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontStyle: FontStyle
-                                                                .italic,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                              if (!MenuWidget.breadcrumbEnBarraSuperior(context)) _buildBreadcrumb(context),
                                             ],
                                           ),
                                           Padding(
@@ -1577,8 +1589,9 @@ class _SolicitudesRechazadasWidgetState
                                                             proveedorId:
                                                                 proveedoresDatosItem
                                                                     .profesionalId!,
-                                                            actionnavegacion:
-                                                                () async {},
+                                                            actionnavegacion: () async {
+                                                              _actualizarRechazadas();
+                                                            },
                                                           ),
                                                         ),
                                                         Row(
@@ -1632,7 +1645,8 @@ class _SolicitudesRechazadasWidgetState
                                                                             },
                                                                             child:
                                                                                 RechazarProveedorWidget(
-                                                                              proveedorId: proveedoresDatosIndex.toString(),
+                                                                              proveedorId: proveedoresDatosItem.profesionalId!,
+                                                                              onGuardado: _actualizarRechazadas,
                                                                             ),
                                                                           ),
                                                                         );
@@ -1689,6 +1703,7 @@ class _SolicitudesRechazadasWidgetState
                                                                               AceptarProveedorWidget(
                                                                             idproveedor:
                                                                                 proveedoresDatosItem.profesionalId!,
+                                                                            onGuardado: _actualizarRechazadas,
                                                                           ),
                                                                         ),
                                                                       );

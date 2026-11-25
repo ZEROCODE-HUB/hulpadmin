@@ -7,12 +7,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 Future<T?> showMapSafeDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
+  bool barrierDismissible = true,
 }) {
   final navigator = Navigator.of(context, rootNavigator: true);
   return navigator.push<T>(
     _MapSafeDialogRoute<T>(
       context: context,
       builder: builder,
+      barrierDismissible: barrierDismissible,
       themes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierColor: DialogTheme.of(context).barrierColor ??
           Theme.of(context).dialogTheme.barrierColor ??
@@ -27,6 +29,7 @@ class _MapSafeDialogRoute<T> extends DialogRoute<T> {
     required super.builder,
     required super.themes,
     required super.barrierColor,
+    super.barrierDismissible,
   });
 
   @override
@@ -94,8 +97,8 @@ Future<void> showCenteredDialog(BuildContext context, Widget child) {
         elevation: 0,
         insetPadding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
-        alignment: AlignmentDirectional(0.0, 0.0)
-            .resolve(Directionality.of(context)),
+        alignment:
+            AlignmentDirectional(0.0, 0.0).resolve(Directionality.of(context)),
         child: GestureDetector(
           onTap: () {
             FocusScope.of(dialogContext).unfocus();

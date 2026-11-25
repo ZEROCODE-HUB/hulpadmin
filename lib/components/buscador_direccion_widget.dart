@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -103,7 +104,7 @@ class _BuscadorDireccionWidgetState extends State<BuscadorDireccionWidget> {
         TextFormField(
           controller: _controlador,
           onChanged: _alEscribir,
-          decoration: InputDecoration(
+          decoration: decorarInputHulp(context, InputDecoration(
             isDense: true,
             hintText: 'Buscar una dirección…',
             hintStyle: tema.labelMedium.override(
@@ -142,7 +143,7 @@ class _BuscadorDireccionWidgetState extends State<BuscadorDireccionWidget> {
             ),
             filled: true,
             fillColor: const Color(0xFFFBFAF9),
-          ),
+          )),
           style: tema.bodyMedium.override(
             font: GoogleFonts.inter(),
             fontSize: 15.0,

@@ -1,3 +1,4 @@
+import '/flutter_flow/solicitud_status_helpers.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 
@@ -93,6 +94,7 @@ String obtenerNroLiteral(int numero) {
 }
 
 List<String> getStatus(List<String> statuses) {
+  if (usaEstadosSprint3) return statuses.map(etiquetaEstadoSprint3).toList();
   return statuses.map((status) {
     switch (status) {
       case 'entrantes':

@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+const Color hulpPrimaryGreen = Color(0xFF0B6244);
+
 abstract class FlutterFlowTheme {
   static FlutterFlowTheme of(BuildContext context) {
     return LightModeTheme();
@@ -123,7 +125,7 @@ class LightModeTheme extends FlutterFlowTheme {
   @Deprecated('Use tertiary instead')
   Color get tertiaryColor => tertiary;
 
-  late Color primary = const Color(0xFF0B6244);
+  late Color primary = hulpPrimaryGreen;
   late Color secondary = const Color(0xFF5E594E);
   late Color tertiary = const Color(0xFF999489);
   late Color alternate = const Color(0xFFB7B1A7);

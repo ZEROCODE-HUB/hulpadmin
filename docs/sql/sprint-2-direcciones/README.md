@@ -1,7 +1,12 @@
 # SQL preparado — direcciones múltiples, Sprint 2
 
-Estado: archivos locales preparados, ninguna migración aplicada. Destino exclusivo:
+Estado: migración aplicada y verificada parcialmente el 2 de noviembre de 2026. Destino exclusivo:
 Hulp, rama `test`, referencia `ptafsiwlhxomgqmdmidf`.
+
+La versión registrada por MCP es `20261102141742`, nombre `sprint2_direcciones_clientes`.
+El archivo local conserva la fecha de preparación `20261029154702`; no representa
+otra migración pendiente. Conciliar esta correspondencia y el historial anterior
+antes de usar CLI; no volver a aplicar el archivo. Ver [resultado de aplicación](aplicacion-test.md).
 
 ## Archivos
 
@@ -74,9 +79,9 @@ Probar también alta, edición y archivo propios como cliente, rechazo de filas
 ajenas y rechazo de cambio de propietario. Esta verificación no acredita la
 protección de `usuarios.rol`, que se mantiene sin cambios.
 
-No se ejecutó el SQL, ni siquiera sobre una base local. La revisión estática no
-acredita aceptación funcional, RLS efectiva ni despliegue. Falta la implementación
-Flutter y su validación al integrar el contrato.
+El SQL se ejecutó en `test`, sin ejecutarse en otros ambientes. La verificación
+realizada está registrada en `aplicacion-test.md`; falta la implementación Flutter
+y su validación funcional al integrar el contrato.
 
 ## Recuperación
 

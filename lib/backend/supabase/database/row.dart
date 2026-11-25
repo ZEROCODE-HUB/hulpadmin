@@ -11,6 +11,25 @@ abstract class SupabaseDataRow {
 
   String get tableName => table.tableName;
 
+  int? get finanzasVersion => getField<int>('finanzas_version');
+  int? get finanzasRevision => getField<int>('finanzas_revision');
+  double? get totalCliente => getField<double>('total_cliente');
+  double importeProveedor(double Function() legacy) {
+    if (finanzasVersion == null) return legacy();
+    if (finanzasVersion != 1 || pagoProveedor == null) {
+      throw StateError('Desglose financiero incompleto');
+    }
+    return pagoProveedor!;
+  }
+
+  double? get pagoProveedor => getField<double>('pago_proveedor');
+  double? get saldoTransferir => getField<double>('saldo_transferir');
+  double? get materialesTotal => getField<double>('materiales_total');
+  double? get comisionNetaHulp => getField<double>('comision_neta_hulp');
+  double? get ivaValor => getField<double>('iva_valor');
+  String? get notasCliente => getField<String>('notas_cliente');
+  bool? get requiereFe => getField<bool>('requiere_fe');
+
   T? getField<T>(String fieldName, [T? defaultValue]) =>
       _supaDeserialize<T>(data[fieldName]) ?? defaultValue;
   void setField<T>(String fieldName, T? value) =>

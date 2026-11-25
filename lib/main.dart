@@ -9,6 +9,7 @@ import 'auth/supabase_auth/supabase_user_provider.dart';
 import 'auth/supabase_auth/auth_util.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/components/admin_visual_scale.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
@@ -96,6 +97,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Hulp Admin',
+      builder: (context, child) => AdminVisualScale(
+        child: child ?? const SizedBox.shrink(),
+      ),
       scrollBehavior: MyAppScrollBehavior(),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -106,6 +110,15 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        primaryColor: hulpPrimaryGreen,
+        colorScheme: const ColorScheme.light(primary: hulpPrimaryGreen),
+        inputDecorationTheme: InputDecorationTheme(
+          prefixIconColor: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.focused)
+                ? hulpPrimaryGreen
+                : const Color(0xFF4A4A4A),
+          ),
+        ),
       ),
       themeMode: _themeMode,
       routerConfig: _router,

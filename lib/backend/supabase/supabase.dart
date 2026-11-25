@@ -1,3 +1,5 @@
+import '/backend/solicitudes_stream.dart';
+import '/backend/solicitudes_http_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/environment_values.dart';
@@ -13,15 +15,22 @@ class SupaFlow {
 
   final _supabase = Supabase.instance.client;
   static SupabaseClient get client => instance._supabase;
+  static bool get sprint4Habilitado => true;
+  static SolicitudesStream solicitudesStream() => SolicitudesStream(client);
+  static bool get finanzasV1Habilitadas => true;
 
-  static Future initialize() => Supabase.initialize(
-        url: FFDevEnvironmentValues().supabaseUrl,
-        headers: {
-          'X-Client-Info': 'flutterflow',
-        },
-        anonKey: FFDevEnvironmentValues().supabaseAnonKey,
-        debug: false,
-        authOptions:
-            FlutterAuthClientOptions(authFlowType: AuthFlowType.implicit),
-      );
+  static Future initialize() {
+    final environment = FFDevEnvironmentValues();
+    final url = environment.supabaseUrl;
+    return Supabase.initialize(
+      url: url,
+      httpClient: SolicitudesHttpClient(supabaseUrl: Uri.parse(url)),
+      headers: {
+        'X-Client-Info': 'flutterflow',
+      },
+      anonKey: environment.supabaseAnonKey,
+      debug: false,
+      authOptions: FlutterAuthClientOptions(authFlowType: AuthFlowType.implicit),
+    );
+  }
 }

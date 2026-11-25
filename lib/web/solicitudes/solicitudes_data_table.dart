@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/profesionales_query.dart';
 import '/components/solicitud_status_badge_widget.dart';
 import '/flutter_flow/cliente_nombre_helpers.dart';
 import '/flutter_flow/flutter_flow_data_table.dart';
@@ -37,6 +38,68 @@ class SolicitudesDataTable extends StatelessWidget {
       onMarkPaymentReceived;
   final Set<String> updatingPaymentIds;
 
+  Widget _proveedorSprint4(
+    BuildContext context,
+    VwSolicitudesServiciosCompletaRow item,
+    String? nombre,
+    TextStyle estilo,
+  ) {
+    final pendiente = item.estadoSolicitud == 'entrantes';
+    final tieneProveedor = nombre != null && nombre.isNotEmpty;
+    final revision = item.getField<String>('revision_asignacion');
+    final tipo = item.getField<String>('tipo_asignacion');
+    final perfilEnviado = item.getField<String>('perfil_enviado_en') != null;
+    final perfilPendiente = item.getField<bool>('perfil_pendiente') == true;
+    final cancelacion = item.getField<String>('proveedor_cancelacion');
+    final fecha = item.getField<DateTime>('cancelacion_proveedor_en');
+    final tipoVisible = tiposAsignacionSprint4[tipo];
+    final canceloProveedor = _proveedorCanceloSolicitud(item, nombre);
+    final detalle = canceloProveedor
+        ? 'Canceló $cancelacion${fecha == null ? '' : ' · ${dateTimeFormat('d/M HH:mm', fecha.toUtc().subtract(const Duration(hours: 5)))}'}'
+        : revision ?? (!pendiente && perfilPendiente ? 'Perfil por enviar' : null);
+    final estiloDetalle = estilo.copyWith(fontSize: 12);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _textoCelda(
+          tieneProveedor ? (perfilEnviado ? '$nombre ✓' : nombre) : 'Sin asignar',
+          style: estilo.copyWith(
+            color: pendiente && tieneProveedor
+                ? const Color(0xFF747474)
+                : perfilEnviado
+                    ? Colors.green.shade800
+                    : pendiente
+                        ? FlutterFlowTheme.of(context).secondaryText
+                        : null,
+          ),
+        ),
+        if (tipoVisible != null) _textoCelda(tipoVisible, style: estiloDetalle),
+        if (detalle != null && detalle.isNotEmpty)
+          _textoCelda(
+            detalle,
+            style: estiloDetalle.copyWith(
+              color: revision != null || canceloProveedor
+                  ? Colors.deepOrange.shade800
+                  : null,
+            ),
+          ),
+      ],
+    );
+  }
+
+  bool _proveedorCanceloSolicitud(
+    VwSolicitudesServiciosCompletaRow item,
+    String? nombreProveedor,
+  ) {
+    final proveedorCancelacion = item.getField<String>('proveedor_cancelacion');
+    final tieneProveedor =
+        nombreProveedor != null && nombreProveedor.isNotEmpty;
+    return item.estadoSolicitud == 'entrantes' &&
+        proveedorCancelacion != null &&
+        !tieneProveedor;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScrollbarTheme(
@@ -49,13 +112,22 @@ class SolicitudesDataTable extends StatelessWidget {
           columnsBuilder: (onSortChanged) => _buildColumns(context),
           dataRowBuilder: (item, index, selected, onSelectChanged) =>
               _buildRow(context, item, index),
+          cellBackgroundColorBuilder: (item, rowIndex, columnIndex) {
+            if (columnIndex != 9) return null;
+            return _proveedorCanceloSolicitud(
+              item,
+              item.proveedorNombreCompleto?.trim(),
+            )
+                ? const Color(0xFFFAEBE1)
+                : const Color(0xFFE9F4EF);
+          },
           paginated: true,
           selectable: false,
           hidePaginator: false,
           showFirstLastButtons: true,
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: MediaQuery.sizeOf(context).height * 1.0,
-          minWidth: 1800.0,
+          minWidth: 1880.0,
           headingRowHeight: 56.0,
           dataRowHeight: 60.0,
           columnSpacing: 20.0,
@@ -83,19 +155,41 @@ class SolicitudesDataTable extends StatelessWidget {
       _col('Usu. Solicitante', headerStyle, fixedWidth: 210.0),
       _col('Ciudad', headerStyle),
       _col('Direccion', headerStyle, fixedWidth: 280.0),
-      _col('Categoria', headerStyle),
+      _col('Servicio', headerStyle),
+      _col('Proveedor', headerStyle, fixedWidth: 220.0),
       _col('Precio', headerStyle),
-      _col('Pago', headerStyle, fixedWidth: 160.0),
-      _col('ID Proveedor', headerStyle),
+      _col(
+        'Pago',
+        headerStyle.copyWith(color: Colors.white),
+        fixedWidth: 160.0,
+        headerBackgroundColor: const Color(0xFF2E6D52),
+      ),
       _col('Acciones', headerStyle, fixedWidth: 140.0),
     ];
   }
 
-  DataColumn2 _col(String label, TextStyle style, {double? fixedWidth}) {
+  DataColumn2 _col(
+    String label,
+    TextStyle style, {
+    double? fixedWidth,
+    Color? headerBackgroundColor,
+  }) {
     return DataColumn2(
       label: DefaultTextStyle.merge(
         softWrap: true,
-        child: Text(label, style: style),
+        child: headerBackgroundColor == null
+            ? Text(label, style: style)
+            : Container(
+                width: double.infinity,
+                height: 56.0,
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                decoration: BoxDecoration(
+                  color: headerBackgroundColor,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(label, style: style),
+              ),
       ),
       fixedWidth: fixedWidth,
     );
@@ -113,6 +207,9 @@ class SolicitudesDataTable extends StatelessWidget {
         );
     final ciudad = item.solicitudCiudad?.trim() ?? '';
     final direccion = direccionSolicitudVisible(item.ubicacion, ciudad);
+    final servicioNombre = item.servicioNombre?.trim();
+    final proveedorNombre = item.proveedorNombreCompleto?.trim();
+    final proveedorCancelo = _proveedorCanceloSolicitud(item, proveedorNombre);
 
     // La columna mide 280 px y reserva 20 px para el espacio entre celdas.
     // La fila crece según el texto real, incluidos saltos y escala de fuente.
@@ -129,7 +226,9 @@ class SolicitudesDataTable extends StatelessWidget {
     return DataRow2(
       specificRowHeight: alturaFila,
       color: WidgetStateProperty.all(
-        FlutterFlowTheme.of(context).secondaryBackground,
+        proveedorCancelo
+            ? const Color(0xFFFAEBE1)
+            : FlutterFlowTheme.of(context).secondaryBackground,
       ),
       cells: [
         // Ticket
@@ -182,9 +281,20 @@ class SolicitudesDataTable extends StatelessWidget {
           },
           child: _textoCelda(direccion, style: bodyStyle),
         )),
-        // Categoria
+        // Servicio
         DataCell(_textoCelda(
-          valueOrDefault<String>(item.categoriaNombre, 'Sin datos'),
+          servicioNombre == null || servicioNombre.isEmpty
+              ? 'Sin datos'
+              : servicioNombre,
+          style: bodyStyle,
+        )),
+        // Proveedor
+        DataCell(SupaFlow.sprint4Habilitado
+            ? _proveedorSprint4(context, item, proveedorNombre, bodyStyle)
+            : _textoCelda(
+          proveedorNombre == null || proveedorNombre.isEmpty
+              ? 'Sin asignar'
+              : proveedorNombre,
           style: bodyStyle,
         )),
         // Precio
@@ -200,12 +310,9 @@ class SolicitudesDataTable extends StatelessWidget {
           ),
         )),
         // Estado del pago y acción directa para marcarlo recibido.
-        DataCell(_buildPaymentCell(context, item, bodyStyle)),
-        // ID Proveedor
-        DataCell(_textoCelda(
-          valueOrDefault<String>(
-              item.proveedorIdUsuario?.toString(), 'Sin datos'),
-          style: bodyStyle,
+        DataCell(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: _buildPaymentCell(context, item, bodyStyle),
         )),
         // Acciones
         DataCell(Row(
@@ -268,7 +375,10 @@ class SolicitudesDataTable extends StatelessWidget {
     final paymentReceived = isPaymentReceived(status);
 
     if (!paymentReceived && !isPaymentPending(status)) {
-      return _textoCelda(paymentStatusLabel(status), style: bodyStyle);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: _textoCelda(paymentStatusLabel(status), style: bodyStyle),
+      );
     }
 
     final isUpdating =
@@ -287,47 +397,50 @@ class SolicitudesDataTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.0),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 24.0,
-                height: 24.0,
-                decoration: BoxDecoration(
-                  color: paymentReceived
-                      ? const Color(0xFF2E6D52)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4.0),
-                  border: Border.all(
+          child: SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 24.0,
+                  height: 24.0,
+                  decoration: BoxDecoration(
                     color: paymentReceived
                         ? const Color(0xFF2E6D52)
-                        : const Color(0xFF8B8B8B),
-                    width: 1.5,
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(4.0),
+                    border: Border.all(
+                      color: paymentReceived
+                          ? const Color(0xFF2E6D52)
+                          : const Color(0xFF8B8B8B),
+                      width: 1.5,
+                    ),
                   ),
+                  child: isUpdating
+                      ? const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                        )
+                      : paymentReceived
+                          ? const Icon(Icons.check,
+                              color: Colors.white, size: 18.0)
+                          : null,
                 ),
-                child: isUpdating
-                    ? const Padding(
-                        padding: EdgeInsets.all(4.0),
-                        child: CircularProgressIndicator(strokeWidth: 2.0),
-                      )
-                    : paymentReceived
-                        ? const Icon(Icons.check,
-                            color: Colors.white, size: 18.0)
-                        : null,
-              ),
-              const SizedBox(width: 8.0),
-              Flexible(
-                  child: _textoCelda(
-                isUpdating ? 'Guardando...' : paymentStatusLabel(status),
-                style: bodyStyle.copyWith(
-                  color: paymentReceived
-                      ? const Color(0xFF2E6D52)
-                      : const Color(0xFF6F6F6F),
-                  fontWeight:
-                      paymentReceived ? FontWeight.w700 : FontWeight.w500,
-                ),
-              )),
-            ],
+                const SizedBox(width: 8.0),
+                Flexible(
+                    child: _textoCelda(
+                  isUpdating ? 'Guardando...' : paymentStatusLabel(status),
+                  style: bodyStyle.copyWith(
+                    color: paymentReceived
+                        ? const Color(0xFF2E6D52)
+                        : const Color(0xFF6F6F6F),
+                    fontWeight:
+                        paymentReceived ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                )),
+              ],
+            ),
           ),
         ),
       ),

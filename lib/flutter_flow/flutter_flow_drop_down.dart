@@ -3,6 +3,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'form_field_controller.dart';
 import 'package:flutter/material.dart';
+import '/components/hulp_input_decoration.dart';
 
 class FlutterFlowDropDown<T> extends StatefulWidget {
   const FlutterFlowDropDown({
@@ -356,7 +357,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
                   controller: _textEditingController,
                   cursorColor: widget.searchCursorColor,
                   style: widget.searchTextStyle,
-                  decoration: InputDecoration(
+                  decoration: decorarInputHulp(context, InputDecoration(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -367,7 +368,7 @@ class _FlutterFlowDropDownState<T> extends State<FlutterFlowDropDown<T>> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
+                  ), busqueda: true),
                 ),
               ),
               searchMatchFn: (item, searchValue) {
